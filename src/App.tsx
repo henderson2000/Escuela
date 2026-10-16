@@ -9,6 +9,7 @@ import { GamesPage } from './pages/GamesPage'
 import { GameRoute } from './pages/GameRoute'
 import { RankingPage } from './pages/RankingPage'
 import { PlayerBadge } from './components/PlayerBadge'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 const NAV = [
   { to: '/', label: 'Inicio', end: true },
@@ -24,6 +25,12 @@ function ScrollToTop() {
   const { pathname } = useLocation()
   useEffect(() => window.scrollTo(0, 0), [pathname])
   return null
+}
+
+/** si una página falla, sólo esa página muestra el error (y se limpia al cambiar de página) */
+function RouteBoundary({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation()
+  return <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
 }
 
 export default function App() {
@@ -47,6 +54,7 @@ export default function App() {
         <PlayerBadge />
       </header>
       <main>
+        <RouteBoundary>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/componentes" element={<ComponentsPage />} />
@@ -59,6 +67,7 @@ export default function App() {
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="*" element={<Home />} />
         </Routes>
+        </RouteBoundary>
       </main>
     </HashRouter>
   )
