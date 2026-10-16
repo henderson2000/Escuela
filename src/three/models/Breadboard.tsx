@@ -1,6 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
+import { RoundedBox } from '@react-three/drei'
 import { Part } from '../Part'
 import { useCanvasTexture } from '../helpers'
 import { PITCH, ROW_Z, RAIL_ROWS, buildHoles, boardSize, type Hole } from '../../lib/breadboard'
@@ -123,10 +124,22 @@ export function BreadboardBody({ cols, highlightStrips, hoverId, onHoleClick, on
 
   return (
     <group ref={group}>
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={[width, height, depth]} />
+      <RoundedBox args={[width, height, depth]} radius={0.03} smoothness={3} castShadow receiveShadow>
         <meshStandardMaterial color="#f3f1ea" roughness={0.75} />
-      </mesh>
+      </RoundedBox>
+      {/* encastres "cola de milano" para unir varias protoboards */}
+      {[-0.32, 0, 0.32].map((f) => (
+        <group key={f}>
+          <mesh position={[width / 2 + 0.05, -0.05, f * depth]}>
+            <boxGeometry args={[0.1, height * 0.6, 0.22]} />
+            <meshStandardMaterial color="#ebe8df" roughness={0.75} />
+          </mesh>
+          <mesh position={[-width / 2 + 0.04, -0.05, f * depth]}>
+            <boxGeometry args={[0.1, height * 0.62, 0.24]} />
+            <meshStandardMaterial color="#9d9a91" roughness={0.9} />
+          </mesh>
+        </group>
+      ))}
       <mesh position={[0, height / 2 + 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]} {...events}>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial map={tex} roughness={0.75} />

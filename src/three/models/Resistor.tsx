@@ -1,18 +1,24 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { Part } from '../Part'
-import { Wire, metal } from '../helpers'
+import { Wire, metal, tinned } from '../helpers'
 import { COLORS, type ColorName } from '../../lib/resistor'
 
 const LEN = 2.4 // largo del cuerpo
 const HALF = LEN / 2
 
 /** radio del cuerpo "hueso de perro" según la posición a lo largo del eje */
+// Proporciones de una resistencia de 1/4 W: cuerpo de 6,3 mm × 2,4 mm (1 unidad ≈ 2,6 mm)
 function bodyRadius(y: number) {
   const a = Math.abs(y)
-  if (a > HALF - 0.45) return 0.42 - Math.max(0, a - (HALF - 0.08)) * 2.2
-  if (a > HALF - 0.6) return 0.36 + ((a - (HALF - 0.6)) / 0.15) * 0.06
-  return 0.36
+  const capStart = HALF - 0.5 // donde empiezan las tapas (zona más gruesa)
+  const neck = HALF - 0.68
+  let r = 0.4
+  if (a > neck) r = 0.4 + 0.055 * (0.5 - 0.5 * Math.cos(Math.min(1, (a - neck) / (capStart - neck)) * Math.PI))
+  // punta redondeada
+  const tip = HALF - 0.12
+  if (a > tip) r *= Math.sqrt(Math.max(0, 1 - ((a - tip) / 0.12) ** 2)) * 0.75 + 0.25
+  return r
 }
 
 function bandPositions(count: number): number[] {
@@ -28,14 +34,14 @@ export interface ResistorProps {
 export function ResistorModel({ bands, straight }: ResistorProps) {
   const bodyGeo = useMemo(() => {
     const pts: THREE.Vector2[] = []
-    const n = 60
+    const n = 120
     for (let i = 0; i <= n; i++) {
       const y = -HALF + (LEN * i) / n
       pts.push(new THREE.Vector2(Math.max(bodyRadius(y), 0.06), y))
     }
     pts.unshift(new THREE.Vector2(0.001, -HALF))
     pts.push(new THREE.Vector2(0.001, HALF))
-    return new THREE.LatheGeometry(pts, 48)
+    return new THREE.LatheGeometry(pts, 64)
   }, [])
 
   const spiralGeo = useMemo(() => {
@@ -85,20 +91,28 @@ export function ResistorModel({ bands, straight }: ResistorProps) {
 
       <Part id="cuerpo" offset={[2.0, 0, 0]} labelAt={[-0.75, -0.1, 0.4]}>
         <mesh geometry={bodyGeo} castShadow>
-          <meshStandardMaterial color={bodyColor} roughness={0.45} />
+          <meshPhysicalMaterial color={bodyColor} roughness={0.42} clearcoat={0.55} clearcoatRoughness={0.3} />
         </mesh>
       </Part>
 
       <Part id="bandas" offset={[3.1, 0, 0]} labelAt={[0.95, 0.8, 0]}>
         {bands.map((b, i) => {
           const y = ys[i]
-          const r = bodyRadius(y) + 0.012
+          const w = 0.19
           const c = COLORS[b]
           const shiny = b === 'dorado' || b === 'plateado'
+          // la banda copia el perfil del cuerpo (en las tapas es más gruesa)
           return (
             <mesh key={i} position={[0, y, 0]}>
-              <cylinderGeometry args={[r, r, 0.17, 40]} />
-              <meshStandardMaterial color={c.hex} metalness={shiny ? 0.8 : 0.05} roughness={shiny ? 0.3 : 0.5} />
+              <cylinderGeometry args={[bodyRadius(y + w / 2) + 0.008, bodyRadius(y - w / 2) + 0.008, w, 64, 1, true]} />
+              <meshPhysicalMaterial
+                color={c.hex}
+                metalness={shiny ? 0.75 : 0}
+                roughness={shiny ? 0.32 : 0.45}
+                clearcoat={0.55}
+                clearcoatRoughness={0.3}
+                side={THREE.DoubleSide}
+              />
             </mesh>
           )
         })}
@@ -106,10 +120,15 @@ export function ResistorModel({ bands, straight }: ResistorProps) {
 
       {[-1, 1].map((s) => (
         <Part key={s} id="terminales" noLabel={s < 0} offset={[0, s * 1.4, 0]} labelAt={[-1.1, s * (HALF + 1.0), 0]}>
+          {/* el alambre sale de la tapa con una pequeña gota de laca */}
+          <mesh position={[0, s * (HALF + 0.02), 0]} rotation={[s > 0 ? 0 : Math.PI, 0, 0]}>
+            <cylinderGeometry args={[0.1, 0.17, 0.1, 20]} />
+            <meshPhysicalMaterial color={bodyColor} roughness={0.42} clearcoat={0.55} />
+          </mesh>
           {straight ? (
-            <Wire points={[[0, s * (HALF - 0.1), 0], [0, s * (HALF + 1.6), 0]]} radius={0.04} />
+            <Wire points={[[0, s * (HALF - 0.1), 0], [0, s * (HALF + 1.8), 0]]} radius={0.09} {...tinned} />
           ) : (
-            <Wire points={legPoints(s)} radius={0.04} />
+            <Wire points={legPoints(s)} radius={0.09} {...tinned} smooth={0.5} />
           )}
         </Part>
       ))}
@@ -121,12 +140,13 @@ export function ResistorModel({ bands, straight }: ResistorProps) {
  * El grupo está rotado 90°: en coordenadas locales, -x es "abajo" y +x es "arriba". */
 function legPoints(s: number): [number, number, number][] {
   const y0 = s * (HALF - 0.1)
-  const y1 = s * (HALF + 0.7)
-  return [
-    [0, y0, 0],
-    [0, y1 - s * 0.12, 0],
-    [-0.04, y1 - s * 0.03, 0],
-    [-0.12, y1, 0],
-    [-1.6, y1, 0],
-  ]
+  const y1 = s * (HALF + 0.75)
+  const r = 0.22 // radio del doblez
+  const pts: [number, number, number][] = [[0, y0, 0], [0, y1 - s * r, 0]]
+  for (let k = 1; k < 6; k++) {
+    const a = (k / 6) * (Math.PI / 2)
+    pts.push([-(r - r * Math.cos(a)), y1 - s * r + s * r * Math.sin(a), 0])
+  }
+  pts.push([-r, y1, 0], [-1.0, y1, 0], [-2.2, y1, 0])
+  return pts
 }

@@ -3,7 +3,8 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { Part } from '../Part'
 import { Label } from '../Label'
-import { Wire, darkPlastic, metal, useCanvasTexture } from '../helpers'
+import { Screw, Wire, darkPlastic, latheGeometry, metal, tinned, useCanvasTexture } from '../helpers'
+import { RoundedBox } from '@react-three/drei'
 
 /** Engranaje recto extruido (dientes trapezoidales). */
 function useGear(teeth: number, r: number, depth: number, hole = 0.04) {
@@ -76,6 +77,25 @@ export function ServoModel({ angle }: { angle: number }) {
     }
   })
 
+  const hornGeo = useMemo(() => {
+    // brazo afinado con punta redondeada y 6 agujeros, como el que trae el SG90
+    const sh = new THREE.Shape()
+    sh.moveTo(0, -0.26)
+    sh.lineTo(1.5, -0.12)
+    sh.absarc(1.5, 0, 0.12, -Math.PI / 2, Math.PI / 2, false)
+    sh.lineTo(0, 0.26)
+    sh.absarc(0, 0, 0.26, Math.PI / 2, (3 * Math.PI) / 2, false)
+    for (let i = 0; i < 6; i++) {
+      const x = 0.45 + i * 0.21
+      const hole = new THREE.Path()
+      hole.absarc(x, 0, 0.035, 0, Math.PI * 2, true)
+      sh.holes.push(hole)
+    }
+    const g = new THREE.ExtrudeGeometry(sh, { depth: 0.09, bevelEnabled: true, bevelSize: 0.012, bevelThickness: 0.012, bevelSegments: 2, curveSegments: 24 })
+    g.rotateX(-Math.PI / 2)
+    return g
+  }, [])
+
   const shell = (
     <meshPhysicalMaterial color="#2a62d8" transparent opacity={0.82} roughness={0.25} clearcoat={0.6} />
   )
@@ -83,15 +103,25 @@ export function ServoModel({ angle }: { angle: number }) {
   return (
     <group position={[0, -0.6, 0]}>
       <Part id="carcasa" offset={[0, 0, 1.8]} labelAt={[-1.4, 1.6, 0.6]}>
-        <mesh position={[0, H / 2, 0]} castShadow>
-          <boxGeometry args={[W, H * 0.62, D]} />
+        <RoundedBox args={[W, H * 0.62, D]} radius={0.04} smoothness={3} position={[0, H / 2, 0]} castShadow>
           {shell}
+        </RoundedBox>
+        {/* tapa inferior (otra pieza, con su línea de unión) */}
+        <RoundedBox args={[W, H * 0.19, D]} radius={0.04} smoothness={3} position={[0, H * 0.095, 0]}>
+          {shell}
+        </RoundedBox>
+        <mesh position={[0, H * 0.19, 0]}>
+          <boxGeometry args={[W + 0.004, 0.012, D + 0.004]} />
+          <meshStandardMaterial color="#0b1d44" />
         </mesh>
+        {/* tornillos largos que cierran la caja desde abajo */}
+        {[-0.85, 0.85].map((x) => (
+          <Screw key={x} position={[x, -0.005, 0]} r={0.09} rotation={[Math.PI, 0, 0]} />
+        ))}
         {/* orejas de montaje */}
-        <mesh position={[0, H * 0.72, 0]}>
-          <boxGeometry args={[3.22, 0.25, D]} />
+        <RoundedBox args={[3.22, 0.25, D]} radius={0.04} smoothness={3} position={[0, H * 0.72, 0]}>
           {shell}
-        </mesh>
+        </RoundedBox>
         {[-1, 1].map((sx) => (
           <mesh key={sx} position={[sx * 1.4, H * 0.72 + 0.126, 0]} rotation={[-Math.PI / 2, 0, 0]}>
             <ringGeometry args={[0.07, 0.12, 20]} />
@@ -132,21 +162,11 @@ export function ServoModel({ angle }: { angle: number }) {
             <cylinderGeometry args={[0.2, 0.2, 0.3, 24]} />
             <meshStandardMaterial color="#f5f5f2" roughness={0.5} />
           </mesh>
-          {/* brazo (horn) */}
-          <mesh position={[0.7, 0.12, 0]}>
-            <boxGeometry args={[1.4, 0.08, 0.32]} />
+          {/* brazo (horn) con sus agujeritos */}
+          <mesh geometry={hornGeo} position={[0, 0.16, 0]}>
             <meshStandardMaterial color="#f5f5f2" roughness={0.5} />
           </mesh>
-          <mesh position={[1.4, 0.12, 0]} rotation={[0, 0, 0]}>
-            <cylinderGeometry args={[0.16, 0.16, 0.08, 20]} />
-            <meshStandardMaterial color="#f5f5f2" roughness={0.5} />
-          </mesh>
-          {[0.5, 0.8, 1.1, 1.4].map((x) => (
-            <mesh key={x} position={[x, 0.165, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-              <circleGeometry args={[0.035, 12]} />
-              <meshStandardMaterial color="#555" />
-            </mesh>
-          ))}
+          <Screw position={[0, 0.17, 0]} r={0.08} />
         </group>
       </Part>
       <Part id="motor" offset={[0, 0, -2.0]} labelAt={[-0.5, 0.5, -0.7]}>
@@ -195,10 +215,18 @@ export function ServoModel({ angle }: { angle: number }) {
             roughness={0.6}
           />
         ))}
-        <mesh position={[-W / 2 - 2.05, -0.38, 0]} rotation={[0, 0, -0.4]}>
-          <boxGeometry args={[0.5, 0.26, 0.78]} />
-          <meshStandardMaterial {...darkPlastic} />
-        </mesh>
+        {/* conector hembra de 3 pines (paso 2,54 mm) */}
+        <group position={[-W / 2 - 2.0, -0.36, 0]} rotation={[0, 0, -0.4]}>
+          <RoundedBox args={[0.6, 0.26, 0.78]} radius={0.03} smoothness={2}>
+            <meshStandardMaterial {...darkPlastic} />
+          </RoundedBox>
+          {[-0.254, 0, 0.254].map((z) => (
+            <mesh key={z} position={[-0.301, 0, z]} rotation={[0, -Math.PI / 2, 0]}>
+              <planeGeometry args={[0.1, 0.1]} />
+              <meshStandardMaterial color="#000" />
+            </mesh>
+          ))}
+        </group>
         <Label position={[-W / 2 - 2.0, -0.9, 0]} center style={{ pointerEvents: 'none' }}>
           <div className="pin-tag">marrón GND · rojo 5V · naranja señal</div>
         </Label>
@@ -212,6 +240,7 @@ export function ServoModel({ angle }: { angle: number }) {
 /* ------------------------------------------------------------------ */
 
 export function BuzzerModel({ playing, active }: { playing: boolean; active: boolean }) {
+  // buzzer de 12 mm: Ø12 × 9,5 mm, patas a 7,6 mm (1 unidad = 10 mm)
   const R = 0.6
   const H = 0.95
   const rings = useRef<THREE.Group>(null)
@@ -227,22 +256,51 @@ export function BuzzerModel({ playing, active }: { playing: boolean; active: boo
         ;((m as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity = (1 - p) * 0.8
       })
     }
-    if (disc.current) disc.current.position.y = H - 0.18 + (playing ? Math.sin(t * 80) * 0.01 : 0)
+    if (disc.current) disc.current.position.y = H - 0.2 + (playing ? Math.sin(t * 80) * 0.01 : 0)
   })
+  // carcasa por revolución: borde superior redondeado y agujero central hundido
+  const caseGeo = useMemo(
+    () =>
+      latheGeometry([
+        [R - 0.02, 0],
+        [R, 0.03],
+        [R, H - 0.07],
+        [R - 0.015, H - 0.02],
+        [R - 0.06, H],
+        [0.12, H],
+        [0.1, H - 0.02],
+        [0.09, H - 0.2],
+      ]),
+    [],
+  )
   const top = useCanvasTexture(
-    256,
-    256,
+    512,
+    512,
     (ctx, w, h) => {
-      ctx.fillStyle = '#151515'
+      ctx.fillStyle = '#121212'
       ctx.fillRect(0, 0, w, h)
-      ctx.fillStyle = '#fff'
-      ctx.font = 'bold 54px sans-serif'
+      ctx.fillStyle = '#e8e8e8'
+      ctx.font = 'bold 90px sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText('+', w * 0.78, h * 0.32)
-      ctx.fillStyle = '#000'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('+', w * 0.8, h * 0.5)
+    },
+    [],
+  )
+  const sticker = useCanvasTexture(
+    512,
+    512,
+    (ctx, w, h) => {
+      ctx.fillStyle = '#f4f4f0'
       ctx.beginPath()
-      ctx.arc(w / 2, h / 2, w * 0.07, 0, Math.PI * 2)
+      ctx.arc(w / 2, h / 2, w / 2, 0, Math.PI * 2)
       ctx.fill()
+      ctx.fillStyle = '#222'
+      ctx.textAlign = 'center'
+      ctx.font = 'bold 54px sans-serif'
+      ctx.fillText('REMOVE SEAL', w / 2, h * 0.36)
+      ctx.fillText('AFTER', w / 2, h * 0.5)
+      ctx.fillText('WASHING', w / 2, h * 0.64)
     },
     [],
   )
@@ -250,48 +308,62 @@ export function BuzzerModel({ playing, active }: { playing: boolean; active: boo
   return (
     <group position={[0, -0.3, 0]}>
       <Part id="carcasa" offset={[0, 0, 2.0]} labelAt={[1.0, 0.6, 0]}>
-        <mesh position={[0, H / 2, 0]} castShadow>
-          <cylinderGeometry args={[R, R, H, 48, 1, true]} />
-          <meshStandardMaterial color="#141414" roughness={0.55} side={THREE.DoubleSide} />
+        <mesh geometry={caseGeo} castShadow>
+          <meshPhysicalMaterial color="#141414" roughness={0.5} clearcoat={0.3} side={THREE.DoubleSide} />
         </mesh>
-        <mesh position={[0, H, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[R, 48]} />
+        <mesh position={[0, H + 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.12, R - 0.06, 64]} />
           <meshStandardMaterial map={top} roughness={0.5} />
         </mesh>
+        {active && (
+          // los buzzers activos vienen con una etiqueta que tapa el agujero (se saca después de lavar la placa)
+          <mesh position={[0, H + 0.004, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[0.3, 48]} />
+            <meshStandardMaterial map={sticker} roughness={0.7} />
+          </mesh>
+        )}
       </Part>
       <Part id="disco" offset={[0, 1.5, 0]} labelAt={[0.9, 1.1, 0]}>
-        <mesh ref={disc} position={[0, H - 0.18, 0]}>
-          <cylinderGeometry args={[0.5, 0.5, 0.02, 40]} />
+        <mesh ref={disc} position={[0, H - 0.2, 0]}>
+          <cylinderGeometry args={[0.52, 0.52, 0.02, 48]} />
           <meshStandardMaterial color="#d6b65a" metalness={0.9} roughness={0.3} />
         </mesh>
-        <mesh position={[0, H - 0.165, 0]}>
-          <cylinderGeometry args={[0.33, 0.33, 0.02, 40]} />
-          <meshStandardMaterial color="#f2f0ea" roughness={0.8} />
+        <mesh position={[0, H - 0.185, 0]}>
+          <cylinderGeometry args={[0.34, 0.34, 0.02, 48]} />
+          <meshStandardMaterial color="#e9e6dd" roughness={0.8} />
+        </mesh>
+        <mesh position={[0, H - 0.172, 0]}>
+          <cylinderGeometry args={[0.3, 0.3, 0.008, 48]} />
+          <meshStandardMaterial color="#cfd2d6" metalness={0.9} roughness={0.35} />
         </mesh>
       </Part>
       {active && (
         <Part id="oscilador" offset={[0, 0.8, 0]} labelAt={[-0.9, 0.4, 0]}>
           <mesh position={[0, 0.25, 0]}>
-            <boxGeometry args={[0.7, 0.05, 0.7]} />
-            <meshStandardMaterial color="#1f6b35" />
+            <cylinderGeometry args={[0.5, 0.5, 0.05, 40]} />
+            <meshStandardMaterial color="#1f6b35" roughness={0.6} />
           </mesh>
-          <mesh position={[0.1, 0.31, 0]}>
+          <mesh position={[0.12, 0.31, 0]}>
             <boxGeometry args={[0.25, 0.08, 0.18]} />
             <meshStandardMaterial {...darkPlastic} />
+          </mesh>
+          <mesh position={[-0.2, 0.3, 0.1]}>
+            <boxGeometry args={[0.12, 0.05, 0.06]} />
+            <meshStandardMaterial color="#151515" />
           </mesh>
         </Part>
       )}
       <Part id="base" offset={[0, -0.7, 0]} labelAt={[-0.9, 0.0, 0]}>
         <mesh position={[0, 0.03, 0]}>
-          <cylinderGeometry args={[R - 0.01, R - 0.01, 0.06, 48]} />
-          <meshStandardMaterial color={active ? '#222' : '#1f6b35'} roughness={0.8} />
+          <cylinderGeometry args={[R - 0.02, R - 0.02, 0.06, 48]} />
+          <meshStandardMaterial color={active ? '#0d0d0d' : '#1f6b35'} roughness={active ? 0.9 : 0.6} />
         </mesh>
       </Part>
-      <Part id="positivo" offset={[0.5, -1.2, 0]} labelAt={[0.65, -1.7, 0]}>
-        <Wire points={[[0.33, 0.05, 0], [0.33, -2.3, 0]]} radius={0.035} />
+      <Part id="positivo" offset={[0.5, -1.2, 0]} labelAt={[0.65, -1.8, 0]}>
+        <Wire points={[[0.38, 0.05, 0], [0.38, -2.6, 0]]} radius={0.03} {...tinned} />
       </Part>
-      <Part id="negativo" offset={[-0.5, -1.2, 0]} labelAt={[-0.65, -1.4, 0]}>
-        <Wire points={[[-0.33, 0.05, 0], [-0.33, -1.9, 0]]} radius={0.035} />
+      <Part id="negativo" offset={[-0.5, -1.2, 0]} labelAt={[-0.65, -1.5, 0]}>
+        <Wire points={[[-0.38, 0.05, 0], [-0.38, -2.1, 0]]} radius={0.03} {...tinned} />
       </Part>
       <group ref={rings}>
         {[0, 1, 2].map((i) => (
@@ -338,12 +410,16 @@ export function TransistorModel({ model, conducting }: { model: TransistorName; 
     (ctx, w, h) => {
       ctx.fillStyle = '#161616'
       ctx.fillRect(0, 0, w, h)
-      ctx.fillStyle = '#d8d8d8'
+      ctx.fillStyle = '#cfcfcf'
       ctx.textAlign = 'center'
-      ctx.font = 'bold 50px sans-serif'
-      ctx.fillText(t.label, w / 2, h * 0.42)
-      ctx.font = '34px sans-serif'
-      ctx.fillText('NPN', w / 2, h * 0.68)
+      ctx.textBaseline = 'middle'
+      // impresión láser típica: modelo en dos renglones y código de fecha
+      const [a, b] = model === 'BC547' ? ['BC', '547B'] : ['2N', '2222A']
+      ctx.font = 'bold 58px sans-serif'
+      ctx.fillText(a, w / 2, h * 0.26)
+      ctx.fillText(b, w / 2, h * 0.5)
+      ctx.font = '36px sans-serif'
+      ctx.fillText('331', w / 2, h * 0.74)
     },
     [model],
   )
@@ -353,10 +429,10 @@ export function TransistorModel({ model, conducting }: { model: TransistorName; 
     <group position={[0, -0.2, 0]}>
       <Part id="encapsulado" offset={[0, 0, -2.2]} labelAt={[0.9, 0.9, -0.3]}>
         <mesh geometry={bodyGeo} castShadow>
-          <meshStandardMaterial color="#161616" roughness={0.45} transparent opacity={0.92} />
+          <meshPhysicalMaterial color="#161616" roughness={0.55} clearcoat={0.15} />
         </mesh>
-        <mesh position={[0, H / 2, 0.03]}>
-          <planeGeometry args={[1.0, 0.8]} />
+        <mesh position={[0, H / 2, 0.025]}>
+          <planeGeometry args={[0.8, 0.8]} />
           <meshStandardMaterial map={face} roughness={0.5} />
         </mesh>
       </Part>
@@ -367,16 +443,24 @@ export function TransistorModel({ model, conducting }: { model: TransistorName; 
         </mesh>
       </Part>
       <Part id="hilos" offset={[0, 0.8, 1.0]} labelAt={[-0.5, 0.8, 0]}>
-        <Wire points={[[-0.04, 0.58, -0.13], [-0.18, 0.7, -0.13], [-0.254, 0.45, -0.15]]} radius={0.006} color="#e8c56a" />
-        <Wire points={[[0.04, 0.58, -0.13], [0.18, 0.7, -0.13], [0.254, 0.45, -0.15]]} radius={0.006} color="#e8c56a" />
+        <Wire points={[[-0.04, 0.58, -0.13], [-0.18, 0.7, -0.13], [-0.29, 0.45, -0.15]]} radius={0.006} color="#e8c56a" smooth={0.5} />
+        <Wire points={[[0.04, 0.58, -0.13], [0.18, 0.7, -0.13], [0.29, 0.45, -0.15]]} radius={0.006} color="#e8c56a" smooth={0.5} />
       </Part>
       <Part id="terminales" offset={[0, -1.0, 0]} labelAt={[0.8, -1.4, 0]}>
         {t.pins.map((p, i) => {
-          const x = (i - 1) * 0.254
+          // dentro del cuerpo las patas están a 1,27 mm; afuera se doblan a 2,54 mm
+          const x = (i - 1) * 0.29
+          const xo = (i - 1) * 0.58
           return (
             <group key={i}>
-              <Wire points={[[x, 0.6, -0.15], [x, -0.1, -0.15], [x, -2.4, -0.15]]} radius={0.03} />
-              <Label position={[x, -2.6, -0.15]} center style={{ pointerEvents: 'none' }}>
+              <Wire
+                points={[[x, 0.6, -0.15], [x, -0.05, -0.15], [x, -0.3, -0.15], [xo, -0.65, -0.15], [xo, -0.9, -0.15], [xo, -3.2, -0.15]]}
+                radius={0.05}
+                square
+                smooth={0.25}
+                {...tinned}
+              />
+              <Label position={[xo, -3.4, -0.15]} center style={{ pointerEvents: 'none' }}>
                 <div className="pin-tag" title={PIN_NAMES[p]}>
                   {p}
                 </div>
@@ -386,7 +470,7 @@ export function TransistorModel({ model, conducting }: { model: TransistorName; 
         })}
         {/* marco metálico (lead frame) sobre el que se pega el chip */}
         <mesh position={[0, 0.5, -0.17]}>
-          <boxGeometry args={[0.3, 0.12, 0.03]} />
+          <boxGeometry args={[0.36, 0.12, 0.03]} />
           <meshStandardMaterial {...metal} />
         </mesh>
       </Part>
