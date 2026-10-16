@@ -1489,3 +1489,108 @@ th {
   pointer-events: none;
   z-index: 2;
 }
+
+/* ---------- intentos por puntos ---------- */
+.gate {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.attempt-dots {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.attempt-dots span {
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.attempt-dots span.used {
+  border-color: var(--line);
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.mode-badge {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--card2);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.mode-badge.ranked {
+  background: rgba(255, 176, 32, 0.15);
+  border-color: var(--accent2);
+  color: var(--accent2);
+}
+
+.level-tabs .chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.palette-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chip-main,
+.chip-x {
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.chip-x {
+  margin-left: 8px;
+  opacity: 0.6;
+}
+
+.chip-x:hover {
+  opacity: 1;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ranking td.actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.confirm {
+  border-color: var(--bad);
+  margin: 12px 0;
+}
+
+.field.inline {
+  margin: 0;
+  min-width: 0;
+  flex: 1 1 260px;
+}
+
+.led-preview {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ff3030;
+  box-shadow: 0 0 24px 8px rgba(255, 48, 48, 0.8);
+  margin: 14px auto 4px;
+  transition: opacity 0.2s;
+}

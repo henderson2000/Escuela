@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Activity } from '../catalog/types'
-import { currentPlayer, markActivity, useStore } from '../lib/scores'
+import { markActivity, useStore } from '../lib/scores'
 
 function check(a: Activity, value: string | number): boolean {
   if (a.type === 'mc') return value === a.answer
@@ -73,7 +73,7 @@ function ActivityItem({ a, n, solved }: { a: Activity; n: number; solved: boolea
 
 export function ActivityList({ activities }: { activities: Activity[] }) {
   const s = useStore()
-  const p = currentPlayer(s)
+  const p = s.me
   const done = p ? s.activities[p.id] ?? {} : {}
   const count = activities.filter((a) => done[a.id]).length
   return (

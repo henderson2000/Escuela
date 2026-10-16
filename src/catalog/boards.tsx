@@ -101,14 +101,14 @@ void loop() {
     { id: 'jack', name: 'Jack de alimentación', desc: 'Entrada para una fuente externa de 7 a 12 V (por ejemplo, una batería de 9 V).' },
     { id: 'regulador', name: 'Regulador de tensión', desc: 'Baja la tensión del jack a 5 V estables para alimentar la placa.' },
     { id: 'capacitores', name: 'Capacitores de filtro', desc: 'Electrolíticos que estabilizan la alimentación y filtran el ruido.' },
-    { id: 'cristal', name: 'Cristal / resonador 16 MHz', desc: 'Marca el “ritmo” (reloj) del microcontrolador: 16 millones de pulsos por segundo.' },
+    { id: 'cristal', name: 'Cristal y resonador de 16 MHz', desc: 'Marcan el “ritmo” (reloj): 16 millones de pulsos por segundo. El cristal metálico es del chip USB y el resonador cerámico (naranja, al lado del ATmega) es del microcontrolador.' },
     { id: 'reset', name: 'Botón RESET', desc: 'Reinicia el programa desde el principio.' },
-    { id: 'icsp', name: 'Conector ICSP', desc: 'Pines para programar el microcontrolador directamente, sin USB (programación “en el circuito”).' },
+    { id: 'icsp', name: 'Conectores ICSP', desc: 'Dos grupos de 6 pines para programar los chips directamente, sin USB (programación “en el circuito”): uno para el ATmega328P (a la derecha) y otro para el chip USB.' },
     { id: 'leds', name: 'LEDs indicadores', desc: 'ON: placa alimentada. L: conectado al pin 13 (el del ejemplo Blink). TX/RX: parpadean al enviar/recibir datos.' },
     { id: 'digitales', name: 'Pines digitales 0–13', desc: 'Entradas o salidas que sólo tienen dos estados: HIGH (5 V) o LOW (0 V). Los marcados con ~ (3, 5, 6, 9, 10, 11) pueden generar PWM para “simular” valores intermedios. 0 y 1 se usan para la comunicación serie.' },
     { id: 'analogicos', name: 'Entradas analógicas A0–A5', desc: 'Leen tensiones entre 0 y 5 V y las convierten en un número de 0 a 1023 (conversor analógico-digital de 10 bits). Ideales para potenciómetros y LDR.' },
     { id: 'alimentacion', name: 'Pines de alimentación', desc: '5V y 3.3V entregan tensión para los circuitos; GND es la referencia (negativo); VIN es la tensión que entra por el jack.' },
-    { id: 'placa', name: 'Placa de circuito impreso (PCB)', desc: 'Placa de fibra de vidrio con pistas de cobre que conectan todos los componentes.' },
+    { id: 'placa', name: 'Placa de circuito impreso (PCB)', desc: 'Placa de fibra de vidrio con pistas de cobre (se ven más claras bajo la pintura) que conectan todos los componentes. Tiene 4 agujeros para atornillarla y muchos componentes SMD chiquitos (resistencias y capacitores de montaje superficial).' },
   ],
   theory: (
     <>

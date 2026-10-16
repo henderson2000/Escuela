@@ -1,4 +1,5 @@
-import { HashRouter, NavLink, Route, Routes } from 'react-router-dom'
+import { useEffect } from 'react'
+import { HashRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { Home } from './pages/Home'
 import { ComponentsPage } from './pages/ComponentsPage'
 import { ComponentDetail } from './pages/ComponentDetail'
@@ -18,9 +19,17 @@ const NAV = [
   { to: '/ranking', label: 'Ranking' },
 ]
 
+/** al cambiar de página, volver arriba */
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => window.scrollTo(0, 0), [pathname])
+  return null
+}
+
 export default function App() {
   return (
     <HashRouter>
+      <ScrollToTop />
       <header className="topbar">
         <NavLink to="/" className="brand">
           <span className="brand-icon">⚡</span>

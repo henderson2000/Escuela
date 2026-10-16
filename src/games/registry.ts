@@ -41,7 +41,7 @@ export const GAMES: GameDef[] = [
     title: 'Código de colores contrarreloj',
     icon: '🎨',
     desc: '60 segundos para leer todas las resistencias que puedas. Las rachas multiplican.',
-    max: 'sin límite',
+    max: 'hasta 1500',
     component: ColorGame,
   },
   {

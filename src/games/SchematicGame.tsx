@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { SYMBOL_NAMES, SymbolIcon, SymbolPaths, type SymbolKind } from '../components/Symbols'
-import { addScore, bestScore, currentPlayer, useStore } from '../lib/scores'
-import { GameShell } from './GameShell'
+import { GameShell, requestLogin } from './GameShell'
+import { useRankedGame } from './useRankedGame'
+import { AttemptGate, LevelTabs, ModeBadge } from './AttemptGate'
 
 interface El {
   kind: SymbolKind
@@ -135,119 +136,154 @@ function Element({ el, kind, onClick, state }: { el: El; kind?: SymbolKind; onCl
 }
 
 export function SchematicGame() {
-  const s = useStore()
-  const p = currentPlayer(s)
   const [li, setLi] = useState(0)
-  const level = SCHEMATIC_LEVELS[li]
+  const [playing, setPlaying] = useState(false)
+  return (
+    <GameShell title="Completá el plano" icon="📐" info="Elegí un símbolo de la caja de herramientas y tocá el lugar con “?” donde va. Cuando esté completo, comprobá.">
+      <LevelTabs game="plano" levels={SCHEMATIC_LEVELS} current={li} locked={playing} onSelect={setLi} />
+      <SchematicLevel
+        key={SCHEMATIC_LEVELS[li].id}
+        level={SCHEMATIC_LEVELS[li]}
+        onPlayingChange={setPlaying}
+        onNext={li + 1 < SCHEMATIC_LEVELS.length ? () => setLi(li + 1) : undefined}
+      />
+    </GameShell>
+  )
+}
+
+function SchematicLevel({ level, onPlayingChange, onNext }: { level: Level; onPlayingChange: (p: boolean) => void; onNext?: () => void }) {
+  const g = useRankedGame('plano', level.id)
   const [filled, setFilled] = useState<Record<number, SymbolKind>>({})
   const [pick, setPick] = useState<SymbolKind | null>(null)
   const [fails, setFails] = useState(0)
-  const [result, setResult] = useState<null | { ok: boolean; wrong: number[]; points?: number; best?: number }>(null)
+  const [result, setResult] = useState<null | { ok: boolean; wrong: number[]; points?: number }>(null)
 
-  const slots = level.els.map((e, i) => (e.slot ? i : -1)).filter((i) => i >= 0)
-  const complete = slots.every((i) => filled[i])
-
-  const reset = (idx: number) => {
-    setLi(idx)
+  useEffect(() => onPlayingChange(g.playing), [g.playing])
+  useEffect(() => {
+    if (!g.playing) return
     setFilled({})
     setPick(null)
     setFails(0)
     setResult(null)
-  }
+  }, [g.playing])
+
+  const slots = level.els.map((e, i) => (e.slot ? i : -1)).filter((i) => i >= 0)
+  const complete = slots.every((i) => filled[i])
+  const active = g.playing && !result?.ok
 
   const check = () => {
     const wrong = slots.filter((i) => filled[i] !== level.els[i].kind)
     if (wrong.length === 0) {
       const points = Math.max(40, 100 - fails * 15)
-      const best = p ? bestScore(s, p.id, 'plano', level.id) : 0
-      addScore('plano', points, level.id)
-      setResult({ ok: true, wrong, points, best })
+      setResult({ ok: true, wrong, points })
+      setPick(null)
+      g.finish(points)
     } else {
       setFails((f) => f + 1)
       setResult({ ok: false, wrong })
     }
   }
 
+  const showBoard = g.playing || result?.ok
+
   return (
-    <GameShell title="Completá el plano" icon="📐" info="Elegí un símbolo de la caja de herramientas y tocá el lugar con “?” donde va. Cuando esté completo, comprobá.">
-      <div className="level-tabs">
-        {SCHEMATIC_LEVELS.map((l, i) => {
-          const b = p ? bestScore(s, p.id, 'plano', l.id) : 0
-          return (
-            <button key={l.id} type="button" className={`chip ${i === li ? 'active' : ''}`} onClick={() => reset(i)}>
-              {l.title} {b > 0 && <small>· {b} pts</small>}
-            </button>
-          )
-        })}
-      </div>
-      <div className="schematic-layout">
-        <div className="card">
+    <div className="schematic-layout">
+      <div className="card">
+        <div className="row space wrap">
           <h3>{level.title}</h3>
-          <p>{level.goal}</p>
-          <svg viewBox="0 0 400 260" className="schematic">
-            <path d={level.wires} className="wire" />
-            {level.els.map((el, i) => {
-              const kind = el.slot ? filled[i] : el.kind
-              const state = result && el.slot ? (result.wrong.includes(i) ? 'bad' : result.ok ? 'ok' : undefined) : undefined
-              return (
-                <Element
-                  key={i}
-                  el={el}
-                  kind={kind}
-                  state={state}
-                  onClick={
-                    el.slot && !result?.ok
-                      ? () => {
-                          if (pick) {
-                            setFilled({ ...filled, [i]: pick })
-                            setResult(null)
-                          } else if (filled[i]) {
-                            const f = { ...filled }
-                            delete f[i]
-                            setFilled(f)
-                            setResult(null)
-                          }
-                        }
-                      : undefined
-                  }
-                />
-              )
-            })}
-          </svg>
-          <div className="row">
-            <button type="button" className="btn primary" disabled={!complete || result?.ok} onClick={check}>
-              Comprobar
-            </button>
-            <button type="button" className="btn" onClick={() => reset(li)}>
-              Reiniciar
-            </button>
-            {result && !result.ok && <span className="feedback bad">✘ Hay {result.wrong.length} símbolo(s) mal ubicados (en rojo). −15 pts</span>}
-          </div>
-          {result?.ok && (
-            <div className="card result inline">
-              <p className="record">✔ ¡Plano correcto! +{result.points} puntos</p>
-              {result.best! >= result.points! && result.best! > 0 && <p>Tu récord en este nivel sigue siendo {result.best}.</p>}
-              {li + 1 < SCHEMATIC_LEVELS.length && (
-                <button type="button" className="btn primary" onClick={() => reset(li + 1)}>
-                  Siguiente nivel →
-                </button>
-              )}
-            </div>
-          )}
+          <ModeBadge g={g} />
         </div>
-        <aside className="card toolbox">
-          <h3>Caja de herramientas</h3>
-          <div className="palette">
-            {level.palette.map((k) => (
-              <button key={k} type="button" className={`palette-item ${pick === k ? 'active' : ''}`} onClick={() => setPick(pick === k ? null : k)}>
-                <SymbolIcon kind={k} size={70} />
-                <span>{SYMBOL_NAMES[k]}</span>
-              </button>
-            ))}
-          </div>
-          <p className="hint">Tocá un símbolo ya colocado (sin nada elegido) para quitarlo.</p>
-        </aside>
+        <p>{level.goal}</p>
+        {!showBoard ? (
+          <AttemptGate g={g} onLogin={requestLogin} />
+        ) : (
+          <>
+            <svg viewBox="0 0 400 260" className="schematic">
+              <path d={level.wires} className="wire" />
+              {level.els.map((el, i) => {
+                const kind = el.slot ? filled[i] : el.kind
+                const state = result && el.slot ? (result.wrong.includes(i) ? 'bad' : result.ok ? 'ok' : undefined) : undefined
+                return (
+                  <Element
+                    key={i}
+                    el={el}
+                    kind={kind}
+                    state={state}
+                    onClick={
+                      el.slot && active
+                        ? () => {
+                            if (pick) {
+                              setFilled({ ...filled, [i]: pick })
+                              setResult(null)
+                            } else if (filled[i]) {
+                              const f = { ...filled }
+                              delete f[i]
+                              setFilled(f)
+                              setResult(null)
+                            }
+                          }
+                        : undefined
+                    }
+                  />
+                )
+              })}
+            </svg>
+            {active && (
+              <div className="row wrap">
+                <button type="button" className="btn primary" disabled={!complete} onClick={check}>
+                  Comprobar
+                </button>
+                <button type="button" className="btn ghost" onClick={() => g.abandon()}>
+                  {g.ranked ? 'Abandonar intento (queda con 0)' : 'Salir de la práctica'}
+                </button>
+                {result && !result.ok && (
+                  <span className="feedback bad">
+                    ✘ Hay {result.wrong.length} símbolo(s) mal ubicados (en rojo).{g.ranked && ' −15 pts'}
+                  </span>
+                )}
+              </div>
+            )}
+            {result?.ok && g.lastResult && (
+              <div className="card result inline">
+                <p className="record">
+                  ✔ ¡Plano correcto! {g.lastResult.ranked ? `+${result.points} puntos para el ranking` : `${result.points} puntos (práctica, no se guardan)`}
+                </p>
+                {g.lastResult.ranked && g.lastResult.prevBest >= result.points! && <p>Tu mejor intento en este nivel sigue siendo {g.lastResult.prevBest}.</p>}
+                {g.error && <p className="feedback bad">{g.error}</p>}
+                <div className="row wrap">
+                  {onNext && (
+                    <button type="button" className="btn primary" onClick={onNext}>
+                      Siguiente nivel →
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => {
+                      setResult(null)
+                      g.clearResult()
+                    }}
+                  >
+                    Volver a este nivel
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
-    </GameShell>
+      <aside className="card toolbox">
+        <h3>Caja de herramientas</h3>
+        <div className="palette">
+          {level.palette.map((k) => (
+            <button key={k} type="button" disabled={!active} className={`palette-item ${pick === k ? 'active' : ''}`} onClick={() => setPick(pick === k ? null : k)}>
+              <SymbolIcon kind={k} size={70} />
+              <span>{SYMBOL_NAMES[k]}</span>
+            </button>
+          ))}
+        </div>
+        <p className="hint">Tocá un símbolo ya colocado (sin nada elegido) para quitarlo.</p>
+      </aside>
+    </div>
   )
 }

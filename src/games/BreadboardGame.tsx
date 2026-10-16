@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import * as THREE from 'three'
 import { Label } from '../three/Label'
 import type { ThreeEvent } from '@react-three/fiber'
@@ -9,9 +9,10 @@ import { Wire } from '../three/helpers'
 import { boardSize, buildHoles, describeHole, type Hole } from '../lib/breadboard'
 import { LEG_NAMES, buildNetlist, type Placed } from '../lib/circuit'
 import { COLORS, valueToBands } from '../lib/resistor'
-import { addScore, bestScore, currentPlayer, useStore } from '../lib/scores'
-import { BB_LEVELS, type Tool } from './breadboardLevels'
-import { GameShell } from './GameShell'
+import { BB_LEVELS, type BBLevel, type Tool } from './breadboardLevels'
+import { GameShell, requestLogin } from './GameShell'
+import { useRankedGame } from './useRankedGame'
+import { AttemptGate, LevelTabs, ModeBadge } from './AttemptGate'
 
 const COLS = 30
 const TOP = boardSize(COLS).height / 2
@@ -37,21 +38,38 @@ function describePin(p: string) {
 }
 
 export function BreadboardGame() {
-  const s = useStore()
-  const player = currentPlayer(s)
+  const [li, setLi] = useState(0)
+  const [playing, setPlaying] = useState(false)
+  return (
+    <GameShell
+      title="Conexiones en la protoboard"
+      icon="🔌"
+      info="Armá el circuito pedido conectando componentes y cables en la protoboard 3D. Tocá un orificio para ver con cuáles está conectado."
+    >
+      <LevelTabs game="protoboard" levels={BB_LEVELS} current={li} locked={playing} onSelect={setLi} />
+      <BreadboardLevel
+        key={BB_LEVELS[li].id}
+        level={BB_LEVELS[li]}
+        onPlayingChange={setPlaying}
+        onNext={li + 1 < BB_LEVELS.length ? () => setLi(li + 1) : undefined}
+      />
+    </GameShell>
+  )
+}
+
+function BreadboardLevel({ level, onPlayingChange, onNext }: { level: BBLevel; onPlayingChange: (p: boolean) => void; onNext?: () => void }) {
+  const g = useRankedGame('protoboard', level.id)
   const holes = useMemo(() => buildHoles(COLS), [])
   const holeById = useMemo(() => new Map(holes.map((h) => [h.id, h])), [holes])
   const pins = useMemo(() => arduinoPinPositions(), [])
 
-  const [li, setLi] = useState(0)
-  const level = BB_LEVELS[li]
   const [tool, setTool] = useState<Tool | 'borrar'>(level.tools[0])
   const [placed, setPlaced] = useState<Placed[]>([])
   const [pending, setPending] = useState<string[]>([])
   const [hover, setHover] = useState<string | null>(null)
   const [msg, setMsg] = useState<{ type: 'info' | 'bad' | 'ok'; text: string } | null>(null)
   const [fails, setFails] = useState(0)
-  const [won, setWon] = useState<null | { points: number; best: number }>(null)
+  const [won, setWon] = useState<null | { points: number }>(null)
   const [showHint, setShowHint] = useState(false)
 
   const termPos = (t: string): THREE.Vector3 => {
@@ -78,19 +96,26 @@ export function BreadboardGame() {
     return m
   }, [placed, pending])
 
-  const reset = (idx: number) => {
-    setLi(idx)
+  const reset = () => {
     setPlaced([])
     setPending([])
     setMsg(null)
     setFails(0)
     setWon(null)
-    setShowHint(false)
-    setTool(BB_LEVELS[idx].tools[0])
+    setTool(level.tools[0])
   }
 
+  useEffect(() => onPlayingChange(g.playing), [g.playing])
+  // cada partida nueva empieza con la protoboard vacía
+  useEffect(() => {
+    if (g.playing) reset()
+  }, [g.playing])
+
   const clickTerminal = (t: string) => {
-    if (won) return
+    if (won || !g.playing) {
+      if (!won) setMsg({ type: 'info', text: 'Elegí “Jugar por puntos” o “Practicar” para empezar a conectar.' })
+      return
+    }
     if (tool === 'borrar') {
       const id = occupied.get(t)
       if (id && id !== 'pending') setPlaced(placed.filter((p) => p.id !== id))
@@ -154,14 +179,13 @@ export function BreadboardGame() {
       // si sólo faltan piezas no se penaliza: se descuenta cuando el circuito armado está mal
       const incomplete = /^Falta/.test(problem)
       if (!incomplete) setFails((f) => f + 1)
-      setMsg({ type: 'bad', text: incomplete ? problem : problem + ' (−15 pts)' })
+      setMsg({ type: 'bad', text: incomplete || !g.ranked ? problem : problem + ' (−15 pts)' })
       return
     }
     const points = Math.max(40, 100 - fails * 15)
-    const best = player ? bestScore(s, player.id, 'protoboard', level.id) : 0
-    addScore('protoboard', points, level.id)
-    setWon({ points, best })
-    setMsg({ type: 'ok', text: `✔ ¡Circuito correcto! +${points} puntos` })
+    setWon({ points })
+    setMsg(null)
+    g.finish(points)
   }
 
   const hoverText = (() => {
@@ -181,24 +205,13 @@ export function BreadboardGame() {
   const toolLabel = tool === 'borrar' ? 'Borrar' : tool.label
 
   return (
-    <GameShell
-      title="Conexiones en la protoboard"
-      icon="🔌"
-      info="Armá el circuito pedido conectando componentes y cables en la protoboard 3D. Tocá un orificio para ver con cuáles está conectado."
-    >
-      <div className="level-tabs">
-        {BB_LEVELS.map((l, i) => {
-          const b = player ? bestScore(s, player.id, 'protoboard', l.id) : 0
-          return (
-            <button key={l.id} type="button" className={`chip ${i === li ? 'active' : ''}`} onClick={() => reset(i)}>
-              {l.title} {b > 0 && <small>· {b} pts</small>}
-            </button>
-          )
-        })}
-      </div>
+    <>
       <div className="bb-layout">
         <div className="bb-main">
           <div className="card goal">
+            <div className="row space wrap">
+              <ModeBadge g={g} />
+            </div>
             <strong>Objetivo:</strong> {level.goal}{' '}
             <button type="button" className="btn small ghost" onClick={() => setShowHint(!showHint)}>
               {showHint ? 'Ocultar pista' : '💡 Pista'}
@@ -279,18 +292,38 @@ export function BreadboardGame() {
             </div>
           </div>
           {msg && <div className={`msg ${msg.type}`}>{msg.text}</div>}
-          {won && (
+          {won && g.lastResult && (
             <div className="card result inline">
-              <p className="record">🎉 ¡Funciona! +{won.points} puntos</p>
-              {won.best >= won.points && won.best > 0 && <p>Tu récord en este nivel sigue siendo {won.best}.</p>}
-              {li + 1 < BB_LEVELS.length && (
-                <button type="button" className="btn primary" onClick={() => reset(li + 1)}>
-                  Siguiente nivel →
+              <p className="record">
+                🎉 ¡Funciona! {g.lastResult.ranked ? `+${won.points} puntos para el ranking` : `${won.points} puntos (práctica, no se guardan)`}
+              </p>
+              {g.lastResult.ranked && g.lastResult.prevBest >= won.points && <p>Tu mejor intento en este nivel sigue siendo {g.lastResult.prevBest}.</p>}
+              {g.error && <p className="feedback bad">{g.error}</p>}
+              <div className="row wrap">
+                {onNext && (
+                  <button type="button" className="btn primary" onClick={onNext}>
+                    Siguiente nivel →
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => {
+                    reset()
+                    g.clearResult()
+                  }}
+                >
+                  Volver a este nivel
                 </button>
-              )}
+              </div>
             </div>
           )}
         </div>
+        {!g.playing && !won ? (
+          <aside className="toolbox">
+            <AttemptGate g={g} onLogin={requestLogin} />
+          </aside>
+        ) : (
         <aside className="card toolbox">
           <h3>Herramientas</h3>
           <div className="tool-list">
@@ -324,17 +357,27 @@ export function BreadboardGame() {
             <button type="button" className="btn small" disabled={!placed.length || !!won} onClick={() => setPlaced(placed.slice(0, -1))}>
               ↶ Deshacer
             </button>
-            <button type="button" className="btn small" onClick={() => reset(li)}>
-              Empezar de nuevo
+            <button type="button" className="btn small" disabled={!!won} onClick={() => setPlaced([])}>
+              Vaciar protoboard
             </button>
           </div>
           <button type="button" className="btn primary big" disabled={!!won || placed.length === 0} onClick={check}>
             ⚡ Probar circuito
           </button>
-          <p className="hint">Cada prueba con un error de conexión resta 15 puntos al premio del nivel (mínimo 40).</p>
+          {!won && (
+            <button type="button" className="btn ghost" onClick={() => g.abandon()}>
+              {g.ranked ? 'Abandonar intento (queda con 0)' : 'Salir de la práctica'}
+            </button>
+          )}
+          <p className="hint">
+            {g.ranked
+              ? 'Cada prueba con un error de conexión resta 15 puntos al premio del nivel (mínimo 40).'
+              : 'En práctica podés probar todas las veces que quieras.'}
+          </p>
         </aside>
+        )}
       </div>
-    </GameShell>
+    </>
   )
 }
 

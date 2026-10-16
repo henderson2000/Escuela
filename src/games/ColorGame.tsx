@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { Viewer } from '../three/Viewer'
 import { ResistorModel } from '../three/models/Resistor'
 import { formatOhms, randomE12, valueToBands, type ColorName } from '../lib/resistor'
-import { addScore, bestScore, currentPlayer, useStore } from '../lib/scores'
-import { GameShell, ResultCard } from './GameShell'
+import { GameShell, ResultCard, requestLogin } from './GameShell'
+import { useRankedGame } from './useRankedGame'
+import { AttemptGate, ModeBadge } from './AttemptGate'
 
 const DURATION = 60
 
@@ -27,9 +28,7 @@ function makeRound(level: number): Round {
 }
 
 export function ColorGame() {
-  const s = useStore()
-  const p = currentPlayer(s)
-  const [phase, setPhase] = useState<'intro' | 'play' | 'end'>('intro')
+  const g = useRankedGame('colores')
   const [time, setTime] = useState(DURATION)
   const [score, setScore] = useState(0)
   const [streak, setStreak] = useState(0)
@@ -37,31 +36,12 @@ export function ColorGame() {
   const [misses, setMisses] = useState(0)
   const [round, setRound] = useState<Round>(() => makeRound(0))
   const [flash, setFlash] = useState<null | { ok: boolean; text: string }>(null)
-  const [best, setBest] = useState(0)
-  const saved = useRef(false)
+  const [summary, setSummary] = useState({ hits: 0, misses: 0 })
+  const ended = useRef(false)
 
   useEffect(() => {
-    if (phase !== 'play') return
-    const t = setInterval(() => setTime((x) => x - 1), 1000)
-    return () => clearInterval(t)
-  }, [phase])
-
-  useEffect(() => {
-    if (phase === 'play' && time <= 0) {
-      setPhase('end')
-    }
-  }, [time, phase])
-
-  useEffect(() => {
-    if (phase === 'end' && !saved.current) {
-      saved.current = true
-      setBest(p ? bestScore(s, p.id, 'colores') : 0)
-      addScore('colores', score)
-    }
-  }, [phase])
-
-  const start = () => {
-    saved.current = false
+    if (!g.playing) return
+    ended.current = false
     setScore(0)
     setStreak(0)
     setHits(0)
@@ -69,8 +49,17 @@ export function ColorGame() {
     setTime(DURATION)
     setRound(makeRound(0))
     setFlash(null)
-    setPhase('play')
-  }
+    const t = setInterval(() => setTime((x) => x - 1), 1000)
+    return () => clearInterval(t)
+  }, [g.playing])
+
+  useEffect(() => {
+    if (g.playing && time <= 0 && !ended.current) {
+      ended.current = true
+      setSummary({ hits, misses })
+      g.finish(score)
+    }
+  }, [time, g.playing])
 
   const answer = (v: number) => {
     if (v === round.value) {
@@ -91,27 +80,31 @@ export function ColorGame() {
 
   return (
     <GameShell title="Código de colores contrarreloj" icon="🎨" info="Tenés 60 segundos. Mirá las bandas y elegí el valor correcto. Cada acierto seguido suma más; cada error resta 3 segundos.">
-      {phase === 'intro' && (
-        <div className="card center-block">
-          <p>Tip: poné la banda dorada a la derecha y leé de izquierda a derecha. Desde la ronda 6 aparecen resistencias de 5 bandas.</p>
-          <button type="button" className="btn primary big" onClick={start}>
-            ¡Empezar!
-          </button>
-        </div>
+      {!g.playing && !g.lastResult && (
+        <AttemptGate
+          g={g}
+          onLogin={requestLogin}
+          intro={<p>Tip: poné la banda dorada a la derecha y leé de izquierda a derecha. Desde la ronda 6 aparecen resistencias de 5 bandas.</p>}
+        />
       )}
-      {phase === 'play' && (
+      {g.playing && (
         <div className="game-layout">
           <div className="hud">
-            <span className={`timer ${time <= 10 ? 'low' : ''}`}>⏱ {time}s</span>
+            <span className={`timer ${time <= 10 ? 'low' : ''}`}>⏱ {Math.max(0, time)}s</span>
             <span>⭐ {score}</span>
             <span>🔥 x{streak}</span>
+            <ModeBadge g={g} />
           </div>
           <Viewer camera={[0, 0.4, 5.2]} shadowY={-1.2} className="viewer game-viewer">
             <group scale={1.15}>
               <ResistorModel bands={round.bands} straight />
             </group>
           </Viewer>
-          {flash && <div className={`flash ${flash.ok ? 'ok' : 'bad'}`} key={hits + misses}>{flash.text}</div>}
+          {flash && (
+            <div className={`flash ${flash.ok ? 'ok' : 'bad'}`} key={hits + misses}>
+              {flash.text}
+            </div>
+          )}
           <div className="answers">
             {round.options.map((o) => (
               <button key={o} type="button" className="btn big answer" onClick={() => answer(o)}>
@@ -121,14 +114,13 @@ export function ColorGame() {
           </div>
         </div>
       )}
-      {phase === 'end' && (
+      {!g.playing && g.lastResult && (
         <ResultCard
-          points={score}
-          best={best}
-          onRetry={start}
+          g={g}
+          onAgain={g.clearResult}
           detail={
             <p>
-              Aciertos: {hits} · Errores: {misses}
+              Aciertos: {summary.hits} · Errores: {summary.misses}
             </p>
           }
         />

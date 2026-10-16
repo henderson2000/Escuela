@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom'
 import { CATALOG } from '../catalog'
 import { TOPICS } from '../data/theory'
-import { currentPlayer, useStore } from '../lib/scores'
+import { useStore } from '../lib/scores'
 import type { Activity } from '../catalog/types'
 
 export function ActivitiesPage() {
   const s = useStore()
-  const p = currentPlayer(s)
+  const p = s.me
   const done = p ? s.activities[p.id] ?? {} : {}
   const progress = (acts: Activity[]) => acts.filter((a) => done[a.id]).length
 

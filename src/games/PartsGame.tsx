@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CATALOG, partsOf, type ComponentDef, type PartInfo } from '../catalog'
 import { Viewer } from '../three/Viewer'
-import { addScore, bestScore, currentPlayer, useStore } from '../lib/scores'
-import { GameShell, ResultCard } from './GameShell'
+import { GameShell, ResultCard, requestLogin } from './GameShell'
+import { useRankedGame } from './useRankedGame'
+import { AttemptGate, ModeBadge } from './AttemptGate'
 
 const ROUNDS = 10
 
@@ -29,24 +30,37 @@ function makeRounds(): Round[] {
   return rounds
 }
 
+/** la cámara del juego se aleja un poco porque el modelo aparece despiezado */
+function farCamera(c: ComponentDef): [number, number, number] {
+  const t = c.target ?? [0, 0, 0]
+  return c.camera.map((v, k) => t[k] + (v - t[k]) * 1.45) as [number, number, number]
+}
+
 export function PartsGame() {
-  const s = useStore()
-  const p = currentPlayer(s)
+  const g = useRankedGame('partes')
   const [rounds, setRounds] = useState<Round[]>(makeRounds)
   const [i, setI] = useState(0)
   const [score, setScore] = useState(0)
-  const [chosen, setChosen] = useState<string | null>(null)
-  const [phase, setPhase] = useState<'intro' | 'play' | 'end'>('intro')
-  const [best, setBest] = useState(0)
   const [hits, setHits] = useState(0)
+  const [chosen, setChosen] = useState<string | null>(null)
+  const [summary, setSummary] = useState(0)
   const startedAt = useRef(Date.now())
 
-  const r = rounds[i]
-  const names = useMemo(() => Object.fromEntries(partsOf(r.comp).map((x) => [x.id, x.name])), [r])
+  useEffect(() => {
+    if (!g.playing) return
+    setRounds(makeRounds())
+    setI(0)
+    setScore(0)
+    setHits(0)
+    setChosen(null)
+  }, [g.playing])
 
   useEffect(() => {
     startedAt.current = Date.now()
-  }, [i, phase])
+  }, [i, g.playing])
+
+  const r = rounds[i]
+  const names = useMemo(() => Object.fromEntries(partsOf(r.comp).map((x) => [x.id, x.name])), [r])
 
   const pick = (id: string) => {
     if (chosen) return
@@ -61,35 +75,20 @@ export function PartsGame() {
 
   const next = () => {
     if (i + 1 >= ROUNDS) {
-      setBest(p ? bestScore(s, p.id, 'partes') : 0)
-      addScore('partes', score)
-      setPhase('end')
+      setSummary(hits)
+      g.finish(score)
     } else {
       setI(i + 1)
       setChosen(null)
     }
   }
 
-  const start = () => {
-    setRounds(makeRounds())
-    setI(0)
-    setScore(0)
-    setHits(0)
-    setChosen(null)
-    setPhase('play')
-  }
-
   return (
     <GameShell title="¿Qué parte es?" icon="🔍" info="El componente aparece despiezado y una pieza tiene un signo “?”. ¿Cuál es? Cuanto más rápido respondas, más puntos.">
-      {phase === 'intro' && (
-        <div className="card center-block">
-          <p>10 rondas. Podés girar el modelo para ver mejor. Respuesta correcta: 10 puntos + bonus por rapidez (hasta 10).</p>
-          <button type="button" className="btn primary big" onClick={start}>
-            ¡Empezar!
-          </button>
-        </div>
+      {!g.playing && !g.lastResult && (
+        <AttemptGate g={g} onLogin={requestLogin} intro={<p>10 rondas. Podés girar el modelo para ver mejor. Respuesta correcta: 10 puntos + bonus por rapidez (hasta 10).</p>} />
       )}
-      {phase === 'play' && (
+      {g.playing && (
         <div className="game-layout">
           <div className="hud">
             <span>
@@ -97,10 +96,11 @@ export function PartsGame() {
             </span>
             <span>⭐ {score}</span>
             <span>{r.comp.name}</span>
+            <ModeBadge g={g} />
           </div>
           <Viewer
             key={`${i}-${r.comp.id}`}
-            camera={r.comp.camera.map((v, k) => (r.comp.target?.[k] ?? 0) + (v - (r.comp.target?.[k] ?? 0)) * 1.45) as [number, number, number]}
+            camera={farCamera(r.comp)}
             target={r.comp.target}
             shadowY={r.comp.shadowY}
             className="viewer game-viewer"
@@ -131,7 +131,7 @@ export function PartsGame() {
           )}
         </div>
       )}
-      {phase === 'end' && <ResultCard points={score} best={best} onRetry={start} detail={<p>Acertaste {hits} de {ROUNDS}</p>} />}
+      {!g.playing && g.lastResult && <ResultCard g={g} onAgain={g.clearResult} detail={<p>Acertaste {summary} de {ROUNDS}</p>} />}
     </GameShell>
   )
 }

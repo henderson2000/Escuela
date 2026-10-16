@@ -1,24 +1,22 @@
 import { Link } from 'react-router-dom'
 import { GAMES } from '../games/registry'
-import { bestScore, currentPlayer, useStore } from '../lib/scores'
+import { MAX_ATTEMPTS } from '../lib/config'
+import { bestOf, myAttempts, useStore } from '../lib/scores'
 
 export function GamesPage() {
   const s = useStore()
-  const p = currentPlayer(s)
   return (
     <div className="page">
       <h1>Juegos</h1>
       <p className="lead">
-        Cada juego suma puntos al ranking del curso. Cuenta tu <strong>mejor</strong> resultado en cada juego (y en cada
-        nivel), así que siempre podés volver a intentar para superarte.
+        Cada juego (y cada nivel) se puede jugar <strong>{MAX_ATTEMPTS} veces por puntos</strong>. En el ranking cuenta tu
+        mejor intento. Después podés seguir practicando todo lo que quieras, pero ya no suma.
       </p>
       <div className="grid cards games">
         {GAMES.map((g) => {
-          const best = p
-            ? g.levels
-              ? g.levels.reduce((a, l) => a + bestScore(s, p.id, g.id, l), 0)
-              : bestScore(s, p.id, g.id)
-            : 0
+          const levels = g.levels ?? ['']
+          const best = levels.reduce((a, l) => a + bestOf(myAttempts(s, g.id, l)), 0)
+          const left = levels.reduce((a, l) => a + Math.max(0, MAX_ATTEMPTS - myAttempts(s, g.id, l).length), 0)
           return (
             <Link key={g.id} to={`/juegos/${g.id}`} className="comp-card game-card">
               <span className="comp-icon">{g.icon}</span>
@@ -26,7 +24,12 @@ export function GamesPage() {
               <span>{g.desc}</span>
               <span className="game-meta">
                 Puntos: {g.max}
-                {p && <> · Tus puntos: <b>{best}</b></>}
+                {s.me && (
+                  <>
+                    {' '}
+                    · Tus puntos: <b>{best}</b> · Intentos disponibles: <b>{left}</b>
+                  </>
+                )}
               </span>
             </Link>
           )

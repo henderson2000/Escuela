@@ -1,42 +1,81 @@
-// Jugadores, puntajes y progreso de actividades.
-// Se guardan en el navegador (localStorage). Para juntar puntajes de varias
-// computadoras se usa Exportar / Importar en la página de Ranking.
+// Jugadores, intentos de juego, ranking y progreso de actividades.
+//
+// Dos modos:
+//  - ONLINE (Supabase configurado): jugadores, intentos y ranking viven en el servidor y los
+//    comparte todo el curso. El límite de intentos lo controla la base de datos.
+//  - LOCAL: todo queda en el navegador de esta computadora (sirve para probar sin servidor).
+//
+// Cada alumno puede jugar por puntos MAX_ATTEMPTS veces cada juego/nivel. Un intento cuenta
+// desde que empieza (si lo abandona, queda con 0). En el ranking suma su mejor intento de cada
+// juego/nivel. Siempre se puede practicar sin sumar puntos.
 
 import { useSyncExternalStore } from 'react'
+import { MAX_ATTEMPTS, MAX_POINTS, ONLINE } from './config'
+import { RemoteError, rpc, select } from './remote'
 
 export interface Player {
   id: string
   name: string
   curso: string
-  createdAt: number
 }
 
-export interface ScoreEntry {
+export interface Attempt {
   id: string
   playerId: string
-  game: string // id del juego
-  level?: string // nivel / modo dentro del juego
+  game: string
+  /** nivel dentro del juego ('' si el juego no tiene niveles) */
+  level: string
+  /** null mientras el intento está en curso o si se abandonó */
+  points: number | null
+  startedAt: number
+}
+
+export interface RankRow {
+  player: Player
   points: number
-  date: number
+  plays: number
+  /** mejor puntaje por juego */
+  byGame: Record<string, number>
 }
 
 interface State {
-  players: Player[]
-  currentPlayerId: string | null
-  scores: ScoreEntry[]
-  /** progreso de actividades: playerId -> activityId -> respondida bien */
+  /** jugador con la sesión abierta en esta computadora */
+  me: Player | null
+  /** jugadores que usaron esta computadora (para entrar rápido) */
+  recent: Player[]
+  /** modo local: todos los intentos; modo online: sólo los del jugador actual */
+  attempts: Attempt[]
+  /** modo local: todos los jugadores registrados */
+  localPlayers: Player[]
+  /** progreso de actividades: playerId -> activityId -> resuelta */
   activities: Record<string, Record<string, boolean>>
+  ranking: RankRow[] | null
+  rankingError: string | null
+  busy: boolean
+  /** modo online: ya se trajeron del servidor los intentos del jugador actual */
+  synced: boolean
 }
 
-const KEY = 'escuela-electronica-v1'
-
-const empty: State = { players: [], currentPlayerId: null, scores: [], activities: {} }
+const KEY = 'escuela-electronica-v2'
+const empty: State = {
+  me: null,
+  recent: [],
+  attempts: [],
+  localPlayers: [],
+  activities: {},
+  ranking: null,
+  rankingError: null,
+  busy: false,
+  synced: !ONLINE,
+}
 
 function load(): State {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return empty
-    return { ...empty, ...JSON.parse(raw) }
+    const saved = JSON.parse(raw)
+    // en modo online los intentos se piden de nuevo al servidor
+    return { ...empty, ...saved, attempts: ONLINE ? [] : saved.attempts ?? [], ranking: null }
   } catch {
     return empty
   }
@@ -45,157 +84,269 @@ function load(): State {
 let state: State = load()
 const listeners = new Set<() => void>()
 
-function save(next: State) {
-  state = next
+function set(patch: Partial<State>) {
+  state = { ...state, ...patch }
   try {
-    localStorage.setItem(KEY, JSON.stringify(state))
+    const { ranking: _r, rankingError: _e, busy: _b, synced: _s, ...persist } = state
+    localStorage.setItem(KEY, JSON.stringify(ONLINE ? { ...persist, attempts: [] } : persist))
   } catch {
-    // almacenamiento no disponible: se mantiene en memoria
+    // sin almacenamiento disponible: queda en memoria
   }
   listeners.forEach((l) => l())
 }
 
-function subscribe(l: () => void) {
-  listeners.add(l)
-  return () => listeners.delete(l)
-}
-
 export function useStore(): State {
-  return useSyncExternalStore(subscribe, () => state)
+  return useSyncExternalStore(
+    (l) => {
+      listeners.add(l)
+      return () => listeners.delete(l)
+    },
+    () => state,
+  )
 }
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36)
+const norm = (s: string) => s.trim().replace(/\s+/g, ' ')
+const keyOf = (name: string, curso: string) => `${norm(name).toLowerCase()}|${curso.replace(/\s/g, '').toLowerCase()}`
 
-export function createPlayer(name: string, curso: string): Player {
-  const existing = state.players.find(
-    (p) => p.name.trim().toLowerCase() === name.trim().toLowerCase() && p.curso === curso,
-  )
-  if (existing) {
-    save({ ...state, currentPlayerId: existing.id })
-    return existing
+// ------------------------------------------------------------------ sesión
+
+interface RemotePlayer {
+  id: string
+  name: string
+  curso: string
+}
+interface RemoteAttempt {
+  id: string
+  player_id: string
+  game: string
+  level: string
+  points: number | null
+  started_at: string
+}
+const fromRemote = (a: RemoteAttempt): Attempt => ({
+  id: a.id,
+  playerId: a.player_id,
+  game: a.game,
+  level: a.level,
+  points: a.points,
+  startedAt: Date.parse(a.started_at),
+})
+
+export async function login(name: string, curso: string): Promise<Player> {
+  name = norm(name)
+  curso = norm(curso)
+  let player: Player
+  if (ONLINE) {
+    set({ busy: true })
+    try {
+      const p = await rpc<RemotePlayer>('login', { p_name: name, p_curso: curso })
+      player = { id: p.id, name: p.name, curso: p.curso }
+    } finally {
+      set({ busy: false })
+    }
+  } else {
+    const found = state.localPlayers.find((p) => keyOf(p.name, p.curso) === keyOf(name, curso))
+    player = found ?? { id: uid(), name, curso }
+    if (!found) set({ localPlayers: [...state.localPlayers, player] })
   }
-  const player: Player = { id: uid(), name: name.trim(), curso: curso.trim(), createdAt: Date.now() }
-  save({ ...state, players: [...state.players, player], currentPlayerId: player.id })
+  const recent = [player, ...state.recent.filter((p) => p.id !== player.id)].slice(0, 30)
+  set({ me: player, recent, attempts: ONLINE ? [] : state.attempts, synced: !ONLINE })
+  if (ONLINE) await refreshMyAttempts()
   return player
 }
 
-export function selectPlayer(id: string | null) {
-  save({ ...state, currentPlayerId: id })
+export function logout() {
+  set({ me: null, attempts: ONLINE ? [] : state.attempts })
 }
 
-export function currentPlayer(s: State = state): Player | undefined {
-  return s.players.find((p) => p.id === s.currentPlayerId)
+export function forgetRecent(id: string) {
+  set({ recent: state.recent.filter((p) => p.id !== id) })
 }
 
-export function addScore(game: string, points: number, level?: string): ScoreEntry | null {
-  const p = currentPlayer()
-  if (!p || points <= 0) return null
-  const entry: ScoreEntry = { id: uid(), playerId: p.id, game, level, points: Math.round(points), date: Date.now() }
-  save({ ...state, scores: [...state.scores, entry] })
-  return entry
+export async function refreshMyAttempts() {
+  if (!ONLINE || !state.me) return
+  const rows = await select<RemoteAttempt[]>('attempts', `player_id=eq.${state.me.id}&select=*`)
+  set({ attempts: rows.map(fromRemote), synced: true })
 }
 
-export function bestScore(s: State, playerId: string, game: string, level?: string): number {
-  return s.scores
-    .filter((e) => e.playerId === playerId && e.game === game && e.level === level)
-    .reduce((m, e) => Math.max(m, e.points), 0)
+// al abrir la app con una sesión guardada, se traen los intentos del servidor
+if (ONLINE && state.me) refreshMyAttempts().catch(() => set({ synced: false }))
+
+// ------------------------------------------------------------------ intentos
+
+export function myAttempts(s: State, game: string, level = ''): Attempt[] {
+  if (!s.me) return []
+  return s.attempts.filter((a) => a.playerId === s.me!.id && a.game === game && a.level === level)
 }
 
-/**
- * Puntaje total del jugador = suma de su MEJOR puntaje en cada juego/nivel.
- * Así repetir mil veces el mismo juego no infla el ranking: lo que cuenta es mejorar.
- */
-export function totalPoints(s: State, playerId: string): number {
+export function bestOf(attempts: Attempt[]): number {
+  return attempts.reduce((m, a) => Math.max(m, a.points ?? 0), 0)
+}
+
+export function attemptsLeft(s: State, game: string, level = ''): number {
+  return Math.max(0, MAX_ATTEMPTS - myAttempts(s, game, level).length)
+}
+
+/** Empieza un intento que cuenta para el ranking. Devuelve su id. */
+export async function startAttempt(game: string, level = ''): Promise<string> {
+  const me = state.me
+  if (!me) throw new RemoteError('SIN_SESION', 'Ingresá con tu nombre para jugar por puntos.')
+  if (attemptsLeft(state, game, level) <= 0)
+    throw new RemoteError('LIMITE_INTENTOS', `Ya usaste tus ${MAX_ATTEMPTS} intentos en este nivel.`)
+  if (ONLINE) {
+    const a = await rpc<RemoteAttempt>('start_attempt', { p_player: me.id, p_game: game, p_level: level })
+    set({ attempts: [...state.attempts, fromRemote(a)] })
+    return a.id
+  }
+  const a: Attempt = { id: uid(), playerId: me.id, game, level, points: null, startedAt: Date.now() }
+  set({ attempts: [...state.attempts, a] })
+  return a.id
+}
+
+/** Guarda el puntaje final de un intento (sólo una vez). */
+export async function finishAttempt(attemptId: string, points: number) {
+  const a = state.attempts.find((x) => x.id === attemptId)
+  if (!a || a.points !== null) return
+  const clean = Math.max(0, Math.min(Math.round(points), MAX_POINTS[a.game] ?? 1000))
+  set({ attempts: state.attempts.map((x) => (x.id === attemptId ? { ...x, points: clean } : x)) })
+  if (ONLINE) {
+    try {
+      await rpc('finish_attempt', { p_attempt: attemptId, p_points: clean })
+    } catch (e) {
+      await refreshMyAttempts().catch(() => undefined)
+      throw e
+    }
+  }
+}
+
+/** Puntos del jugador actual: suma de su mejor intento en cada juego/nivel. */
+export function myPoints(s: State): number {
+  if (!s.me) return 0
+  return pointsOf(s.attempts.filter((a) => a.playerId === s.me!.id))
+}
+
+function pointsOf(attempts: Attempt[]): number {
   const best = new Map<string, number>()
-  for (const e of s.scores) {
-    if (e.playerId !== playerId) continue
-    const k = `${e.game}|${e.level ?? ''}`
-    best.set(k, Math.max(best.get(k) ?? 0, e.points))
+  for (const a of attempts) {
+    const k = `${a.game}|${a.level}`
+    best.set(k, Math.max(best.get(k) ?? 0, a.points ?? 0))
   }
   let t = 0
   best.forEach((v) => (t += v))
   return t
 }
 
+function bestByGame(attempts: Attempt[]): Record<string, number> {
+  const best = new Map<string, number>()
+  for (const a of attempts) {
+    const k = `${a.game}|${a.level}`
+    best.set(k, Math.max(best.get(k) ?? 0, a.points ?? 0))
+  }
+  const out: Record<string, number> = {}
+  best.forEach((v, k) => {
+    const g = k.split('|')[0]
+    out[g] = (out[g] ?? 0) + v
+  })
+  return out
+}
+
+// ------------------------------------------------------------------ ranking
+
+interface RemoteRank {
+  id: string
+  name: string
+  curso: string
+  game: string | null
+  points: number
+  plays: number
+}
+
+export async function loadRanking() {
+  if (!ONLINE) {
+    const rows: RankRow[] = state.localPlayers.map((p) => {
+      const mine = state.attempts.filter((a) => a.playerId === p.id)
+      return { player: p, points: pointsOf(mine), plays: mine.length, byGame: bestByGame(mine) }
+    })
+    set({ ranking: rows, rankingError: null })
+    return
+  }
+  try {
+    // la vista devuelve una fila por alumno y juego
+    const data = await select<RemoteRank[]>('ranking', 'select=*')
+    const map = new Map<string, RankRow>()
+    for (const r of data) {
+      const row = map.get(r.id) ?? { player: { id: r.id, name: r.name, curso: r.curso }, points: 0, plays: 0, byGame: {} }
+      if (r.game) {
+        row.byGame[r.game] = r.points
+        row.points += r.points
+        row.plays += r.plays
+      }
+      map.set(r.id, row)
+    }
+    set({ ranking: [...map.values()], rankingError: null })
+  } catch (e) {
+    set({ rankingError: (e as Error).message })
+  }
+}
+
+// ------------------------------------------------------------------ actividades (siempre locales)
+
 export function markActivity(activityId: string, correct: boolean) {
-  const p = currentPlayer()
+  const p = state.me
   if (!p) return
   const mine = { ...(state.activities[p.id] ?? {}) }
-  if (mine[activityId]) return // ya estaba bien, no se pisa
+  if (mine[activityId]) return
   mine[activityId] = correct
-  save({ ...state, activities: { ...state.activities, [p.id]: mine } })
+  set({ activities: { ...state.activities, [p.id]: mine } })
 }
 
 export function activitiesDone(s: State, playerId: string): number {
   return Object.values(s.activities[playerId] ?? {}).filter(Boolean).length
 }
 
-// ---------- exportar / importar (para juntar los datos de varias PCs) ----------
+// ------------------------------------------------------------------ zona docente
 
-export function exportJSON(): string {
-  return JSON.stringify({ app: 'escuela-electronica', version: 1, ...state, currentPlayerId: null }, null, 2)
+/** Modo online: acciones protegidas con el PIN docente definido en la base de datos. */
+export async function adminDeletePlayer(pin: string, playerId: string) {
+  if (ONLINE) await rpc('admin_delete_player', { p_pin: pin, p_player: playerId })
+  else
+    set({
+      localPlayers: state.localPlayers.filter((p) => p.id !== playerId),
+      attempts: state.attempts.filter((a) => a.playerId !== playerId),
+      recent: state.recent.filter((p) => p.id !== playerId),
+      me: state.me?.id === playerId ? null : state.me,
+    })
+  await loadRanking()
 }
 
-export function importJSON(text: string): { players: number; scores: number } {
-  const data = JSON.parse(text) as Partial<State>
-  if (!Array.isArray(data.players) || !Array.isArray(data.scores)) throw new Error('Archivo inválido')
-  const players = [...state.players]
-  const idMap = new Map<string, string>()
-  let newPlayers = 0
-  for (const p of data.players) {
-    const same = players.find(
-      (q) => q.id === p.id || (q.name.toLowerCase() === p.name.toLowerCase() && q.curso === p.curso),
-    )
-    if (same) idMap.set(p.id, same.id)
-    else {
-      players.push(p)
-      idMap.set(p.id, p.id)
-      newPlayers++
-    }
-  }
-  const known = new Set(state.scores.map((e) => e.id))
-  const incoming = data.scores
-    .filter((e) => !known.has(e.id))
-    .map((e) => ({ ...e, playerId: idMap.get(e.playerId) ?? e.playerId }))
-  const activities = { ...state.activities }
-  for (const [pid, acts] of Object.entries(data.activities ?? {})) {
-    const target = idMap.get(pid) ?? pid
-    activities[target] = { ...acts, ...(activities[target] ?? {}) }
-  }
-  save({ ...state, players, scores: [...state.scores, ...incoming], activities })
-  return { players: newPlayers, scores: incoming.length }
+/** Borra los intentos de un alumno (en un juego, o en todos) para que pueda volver a jugar. */
+export async function adminResetAttempts(pin: string, playerId: string, game: string | null) {
+  if (ONLINE) await rpc('admin_reset_attempts', { p_pin: pin, p_player: playerId, p_game: game })
+  else set({ attempts: state.attempts.filter((a) => !(a.playerId === playerId && (game === null || a.game === game))) })
+  if (state.me?.id === playerId) await refreshMyAttempts()
+  await loadRanking()
 }
 
-export function exportCSV(): string {
-  const rows = [['Curso', 'Alumno', 'Puntos totales', 'Actividades resueltas', 'Partidas jugadas']]
-  for (const p of state.players) {
-    rows.push([
-      p.curso,
-      p.name,
-      String(totalPoints(state, p.id)),
-      String(activitiesDone(state, p.id)),
-      String(state.scores.filter((e) => e.playerId === p.id).length),
-    ])
-  }
-  return rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n')
+export async function adminCheckPin(pin: string): Promise<boolean> {
+  if (!ONLINE) return true
+  return rpc<boolean>('admin_check_pin', { p_pin: pin })
 }
 
-export function resetAll() {
-  save(empty)
+export function rankingCSV(rows: RankRow[], games: { id: string; title: string }[]): string {
+  const head = ['Puesto', 'Curso', 'Alumno', ...games.map((g) => g.title), 'Puntos totales', 'Partidas']
+  const lines = rows.map((r, i) => [
+    String(i + 1),
+    r.player.curso,
+    r.player.name,
+    ...games.map((g) => String(r.byGame[g.id] ?? 0)),
+    String(r.points),
+    String(r.plays),
+  ])
+  return [head, ...lines].map((l) => l.map((c) => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n')
 }
 
-export function deletePlayer(id: string) {
-  const activities = { ...state.activities }
-  delete activities[id]
-  save({
-    players: state.players.filter((p) => p.id !== id),
-    scores: state.scores.filter((e) => e.playerId !== id),
-    activities,
-    currentPlayerId: state.currentPlayerId === id ? null : state.currentPlayerId,
-  })
-}
-
-export function download(filename: string, text: string, mime = 'application/json') {
+export function download(filename: string, text: string, mime = 'text/csv') {
   const blob = new Blob([text], { type: mime })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

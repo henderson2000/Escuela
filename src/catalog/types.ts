@@ -32,7 +32,7 @@ export type Params = Record<string, any>
 export interface ComponentDef {
   id: string
   name: string
-  category: 'Componentes básicos' | 'Placas' | 'Sensores y entradas'
+  category: 'Componentes básicos' | 'Placas' | 'Sensores y entradas' | 'Actuadores'
   icon: string
   short: string
   parts: PartInfo[] | ((p: Params) => PartInfo[])

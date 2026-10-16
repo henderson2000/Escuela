@@ -1,64 +1,42 @@
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { currentPlayer, useStore } from '../lib/scores'
-import { PlayerModal } from '../components/PlayerBadge'
+import { requestLogin } from '../components/PlayerBadge'
+import type { RankedGame } from './useRankedGame'
 
 export function GameShell({ title, icon, children, info }: { title: string; icon: string; children: ReactNode; info?: ReactNode }) {
-  const s = useStore()
-  const p = currentPlayer(s)
-  const [login, setLogin] = useState(false)
   return (
     <div className="page game">
-      <div className="row space wrap">
-        <div>
-          <Link to="/juegos" className="back">
-            ← Juegos
-          </Link>
-          <h1>
-            <span className="icon">{icon}</span> {title}
-          </h1>
-        </div>
-        {!p && (
-          <div className="warn-box">
-            Estás jugando sin usuario: los puntos no se van a guardar.{' '}
-            <button type="button" className="btn small primary" onClick={() => setLogin(true)}>
-              Ingresar
-            </button>
-          </div>
-        )}
-      </div>
+      <Link to="/juegos" className="back">
+        ← Juegos
+      </Link>
+      <h1>
+        <span className="icon">{icon}</span> {title}
+      </h1>
       {info && <p className="lead">{info}</p>}
       {children}
-      {login && <PlayerModal onClose={() => setLogin(false)} />}
     </div>
   )
 }
 
-export function ResultCard({
-  points,
-  best,
-  detail,
-  onRetry,
-  extra,
-}: {
-  points: number
-  best: number
-  detail?: ReactNode
-  onRetry: () => void
-  extra?: ReactNode
-}) {
-  const record = points >= best && points > 0
+export { requestLogin }
+
+/** Resultado de una partida completa (juegos sin niveles). */
+export function ResultCard({ g, detail, onAgain }: { g: RankedGame; detail?: ReactNode; onAgain: () => void }) {
+  const r = g.lastResult
+  if (!r) return null
+  const record = r.ranked && r.points > r.prevBest
   return (
     <div className="card result">
-      <div className="result-points">{points}</div>
-      <div>puntos</div>
-      {record ? <p className="record">🎉 ¡Nuevo récord personal!</p> : best > 0 && <p>Tu récord: {best} puntos</p>}
+      <div className="result-points">{r.points}</div>
+      <div>{r.ranked ? 'puntos para el ranking' : 'puntos (práctica, no se guardan)'}</div>
+      {record && <p className="record">🎉 ¡Nuevo récord personal!</p>}
+      {r.ranked && !record && r.prevBest > 0 && <p>Tu mejor intento sigue siendo {r.prevBest} puntos.</p>}
       {detail}
+      {g.error && <p className="feedback bad">{g.error}</p>}
       <div className="row center">
-        <button type="button" className="btn primary big" onClick={onRetry}>
-          Jugar de nuevo
+        <button type="button" className="btn primary big" onClick={onAgain}>
+          Continuar
         </button>
-        {extra}
         <Link to="/ranking" className="btn big">
           Ver ranking
         </Link>
