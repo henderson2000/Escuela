@@ -29,7 +29,13 @@ export function PlayerBadge() {
 export function PlayerModal({ onClose }: { onClose: () => void }) {
   const s = useStore()
   const [name, setName] = useState('')
-  const [curso, setCurso] = useState(localStorage.getItem('ultimo-curso') ?? '')
+  const [curso, setCurso] = useState(() => {
+    try {
+      return localStorage.getItem('ultimo-curso') ?? ''
+    } catch {
+      return ''
+    }
+  })
   const cursos = [...new Set(s.players.map((p) => p.curso))].sort()
 
   const submit = (e: React.FormEvent) => {
