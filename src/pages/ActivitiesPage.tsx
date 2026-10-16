@@ -1,0 +1,54 @@
+import { Link } from 'react-router-dom'
+import { CATALOG } from '../catalog'
+import { TOPICS } from '../data/theory'
+import { currentPlayer, useStore } from '../lib/scores'
+import type { Activity } from '../catalog/types'
+
+export function ActivitiesPage() {
+  const s = useStore()
+  const p = currentPlayer(s)
+  const done = p ? s.activities[p.id] ?? {} : {}
+  const progress = (acts: Activity[]) => acts.filter((a) => done[a.id]).length
+
+  const groups = [
+    ...TOPICS.map((t) => ({ key: t.id, to: `/teoria/${t.id}`, icon: t.icon, title: t.title, acts: t.activities })),
+    ...CATALOG.map((c) => ({ key: c.id, to: `/componentes/${c.id}`, icon: c.icon, title: c.name, acts: c.activities })),
+  ]
+  const total = groups.reduce((a, g) => a + g.acts.length, 0)
+  const solved = groups.reduce((a, g) => a + progress(g.acts), 0)
+
+  return (
+    <div className="page">
+      <h1>Actividades</h1>
+      <p className="lead">
+        Cada tema y cada componente tiene ejercicios con corrección automática. Tu progreso queda guardado.
+      </p>
+      <div className="card progress-card">
+        <strong>{p ? `Progreso de ${p.name}` : 'Ingresá con tu nombre para guardar el progreso'}</strong>
+        <div className="progress big">
+          <div style={{ width: `${(solved / total) * 100}%` }} />
+        </div>
+        <span>
+          {solved} de {total} actividades resueltas
+        </span>
+      </div>
+      <div className="grid cards">
+        {groups.map((g) => {
+          const n = progress(g.acts)
+          return (
+            <Link key={g.key} to={g.to} className={`comp-card ${n === g.acts.length ? 'complete' : ''}`}>
+              <span className="comp-icon">{g.icon}</span>
+              <strong>{g.title}</strong>
+              <div className="progress">
+                <div style={{ width: `${(n / g.acts.length) * 100}%` }} />
+              </div>
+              <span>
+                {n} / {g.acts.length} {n === g.acts.length ? '✔' : ''}
+              </span>
+            </Link>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
