@@ -47,7 +47,7 @@ export const YEARS: Year[] = [
     rotations: [
       { n: 1, subject: 'electronica', ready: true, desc: 'Componentes en 3D, Arduino, teoría, actividades y juegos.' },
       { n: 2, subject: 'computacion' },
-      { n: 3, subject: 'electricidad' },
+      { n: 3, subject: 'electricidad', ready: true, desc: 'Automatización con LOGO!: simulador, guía de ejercicios, teoría y juegos.' },
       { n: 4, subject: 'torno' },
     ],
   },

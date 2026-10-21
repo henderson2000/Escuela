@@ -1,11 +1,11 @@
 import { Link, useParams } from 'react-router-dom'
-import { TOPICS, getTopic } from '../data/theory'
-import { CATALOG } from '../catalog'
+import { useSubject } from '../lib/subject'
 import { ActivityList } from '../components/ActivityList'
 import { useSub } from '../lib/nav'
 
 export function TheoryPage() {
   const sub = useSub()
+  const { topics: TOPICS, catalog: CATALOG } = useSubject()
   return (
     <div className="page">
       <h1>Teoría</h1>
@@ -38,7 +38,8 @@ export function TheoryPage() {
 export function TopicPage() {
   const sub = useSub()
   const { id = '' } = useParams()
-  const t = getTopic(id)
+  const { topics: TOPICS } = useSubject()
+  const t = TOPICS.find((x) => x.id === id)
   if (!t) return <div className="page">Tema no encontrado.</div>
   const idx = TOPICS.indexOf(t)
   const next = TOPICS[idx + 1]

@@ -1,7 +1,11 @@
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { SUBJECTS, YEARS, getRotation, getYear } from '../data/curriculum'
 import { BaseContext } from '../lib/nav'
-import { ElectronicsHome } from './ElectronicsHome'
+import { SubjectContext } from '../lib/subject'
+import { getSubjectContent } from '../subjects'
+import { SimulatorPage } from '../logo/pages/SimulatorPage'
+import { GuidePage } from '../logo/pages/GuidePage'
+import { ExercisePage } from '../logo/pages/ExercisePage'
 import { ComponentsPage } from './ComponentsPage'
 import { ComponentDetail } from './ComponentDetail'
 import { TheoryPage, TopicPage } from './TheoryPage'
@@ -110,19 +114,22 @@ function ComingSoon({ yearId, subjectId }: { yearId: string; subjectId: string }
   )
 }
 
-/** Contenido de un taller. Por ahora sólo Electrónica (3er año) tiene páginas. */
+/** Contenido de un taller (sólo los que figuran en SUBJECT_CONTENT tienen páginas). */
 export function SubjectLayout() {
   const { anio = '', materia = '' } = useParams()
   const year = getYear(anio)
   const subject = SUBJECTS[materia]
   const rotation = getRotation(anio, materia)
   if (!year || !subject || !rotation) return <Navigate to={year ? `/${anio}` : '/'} replace />
-  if (!rotation.ready) return <ComingSoon yearId={anio} subjectId={materia} />
+  const content = getSubjectContent(anio, materia)
+  if (!rotation.ready || !content) return <ComingSoon yearId={anio} subjectId={materia} />
+  const Home = content.Home
 
   return (
+    <SubjectContext.Provider value={content}>
     <BaseContext.Provider value={`/${anio}/${materia}`}>
       <Routes>
-        <Route index element={<ElectronicsHome />} />
+        <Route index element={<Home />} />
         <Route path="componentes" element={<ComponentsPage />} />
         <Route path="componentes/:id" element={<ComponentDetail />} />
         <Route path="teoria" element={<TheoryPage />} />
@@ -131,9 +138,13 @@ export function SubjectLayout() {
         <Route path="juegos" element={<GamesPage />} />
         <Route path="juegos/:id" element={<GameRoute />} />
         <Route path="ranking" element={<RankingPage />} />
+        <Route path="simulador" element={<SimulatorPage />} />
+        <Route path="guia" element={<GuidePage />} />
+        <Route path="guia/:id" element={<ExercisePage />} />
         <Route path="*" element={<Navigate to={`/${anio}/${materia}`} replace />} />
       </Routes>
     </BaseContext.Provider>
+    </SubjectContext.Provider>
   )
 }
 
@@ -145,15 +156,6 @@ export function LegacyRedirect() {
 
 /* ------------------------------------------------------------------ barra superior */
 
-const SUBJECT_NAV = [
-  { to: '', label: 'Inicio del taller', end: true },
-  { to: '/componentes', label: 'Componentes 3D' },
-  { to: '/teoria', label: 'Teoría' },
-  { to: '/actividades', label: 'Actividades' },
-  { to: '/juegos', label: 'Juegos' },
-  { to: '/ranking', label: 'Ranking' },
-]
-
 /** Migas (Año › Taller) y, dentro de un taller con contenido, su menú. */
 export function TopNav() {
   const { pathname } = useLocation()
@@ -161,6 +163,7 @@ export function TopNav() {
   const year = getYear(anio)
   const subject = year && materia ? SUBJECTS[materia] : undefined
   const base = subject ? `/${anio}/${materia}` : ''
+  const content = getSubjectContent(anio, materia)
 
   return (
     <div className="topnav">
@@ -179,9 +182,9 @@ export function TopNav() {
           )}
         </nav>
       )}
-      {subject && getRotation(anio, materia)?.ready && (
+      {subject && getRotation(anio, materia)?.ready && content && (
         <nav className="nav">
-          {SUBJECT_NAV.map((n) => (
+          {content.nav.map((n) => (
             <NavLink key={n.to} to={base + n.to} end={n.end}>
               {n.label}
             </NavLink>

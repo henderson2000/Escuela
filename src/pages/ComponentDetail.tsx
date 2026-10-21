@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getComponent, partsOf } from '../catalog'
+import { partsOf } from '../catalog'
+import { useSubject } from '../lib/subject'
 import { Viewer } from '../three/Viewer'
 import { ActivityList } from '../components/ActivityList'
 import { Slider, Toggle } from '../components/ui'
@@ -16,7 +17,8 @@ export function ComponentDetail() {
 
 function Detail({ id }: { id: string }) {
   const sub = useSub()
-  const def = getComponent(id)
+  const { catalog, labels: texts } = useSubject()
+  const def = catalog.find((c) => c.id === id)
   const [params, setParams] = useState(def?.defaultParams ?? {})
   const [explode, setExplode] = useState(0)
   const [labels, setLabels] = useState(false)
@@ -42,7 +44,7 @@ function Detail({ id }: { id: string }) {
     <div className="page detail">
       <div className="detail-head">
         <Link to={sub('/componentes')} className="back">
-          ← Componentes
+          ← {texts?.componentsBack ?? 'Componentes'}
         </Link>
         <h1>
           <span className="icon">{def.icon}</span> {def.name}

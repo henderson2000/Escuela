@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom'
-import { CATALOG } from '../catalog'
+import { useSubject } from '../lib/subject'
 import { useSub } from '../lib/nav'
 
 export function ComponentsPage() {
   const sub = useSub()
+  const { catalog: CATALOG, labels } = useSubject()
   const cats = [...new Set(CATALOG.map((c) => c.category))]
   return (
     <div className="page">
-      <h1>Componentes en 3D</h1>
+      <h1>{labels?.components ?? 'Componentes en 3D'}</h1>
       <p className="lead">
-        Elegí un componente para verlo en 3D, modificarlo, despiezarlo y descubrir para qué sirve cada parte.
+        {labels?.componentsLead ?? 'Elegí un componente para verlo en 3D, modificarlo, despiezarlo y descubrir para qué sirve cada parte.'}
       </p>
       {cats.map((cat) => (
         <section key={cat}>

@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
-import { CATALOG } from '../catalog'
-import { TOPICS } from '../data/theory'
+import { useSubject } from '../lib/subject'
+import { useSub } from '../lib/nav'
 import { useStore } from '../lib/scores'
 import type { Activity } from '../catalog/types'
 
 export function ActivitiesPage() {
   const s = useStore()
+  const { topics: TOPICS, catalog: CATALOG } = useSubject()
+  const sub = useSub()
   const p = s.me
   const done = p ? s.activities[p.id] ?? {} : {}
   const progress = (acts: Activity[]) => acts.filter((a) => done[a.id]).length
@@ -36,7 +38,7 @@ export function ActivitiesPage() {
         {groups.map((g) => {
           const n = progress(g.acts)
           return (
-            <Link key={g.key} to={g.to} className={`comp-card ${n === g.acts.length ? 'complete' : ''}`}>
+            <Link key={g.key} to={sub(g.to)} className={`comp-card ${n === g.acts.length ? 'complete' : ''}`}>
               <span className="comp-icon">{g.icon}</span>
               <strong>{g.title}</strong>
               <div className="progress">

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { GAMES } from '../games/registry'
+import { useSubject } from '../lib/subject'
 import { MAX_ATTEMPTS } from '../lib/config'
 import { bestOf, myAttempts, useStore } from '../lib/scores'
 import { useSub } from '../lib/nav'
@@ -7,6 +7,7 @@ import { useSub } from '../lib/nav'
 export function GamesPage() {
   const sub = useSub()
   const s = useStore()
+  const { games: GAMES } = useSubject()
   return (
     <div className="page">
       <h1>Juegos</h1>

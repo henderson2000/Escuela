@@ -1,11 +1,11 @@
 import { Link, useParams } from 'react-router-dom'
-import { getGame } from '../games/registry'
+import { useSubject } from '../lib/subject'
 import { useSub } from '../lib/nav'
 
 export function GameRoute() {
   const sub = useSub()
   const { id = '' } = useParams()
-  const g = getGame(id)
+  const g = useSubject().games.find((x) => x.id === id)
   if (!g) {
     return (
       <div className="page">

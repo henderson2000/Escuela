@@ -1835,3 +1835,286 @@ a.rotation-card:hover {
   color: #fff;
   font-size: 0.9rem;
 }
+
+/* ---------- LOGO! teoría ---------- */
+.lt-diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 10px auto;
+  color: var(--text);
+}
+.lt-diagram text {
+  font-family: system-ui, sans-serif;
+}
+.lt-phases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.lt-phase {
+  flex: 1 1 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.lt-phase small {
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+.lt-phase.active {
+  border-color: var(--accent);
+  background: rgba(54, 194, 255, 0.14);
+  color: var(--text);
+  font-weight: 700;
+}
+.lt-io-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+.lt-io-col {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.lt-io-col.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(54, 194, 255, 0.25);
+}
+.lt-io-col h5 {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.lt-bitrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0;
+  font-size: 0.9rem;
+}
+.lt-tag {
+  font-family: ui-monospace, monospace;
+  font-weight: 700;
+  min-width: 24px;
+}
+.lt-bit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 4px;
+  border-radius: 6px;
+  border: 1px solid #3b4a66;
+  background: #172033;
+  color: #6b85b8;
+  font-family: ui-monospace, monospace;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+.lt-bit.on {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.18);
+  color: #ff6b6b;
+}
+.lt-lamp-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.lt-lamp {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #263044;
+  border: 2px solid #3b4760;
+  flex: none;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.lt-lamp.on {
+  background: var(--c, #ffd34d);
+  border-color: transparent;
+  box-shadow: 0 0 12px 3px var(--c, #ffd34d);
+}
+.btn.lt-push {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.btn.lt-push.pressed {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: #ef4444;
+}
+.btn.lt-push.pressed.danger-on {
+  background: rgba(255, 176, 32, 0.18);
+  border-color: var(--accent2);
+}
+.lt-signal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.lt-gate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+  align-items: end;
+  margin: 12px 0;
+}
+.lt-gate-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.lt-gate-cell svg {
+  color: var(--text);
+}
+table.lt-tt {
+  width: auto;
+  margin: 0 auto;
+  font-family: ui-monospace, monospace;
+}
+table.lt-tt th,
+table.lt-tt td {
+  text-align: center;
+  padding: 2px 9px;
+}
+table.lt-tt th:last-child,
+table.lt-tt td:last-child {
+  border-left: 1px solid var(--line);
+}
+table.lt-tt tr.cur td {
+  background: rgba(54, 194, 255, 0.18);
+}
+table.lt-tt td.z1 {
+  color: #ff6b6b;
+  font-weight: 800;
+}
+table.lt-ref {
+  min-width: 720px;
+}
+table.lt-ref th,
+table.lt-ref td {
+  padding: 6px 4px;
+}
+table.lt-ref th,
+table.lt-ref td {
+  text-align: center;
+  vertical-align: middle;
+}
+table.lt-ref tbody th {
+  text-align: left;
+  font-size: 0.82rem;
+  width: 90px;
+}
+table.lt-ref svg {
+  margin: 0 auto;
+}
+.lt-expr {
+  font-family: 'Cambria Math', Georgia, serif;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+.lt-motor-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+.lt-motor-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--muted);
+}
+.lt-motor {
+  color: var(--text);
+}
+.lt-motor .lt-rotor {
+  transform-origin: 40px 40px;
+}
+.lt-motor.on .lt-rotor {
+  animation: lt-spin 0.8s linear infinite;
+}
+@keyframes lt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.lt-scope-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin: 10px 0;
+}
+.lt-in {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.lt-latch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+.lt-scope,
+.lt-figure {
+  background: #0c1220;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px;
+  color: var(--text);
+}
+.lt-figure {
+  margin: 10px 0 16px;
+}
+.lt-figure figcaption {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0 0 4px 4px;
+}
+.lt-count {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  color: var(--muted);
+}
+.lt-count strong {
+  font-size: 2.2rem;
+  font-family: ui-monospace, monospace;
+  color: var(--accent);
+}
+.lt-wide {
+  overflow-x: auto;
+}
+.lt-wide > svg {
+  min-width: 540px;
+}

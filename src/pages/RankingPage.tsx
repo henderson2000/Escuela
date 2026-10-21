@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { GAMES } from '../games/registry'
+import { useSubject } from '../lib/subject'
 import { MAX_ATTEMPTS, ONLINE } from '../lib/config'
 import { adminCheckPin, adminDeletePlayer, adminResetAttempts, download, loadRanking, rankingCSV, useStore, type RankRow } from '../lib/scores'
 
@@ -7,6 +7,7 @@ const REFRESH_MS = 20000
 
 export function RankingPage() {
   const s = useStore()
+  const { games: GAMES } = useSubject()
   const [curso, setCurso] = useState<string>('')
   const [pin, setPin] = useState('')
   const [teacher, setTeacher] = useState(false)
@@ -21,7 +22,8 @@ export function RankingPage() {
     return () => clearInterval(t)
   }, [])
 
-  const all = s.ranking ?? []
+  // puntos sólo de los juegos de este taller
+  const all = (s.ranking ?? []).map((r) => ({ ...r, points: GAMES.reduce((a, g) => a + (r.byGame[g.id] ?? 0), 0) }))
   const cursos = [...new Set(all.map((r) => r.player.curso))].sort()
   const rows = all
     .filter((r) => !curso || r.player.curso === curso)

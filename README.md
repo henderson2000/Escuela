@@ -11,7 +11,7 @@ Al entrar se elige el año (**1ro, 2do o 3ro**). Cada año tiene **4 rotaciones*
 - **2do:** Electrónica, Computación, Electricidad y Soldadura.
 - **3ro:** Electrónica (con todo el contenido), Computación, Electricidad y Torno.
 
-Por ahora sólo Electrónica de 3ro tiene contenido; el resto muestra "Próximamente". Todo eso se configura en
+Por ahora tienen contenido **Electrónica** y **Electricidad (LOGO!)** de 3ro; el resto muestra "Próximamente". El contenido de cada taller se registra en [`src/subjects.tsx`](src/subjects.tsx). Los años y talleres se configuran en
 [`src/data/curriculum.ts`](src/data/curriculum.ts).
 
 ## Qué incluye (taller de Electrónica, 3er año)
@@ -23,6 +23,16 @@ Por ahora sólo Electrónica de 3ro tiene contenido; el resto muestra "Próximam
 | **Actividades** | Más de 90 ejercicios con corrección automática y progreso guardado por alumno. |
 | **Juegos** | 🔌 *Conexiones en la protoboard* (circuitos reales en 3D con el Arduino, 6 niveles) · 📐 *Completá el plano* (6 niveles) · 🎨 *Código de colores contrarreloj* · 🔍 *¿Qué parte es?* |
 | **Ranking online** | Los alumnos entran con **nombre, apellido y curso**. Cada juego/nivel se puede jugar **2 veces por puntos** (el intento cuenta desde que empieza); después pueden seguir practicando sin sumar. En el ranking cuenta el mejor intento de cada nivel. Zona docente con PIN para devolver intentos o borrar alumnos, y descarga de planilla CSV. |
+
+## Qué incluye (taller de Electricidad, 3er año: automatización con LOGO!)
+
+| Sección | Contenido |
+| --- | --- |
+| **Equipos en 3D** | LOGO! 8 (con su display mostrando el estado de entradas y salidas y un tablero de prueba), contactor, pulsadores, hongo y lámpara piloto. |
+| **Teoría** | 9 temas del apunte: automatización y PLC, lógica cableada vs. programada (ciclo de scan), partes del LOGO!, señales NA/NC, compuertas, arranque de motor, temporizadores, set-reset y relé de impulsos, marcas y contador. Con simuladores chicos y ~50 actividades. |
+| **Simulador** | Editor de bloques FUP (como LOGO!Soft Comfort): entradas I1–I8 (pulsador NA/NC, interruptor, contacto NC con retención), salidas Q1–Q8, AND, OR, NOT, NAND, NOR, XOR, TON, TOF, RS, relé de impulsos, generador de impulsos y contador. Simulación en vivo con velocidad ×1/×10/×60. |
+| **Guía** | Los 32 ejercicios de la guía de ejercitación. 30 tienen corrección automática (el programa se prueba solo), 2 los corrige el docente. |
+| **Juegos** | 🤖 *Programá el LOGO!* (8 niveles × 100) · 🔣 *Compuertas al toque* (200) · ⏱ *Diagramas de tiempo* (200). Cada taller tiene su propio ranking. |
 
 ## Puesta en marcha (una sola vez)
 

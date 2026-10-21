@@ -83,6 +83,9 @@ returns int language sql immutable as $$
     when 'plano'      then 100
     when 'partes'     then 200
     when 'colores'    then 1500
+    when 'logo-programa'   then 100
+    when 'logo-compuertas' then 200
+    when 'logo-tiempos'    then 200
     else null end
 $$;
 
