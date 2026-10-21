@@ -40,7 +40,7 @@ export default function App() {
         <NavLink to="/" className="brand">
           <span className="brand-icon">🛠</span>
           <span>
-            Escuela <strong>Técnica</strong>
+            ITS <strong>Villada</strong>
           </span>
         </NavLink>
         <TopNav />

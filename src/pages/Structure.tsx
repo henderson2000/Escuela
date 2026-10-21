@@ -19,7 +19,7 @@ export function YearsHome() {
         <h1>
           Plataforma de <span className="accent">talleres</span>
         </h1>
-        <p className="lead">Elegí tu año para ver las rotaciones y los talleres.</p>
+        <p className="lead">Elegí tu año para ver los talleres.</p>
       </section>
       <div className="year-buttons">
         {YEARS.map((y) => {
@@ -29,7 +29,7 @@ export function YearsHome() {
               <span className="year-num">{y.short}</span>
               <span className="year-name">{y.name}</span>
               <span className="year-detail">
-                {subjects.length ? subjects.map((s) => SUBJECTS[s].name).join(' · ') : '4 rotaciones · próximamente'}
+                {subjects.length ? subjects.map((s) => SUBJECTS[s].name).join(' · ') : 'Próximamente'}
               </span>
             </Link>
           )
@@ -51,13 +51,12 @@ export function YearPage() {
         ← Elegir año
       </Link>
       <h1>{year.name}</h1>
-      <p className="lead">El año está dividido en 4 rotaciones. En cada una cursás un taller distinto.</p>
+      <p className="lead">Elegí el taller.</p>
       <div className="rotation-grid">
         {year.rotations.map((r) => {
           const s = r.subject ? SUBJECTS[r.subject] : null
           const content = (
             <>
-              <span className="rotation-n">Rotación {r.n}</span>
               {s ? (
                 <>
                   <span className="rotation-icon">{s.icon}</span>
@@ -97,14 +96,14 @@ function ComingSoon({ yearId, subjectId }: { yearId: string; subjectId: string }
   return (
     <div className="page narrow">
       <Link to={`/${yearId}`} className="back">
-        ← Rotaciones
+        ← Talleres
       </Link>
       <div className="card coming-soon">
         <span className="rotation-icon">{s.icon}</span>
         <h1>{s.name}</h1>
         <p>Este taller todavía no tiene contenido. Muy pronto vas a encontrar acá la teoría, las actividades y los juegos.</p>
         <Link to={`/${yearId}`} className="btn primary">
-          Volver a las rotaciones
+          Volver a los talleres
         </Link>
       </div>
     </div>
