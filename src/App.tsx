@@ -1,8 +1,22 @@
 import { useEffect } from 'react'
-import { HashRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom'
+import { HashRouter, MemoryRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { LegacyRedirect, SubjectLayout, TopNav, YearPage, YearsHome } from './pages/Structure'
 import { PlayerBadge } from './components/PlayerBadge'
 import { ErrorBoundary } from './components/ErrorBoundary'
+
+/**
+ * Dentro de otra página (por ejemplo, la vista previa de Claude) la dirección del marco no se puede
+ * cambiar con seguridad: ahí la navegación se guarda en memoria. Publicada sola (GitHub Pages) usa
+ * la dirección con # para que los links se puedan compartir.
+ */
+const inFrame = (() => {
+  try {
+    return window.self !== window.top
+  } catch {
+    return true
+  }
+})()
+const Router = inFrame ? MemoryRouter : HashRouter
 
 /** al cambiar de página, volver arriba */
 function ScrollToTop() {
@@ -19,7 +33,7 @@ function RouteBoundary({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <HashRouter>
+    <Router>
       <ScrollToTop />
       <header className="topbar">
         <NavLink to="/" className="brand">
@@ -44,6 +58,6 @@ export default function App() {
         </Routes>
         </RouteBoundary>
       </main>
-    </HashRouter>
+    </Router>
   )
 }
