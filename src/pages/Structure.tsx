@@ -1,5 +1,5 @@
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
-import { SUBJECTS, YEARS, getYear } from '../data/curriculum'
+import { SUBJECTS, YEARS, getRotation, getYear } from '../data/curriculum'
 import { BaseContext } from '../lib/nav'
 import { ElectronicsHome } from './ElectronicsHome'
 import { ComponentsPage } from './ComponentsPage'
@@ -61,8 +61,8 @@ export function YearPage() {
                 <>
                   <span className="rotation-icon">{s.icon}</span>
                   <strong>{s.name}</strong>
-                  <span className="rotation-desc">{s.desc}</span>
-                  <span className={`pill ${s.ready ? 'ok' : ''}`}>{s.ready ? 'Disponible' : 'Próximamente'}</span>
+                  <span className="rotation-desc">{r.ready ? r.desc : 'Contenido en preparación.'}</span>
+                  <span className={`pill ${r.ready ? 'ok' : ''}`}>{r.ready ? 'Disponible' : 'Próximamente'}</span>
                 </>
               ) : (
                 <>
@@ -75,7 +75,7 @@ export function YearPage() {
             </>
           )
           return s ? (
-            <Link key={r.n} to={`/${year.id}/${s.id}`} className={`rotation-card ${s.ready ? '' : 'soon'}`}>
+            <Link key={r.n} to={`/${year.id}/${s.id}`} className={`rotation-card ${r.ready ? '' : 'soon'}`}>
               {content}
             </Link>
           ) : (
@@ -115,8 +115,9 @@ export function SubjectLayout() {
   const { anio = '', materia = '' } = useParams()
   const year = getYear(anio)
   const subject = SUBJECTS[materia]
-  if (!year || !subject || !year.rotations.some((r) => r.subject === materia)) return <Navigate to={year ? `/${anio}` : '/'} replace />
-  if (!subject.ready) return <ComingSoon yearId={anio} subjectId={materia} />
+  const rotation = getRotation(anio, materia)
+  if (!year || !subject || !rotation) return <Navigate to={year ? `/${anio}` : '/'} replace />
+  if (!rotation.ready) return <ComingSoon yearId={anio} subjectId={materia} />
 
   return (
     <BaseContext.Provider value={`/${anio}/${materia}`}>
@@ -178,7 +179,7 @@ export function TopNav() {
           )}
         </nav>
       )}
-      {subject?.ready && (
+      {subject && getRotation(anio, materia)?.ready && (
         <nav className="nav">
           {SUBJECT_NAV.map((n) => (
             <NavLink key={n.to} to={base + n.to} end={n.end}>

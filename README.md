@@ -7,8 +7,11 @@ que suman puntos a un **ranking online** del curso.
 ## Estructura de la plataforma
 
 Al entrar se elige el año (**1ro, 2do o 3ro**). Cada año tiene **4 rotaciones** y cada rotación es un taller.
-Hoy 3er año tiene Electrónica (con todo el contenido), Computación, Electricidad y Torno (todavía sin contenido).
-1ro y 2do tienen sus 4 rotaciones sin taller asignado. Todo eso se configura en
+- **1ro:** Electricidad, Computación, Hojalatería y Ajuste.
+- **2do:** Electrónica, Computación, Electricidad y Soldadura.
+- **3ro:** Electrónica (con todo el contenido), Computación, Electricidad y Torno.
+
+Por ahora sólo Electrónica de 3ro tiene contenido; el resto muestra "Próximamente". Todo eso se configura en
 [`src/data/curriculum.ts`](src/data/curriculum.ts).
 
 ## Qué incluye (taller de Electrónica, 3er año)
