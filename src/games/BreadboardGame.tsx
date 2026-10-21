@@ -105,7 +105,9 @@ function BreadboardLevel({ level, onPlayingChange, onNext }: { level: BBLevel; o
     setTool(level.tools[0])
   }
 
-  useEffect(() => onPlayingChange(g.playing), [g.playing])
+  useEffect(() => {
+    onPlayingChange(g.playing)
+  }, [g.playing])
   // cada partida nueva empieza con la protoboard vacía
   useEffect(() => {
     if (g.playing) reset()

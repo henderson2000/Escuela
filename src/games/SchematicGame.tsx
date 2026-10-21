@@ -158,7 +158,9 @@ function SchematicLevel({ level, onPlayingChange, onNext }: { level: Level; onPl
   const [fails, setFails] = useState(0)
   const [result, setResult] = useState<null | { ok: boolean; wrong: number[]; points?: number }>(null)
 
-  useEffect(() => onPlayingChange(g.playing), [g.playing])
+  useEffect(() => {
+    onPlayingChange(g.playing)
+  }, [g.playing])
   useEffect(() => {
     if (!g.playing) return
     setFilled({})

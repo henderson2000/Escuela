@@ -43,7 +43,9 @@ function BandPicker({ index, total, value, onChange }: { index: number; total: n
 function ResistorControls({ params, set }: { params: { count: BandCount; bands: ColorName[] }; set: (p: object) => void }) {
   const { ohms, tolerance } = bandsToValue(params.bands)
   const [text, setText] = useState(String(ohms))
-  useEffect(() => setText(String(ohms)), [ohms])
+  useEffect(() => {
+    setText(String(ohms))
+  }, [ohms])
 
   const applyText = (t: string) => {
     setText(t)

@@ -21,7 +21,9 @@ const Router = inFrame ? MemoryRouter : HashRouter
 /** al cambiar de página, volver arriba */
 function ScrollToTop() {
   const { pathname } = useLocation()
-  useEffect(() => window.scrollTo(0, 0), [pathname])
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
   return null
 }
 

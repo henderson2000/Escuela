@@ -102,7 +102,10 @@ function BuzzerControls({ params, set }: { params: { type: 'activo' | 'pasivo'; 
     osc.current = null
   }
   useEffect(() => {
-    if (!params.playing) return stop()
+    if (!params.playing) {
+      stop()
+      return
+    }
     try {
       ctx.current ??= new AudioContext()
       const o = ctx.current.createOscillator()
