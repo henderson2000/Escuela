@@ -2,8 +2,10 @@ import { Link } from 'react-router-dom'
 import { GAMES } from '../games/registry'
 import { MAX_ATTEMPTS } from '../lib/config'
 import { bestOf, myAttempts, useStore } from '../lib/scores'
+import { useSub } from '../lib/nav'
 
 export function GamesPage() {
+  const sub = useSub()
   const s = useStore()
   return (
     <div className="page">
@@ -18,7 +20,7 @@ export function GamesPage() {
           const best = levels.reduce((a, l) => a + bestOf(myAttempts(s, g.id, l)), 0)
           const left = levels.reduce((a, l) => a + Math.max(0, MAX_ATTEMPTS - myAttempts(s, g.id, l).length), 0)
           return (
-            <Link key={g.id} to={`/juegos/${g.id}`} className="comp-card game-card">
+            <Link key={g.id} to={sub(`/juegos/${g.id}`)} className="comp-card game-card">
               <span className="comp-icon">{g.icon}</span>
               <strong>{g.title}</strong>
               <span>{g.desc}</span>

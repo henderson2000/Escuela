@@ -4,6 +4,7 @@ import { getComponent, partsOf } from '../catalog'
 import { Viewer } from '../three/Viewer'
 import { ActivityList } from '../components/ActivityList'
 import { Slider, Toggle } from '../components/ui'
+import { useSub } from '../lib/nav'
 
 type Tab = '3d' | 'teoria' | 'actividades'
 
@@ -14,6 +15,7 @@ export function ComponentDetail() {
 }
 
 function Detail({ id }: { id: string }) {
+  const sub = useSub()
   const def = getComponent(id)
   const [params, setParams] = useState(def?.defaultParams ?? {})
   const [explode, setExplode] = useState(0)
@@ -29,7 +31,7 @@ function Detail({ id }: { id: string }) {
     return (
       <div className="page">
         <p>No encontramos ese componente.</p>
-        <Link to="/componentes">Volver</Link>
+        <Link to={sub('/componentes')}>Volver</Link>
       </div>
     )
   }
@@ -39,7 +41,7 @@ function Detail({ id }: { id: string }) {
   return (
     <div className="page detail">
       <div className="detail-head">
-        <Link to="/componentes" className="back">
+        <Link to={sub('/componentes')} className="back">
           ← Componentes
         </Link>
         <h1>

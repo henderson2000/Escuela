@@ -2,11 +2,13 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { requestLogin } from '../components/PlayerBadge'
 import type { RankedGame } from './useRankedGame'
+import { useSub } from '../lib/nav'
 
 export function GameShell({ title, icon, children, info }: { title: string; icon: string; children: ReactNode; info?: ReactNode }) {
+  const sub = useSub()
   return (
     <div className="page game">
-      <Link to="/juegos" className="back">
+      <Link to={sub('/juegos')} className="back">
         ← Juegos
       </Link>
       <h1>
@@ -22,6 +24,7 @@ export { requestLogin }
 
 /** Resultado de una partida completa (juegos sin niveles). */
 export function ResultCard({ g, detail, onAgain }: { g: RankedGame; detail?: ReactNode; onAgain: () => void }) {
+  const sub = useSub()
   const r = g.lastResult
   if (!r) return null
   const record = r.ranked && r.points > r.prevBest
@@ -37,7 +40,7 @@ export function ResultCard({ g, detail, onAgain }: { g: RankedGame; detail?: Rea
         <button type="button" className="btn primary big" onClick={onAgain}>
           Continuar
         </button>
-        <Link to="/ranking" className="btn big">
+        <Link to={sub('/ranking')} className="btn big">
           Ver ranking
         </Link>
       </div>

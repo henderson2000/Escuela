@@ -2,8 +2,10 @@ import { Link, useParams } from 'react-router-dom'
 import { TOPICS, getTopic } from '../data/theory'
 import { CATALOG } from '../catalog'
 import { ActivityList } from '../components/ActivityList'
+import { useSub } from '../lib/nav'
 
 export function TheoryPage() {
+  const sub = useSub()
   return (
     <div className="page">
       <h1>Teoría</h1>
@@ -11,7 +13,7 @@ export function TheoryPage() {
       <h2 className="section-title">Conceptos</h2>
       <div className="grid cards">
         {TOPICS.map((t, i) => (
-          <Link key={t.id} to={`/teoria/${t.id}`} className="comp-card">
+          <Link key={t.id} to={sub(`/teoria/${t.id}`)} className="comp-card">
             <span className="comp-icon">{t.icon}</span>
             <strong>
               {i + 1}. {t.title}
@@ -23,7 +25,7 @@ export function TheoryPage() {
       <h2 className="section-title">Teoría de cada componente</h2>
       <div className="grid cards small">
         {CATALOG.map((c) => (
-          <Link key={c.id} to={`/componentes/${c.id}`} className="comp-card">
+          <Link key={c.id} to={sub(`/componentes/${c.id}`)} className="comp-card">
             <span className="comp-icon">{c.icon}</span>
             <strong>{c.name}</strong>
           </Link>
@@ -34,6 +36,7 @@ export function TheoryPage() {
 }
 
 export function TopicPage() {
+  const sub = useSub()
   const { id = '' } = useParams()
   const t = getTopic(id)
   if (!t) return <div className="page">Tema no encontrado.</div>
@@ -41,7 +44,7 @@ export function TopicPage() {
   const next = TOPICS[idx + 1]
   return (
     <div className="page narrow">
-      <Link to="/teoria" className="back">
+      <Link to={sub('/teoria')} className="back">
         ← Teoría
       </Link>
       <h1>
@@ -53,7 +56,7 @@ export function TopicPage() {
         <ActivityList activities={t.activities} />
       </section>
       {next && (
-        <Link to={`/teoria/${next.id}`} className="btn primary">
+        <Link to={sub(`/teoria/${next.id}`)} className="btn primary">
           Siguiente tema: {next.title} →
         </Link>
       )}

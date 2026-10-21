@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import { CATALOG } from '../catalog'
+import { useSub } from '../lib/nav'
 
 export function ComponentsPage() {
+  const sub = useSub()
   const cats = [...new Set(CATALOG.map((c) => c.category))]
   return (
     <div className="page">
@@ -14,7 +16,7 @@ export function ComponentsPage() {
           <h2 className="section-title">{cat}</h2>
           <div className="grid cards">
             {CATALOG.filter((c) => c.category === cat).map((c) => (
-              <Link key={c.id} to={`/componentes/${c.id}`} className="comp-card">
+              <Link key={c.id} to={sub(`/componentes/${c.id}`)} className="comp-card">
                 <span className="comp-icon">{c.icon}</span>
                 <strong>{c.name}</strong>
                 <span>{c.short}</span>

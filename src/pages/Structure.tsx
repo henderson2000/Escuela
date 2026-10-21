@@ -1,0 +1,193 @@
+import { Link, Navigate, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
+import { SUBJECTS, YEARS, getYear } from '../data/curriculum'
+import { BaseContext } from '../lib/nav'
+import { ElectronicsHome } from './ElectronicsHome'
+import { ComponentsPage } from './ComponentsPage'
+import { ComponentDetail } from './ComponentDetail'
+import { TheoryPage, TopicPage } from './TheoryPage'
+import { ActivitiesPage } from './ActivitiesPage'
+import { GamesPage } from './GamesPage'
+import { GameRoute } from './GameRoute'
+import { RankingPage } from './RankingPage'
+
+/* ------------------------------------------------------------------ inicio: elegir año */
+
+export function YearsHome() {
+  return (
+    <div className="page years-home">
+      <section className="years-hero">
+        <h1>
+          Plataforma de <span className="accent">talleres</span>
+        </h1>
+        <p className="lead">Elegí tu año para ver las rotaciones y los talleres.</p>
+      </section>
+      <div className="year-buttons">
+        {YEARS.map((y) => {
+          const subjects = y.rotations.map((r) => r.subject).filter(Boolean) as string[]
+          return (
+            <Link key={y.id} to={`/${y.id}`} className="year-btn">
+              <span className="year-num">{y.short}</span>
+              <span className="year-name">{y.name}</span>
+              <span className="year-detail">
+                {subjects.length ? subjects.map((s) => SUBJECTS[s].name).join(' · ') : '4 rotaciones · próximamente'}
+              </span>
+            </Link>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ año: las 4 rotaciones */
+
+export function YearPage() {
+  const { anio } = useParams()
+  const year = getYear(anio)
+  if (!year) return <Navigate to="/" replace />
+  return (
+    <div className="page">
+      <Link to="/" className="back">
+        ← Elegir año
+      </Link>
+      <h1>{year.name}</h1>
+      <p className="lead">El año está dividido en 4 rotaciones. En cada una cursás un taller distinto.</p>
+      <div className="rotation-grid">
+        {year.rotations.map((r) => {
+          const s = r.subject ? SUBJECTS[r.subject] : null
+          const content = (
+            <>
+              <span className="rotation-n">Rotación {r.n}</span>
+              {s ? (
+                <>
+                  <span className="rotation-icon">{s.icon}</span>
+                  <strong>{s.name}</strong>
+                  <span className="rotation-desc">{s.desc}</span>
+                  <span className={`pill ${s.ready ? 'ok' : ''}`}>{s.ready ? 'Disponible' : 'Próximamente'}</span>
+                </>
+              ) : (
+                <>
+                  <span className="rotation-icon muted">＋</span>
+                  <strong>Sin taller asignado</strong>
+                  <span className="rotation-desc">Todavía no hay contenido para esta rotación.</span>
+                  <span className="pill">Próximamente</span>
+                </>
+              )}
+            </>
+          )
+          return s ? (
+            <Link key={r.n} to={`/${year.id}/${s.id}`} className={`rotation-card ${s.ready ? '' : 'soon'}`}>
+              {content}
+            </Link>
+          ) : (
+            <div key={r.n} className="rotation-card soon" aria-disabled>
+              {content}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ taller */
+
+function ComingSoon({ yearId, subjectId }: { yearId: string; subjectId: string }) {
+  const s = SUBJECTS[subjectId]
+  return (
+    <div className="page narrow">
+      <Link to={`/${yearId}`} className="back">
+        ← Rotaciones
+      </Link>
+      <div className="card coming-soon">
+        <span className="rotation-icon">{s.icon}</span>
+        <h1>{s.name}</h1>
+        <p>Este taller todavía no tiene contenido. Muy pronto vas a encontrar acá la teoría, las actividades y los juegos.</p>
+        <Link to={`/${yearId}`} className="btn primary">
+          Volver a las rotaciones
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+/** Contenido de un taller. Por ahora sólo Electrónica (3er año) tiene páginas. */
+export function SubjectLayout() {
+  const { anio = '', materia = '' } = useParams()
+  const year = getYear(anio)
+  const subject = SUBJECTS[materia]
+  if (!year || !subject || !year.rotations.some((r) => r.subject === materia)) return <Navigate to={year ? `/${anio}` : '/'} replace />
+  if (!subject.ready) return <ComingSoon yearId={anio} subjectId={materia} />
+
+  return (
+    <BaseContext.Provider value={`/${anio}/${materia}`}>
+      <Routes>
+        <Route index element={<ElectronicsHome />} />
+        <Route path="componentes" element={<ComponentsPage />} />
+        <Route path="componentes/:id" element={<ComponentDetail />} />
+        <Route path="teoria" element={<TheoryPage />} />
+        <Route path="teoria/:id" element={<TopicPage />} />
+        <Route path="actividades" element={<ActivitiesPage />} />
+        <Route path="juegos" element={<GamesPage />} />
+        <Route path="juegos/:id" element={<GameRoute />} />
+        <Route path="ranking" element={<RankingPage />} />
+        <Route path="*" element={<Navigate to={`/${anio}/${materia}`} replace />} />
+      </Routes>
+    </BaseContext.Provider>
+  )
+}
+
+/** Links viejos (#/componentes, #/juegos…) siguen funcionando: van a 3er año › Electrónica. */
+export function LegacyRedirect() {
+  const { pathname } = useLocation()
+  return <Navigate to={`/3/electronica${pathname}`} replace />
+}
+
+/* ------------------------------------------------------------------ barra superior */
+
+const SUBJECT_NAV = [
+  { to: '', label: 'Inicio del taller', end: true },
+  { to: '/componentes', label: 'Componentes 3D' },
+  { to: '/teoria', label: 'Teoría' },
+  { to: '/actividades', label: 'Actividades' },
+  { to: '/juegos', label: 'Juegos' },
+  { to: '/ranking', label: 'Ranking' },
+]
+
+/** Migas (Año › Taller) y, dentro de un taller con contenido, su menú. */
+export function TopNav() {
+  const { pathname } = useLocation()
+  const [, anio, materia] = pathname.split('/')
+  const year = getYear(anio)
+  const subject = year && materia ? SUBJECTS[materia] : undefined
+  const base = subject ? `/${anio}/${materia}` : ''
+
+  return (
+    <div className="topnav">
+      {year && (
+        <nav className="crumbs" aria-label="Ubicación">
+          <NavLink to={`/${year.id}`} end>
+            {year.name}
+          </NavLink>
+          {subject && (
+            <>
+              <span aria-hidden>›</span>
+              <NavLink to={base} end>
+                {subject.icon} {subject.name}
+              </NavLink>
+            </>
+          )}
+        </nav>
+      )}
+      {subject?.ready && (
+        <nav className="nav">
+          {SUBJECT_NAV.map((n) => (
+            <NavLink key={n.to} to={base + n.to} end={n.end}>
+              {n.label}
+            </NavLink>
+          ))}
+        </nav>
+      )}
+    </div>
+  )
+}

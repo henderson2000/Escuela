@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Viewer } from '../three/Viewer'
 import { ArduinoModel } from '../three/models/Arduino'
+import { useSub } from '../lib/nav'
 
 const SECTIONS = [
   { to: '/componentes', icon: '🧊', title: 'Componentes 3D', text: 'Resistencias, LEDs, capacitores, protoboard, Arduino y sensores. Giralos, modificalos y despiezalos.' },
@@ -10,7 +11,8 @@ const SECTIONS = [
   { to: '/ranking', icon: '🏆', title: 'Ranking', text: 'Los puntos se acumulan durante todo el año. ¡El que más suma se lleva el premio!' },
 ]
 
-export function Home() {
+export function ElectronicsHome() {
+  const sub = useSub()
   return (
     <div className="page home">
       <section className="hero">
@@ -23,10 +25,10 @@ export function Home() {
             sabés con actividades y juegos que suman puntos para el ranking del curso.
           </p>
           <div className="row">
-            <Link to="/componentes" className="btn primary big">
+            <Link to={sub('/componentes')} className="btn primary big">
               Explorar componentes
             </Link>
-            <Link to="/juegos" className="btn big">
+            <Link to={sub('/juegos')} className="btn big">
               Jugar
             </Link>
           </div>
@@ -39,7 +41,7 @@ export function Home() {
       </section>
       <div className="grid cards">
         {SECTIONS.map((s) => (
-          <Link key={s.to} to={s.to} className="comp-card">
+          <Link key={s.to} to={sub(s.to)} className="comp-card">
             <span className="comp-icon">{s.icon}</span>
             <strong>{s.title}</strong>
             <span>{s.text}</span>
