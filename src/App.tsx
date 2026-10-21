@@ -33,6 +33,7 @@ function RouteBoundary({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <Router>
       <ScrollToTop />
       <header className="topbar">
@@ -59,5 +60,6 @@ export default function App() {
         </RouteBoundary>
       </main>
     </Router>
+    </ErrorBoundary>
   )
 }

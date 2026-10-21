@@ -1808,3 +1808,30 @@ a.rotation-card:hover {
   padding: 36px 24px;
   margin-top: 16px;
 }
+
+.fatal {
+  max-width: 680px;
+  margin: 60px auto;
+  padding: 24px;
+  border: 1px solid var(--bad);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.fatal pre,
+.error-card pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.fatal-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  padding: 10px 16px;
+  background: #5a1010;
+  color: #fff;
+  font-size: 0.9rem;
+}
