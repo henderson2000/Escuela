@@ -86,6 +86,7 @@ returns int language sql immutable as $$
     when 'logo-programa'   then 100
     when 'logo-compuertas' then 200
     when 'logo-tiempos'    then 200
+    when 'compu-desafios'  then 100
     else null end
 $$;
 

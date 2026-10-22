@@ -19,4 +19,6 @@ export const MAX_POINTS: Record<string, number> = {
   'logo-programa': 100,
   'logo-compuertas': 200,
   'logo-tiempos': 200,
+  // Computación
+  'compu-desafios': 100,
 }

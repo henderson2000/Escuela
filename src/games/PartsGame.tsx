@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CATALOG, partsOf, type ComponentDef, type PartInfo } from '../catalog'
+import { partsOf, type ComponentDef, type PartInfo } from '../catalog'
+import { useSubject } from '../lib/subject'
 import { Viewer } from '../three/Viewer'
 import { GameShell, ResultCard, requestLogin } from './GameShell'
 import { useRankedGame } from './useRankedGame'
@@ -17,7 +18,7 @@ function shuffle<T>(a: T[]): T[] {
   return [...a].sort(() => Math.random() - 0.5)
 }
 
-function makeRounds(): Round[] {
+function makeRounds(CATALOG: ComponentDef[]): Round[] {
   const rounds: Round[] = []
   const comps = shuffle(CATALOG)
   for (let i = 0; i < ROUNDS; i++) {
@@ -36,9 +37,11 @@ function farCamera(c: ComponentDef): [number, number, number] {
   return c.camera.map((v, k) => t[k] + (v - t[k]) * 1.45) as [number, number, number]
 }
 
-export function PartsGame() {
-  const g = useRankedGame('partes')
-  const [rounds, setRounds] = useState<Round[]>(makeRounds)
+/** Juego de identificar partes. Usa los equipos 3D del taller actual. */
+export function PartsGame({ game = 'partes' }: { game?: string }) {
+  const { catalog } = useSubject()
+  const g = useRankedGame(game)
+  const [rounds, setRounds] = useState<Round[]>(() => makeRounds(catalog))
   const [i, setI] = useState(0)
   const [score, setScore] = useState(0)
   const [hits, setHits] = useState(0)
@@ -48,7 +51,7 @@ export function PartsGame() {
 
   useEffect(() => {
     if (!g.playing) return
-    setRounds(makeRounds())
+    setRounds(makeRounds(catalog))
     setI(0)
     setScore(0)
     setHits(0)

@@ -1,0 +1,17 @@
+.guide-section {
+  margin-bottom: 10px;
+}
+.guide-head {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: 0;
+  color: var(--text);
+  font-size: 1.05rem;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}

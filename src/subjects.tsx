@@ -8,6 +8,8 @@ import { LOGO_CATALOG } from './logo/catalog'
 import { LOGO_TOPICS } from './logo/theory'
 import { LOGO_GAMES } from './logo/games/registry'
 import { LogoHome } from './logo/pages/LogoHome'
+import { CompuHome } from './compu/pages/CompuHome'
+import { COMPU_GAMES } from './compu/games/registry'
 
 export interface SubjectEntry extends SubjectContent {
   Home: ComponentType
@@ -49,6 +51,22 @@ export const SUBJECT_CONTENT: Record<string, SubjectEntry> = {
       componentsBack: 'Equipos en 3D',
     },
   },
+}
+
+SUBJECT_CONTENT['3/computacion'] = {
+  Home: CompuHome,
+  catalog: [],
+  topics: [],
+  games: COMPU_GAMES,
+  nav: [
+    { to: '', label: 'Inicio del taller', end: true },
+    { to: '/curso/html', label: 'HTML' },
+    { to: '/curso/css', label: 'CSS' },
+    { to: '/curso/java', label: 'Java' },
+    { to: '/taller-libre', label: 'Taller libre' },
+    { to: '/juegos', label: 'Juegos' },
+    { to: '/ranking', label: 'Ranking' },
+  ],
 }
 
 export const getSubjectContent = (anio?: string, materia?: string) => SUBJECT_CONTENT[`${anio}/${materia}`]

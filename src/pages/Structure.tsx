@@ -6,6 +6,9 @@ import { getSubjectContent } from '../subjects'
 import { SimulatorPage } from '../logo/pages/SimulatorPage'
 import { GuidePage } from '../logo/pages/GuidePage'
 import { ExercisePage } from '../logo/pages/ExercisePage'
+import { TrackPage } from '../compu/pages/TrackPage'
+import { LessonPage } from '../compu/pages/LessonPage'
+import { PlaygroundPage } from '../compu/pages/PlaygroundPage'
 import { ComponentsPage } from './ComponentsPage'
 import { ComponentDetail } from './ComponentDetail'
 import { TheoryPage, TopicPage } from './TheoryPage'
@@ -141,6 +144,9 @@ export function SubjectLayout() {
         <Route path="simulador" element={<SimulatorPage />} />
         <Route path="guia" element={<GuidePage />} />
         <Route path="guia/:id" element={<ExercisePage />} />
+        <Route path="curso/:track" element={<TrackPage />} />
+        <Route path="curso/:track/:lesson" element={<LessonPage />} />
+        <Route path="taller-libre" element={<PlaygroundPage />} />
         <Route path="*" element={<Navigate to={`/${anio}/${materia}`} replace />} />
       </Routes>
     </BaseContext.Provider>

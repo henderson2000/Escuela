@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { GameShell, ResultCard, requestLogin } from '../../games/GameShell'
-import { useRankedGame } from '../../games/useRankedGame'
-import { AttemptGate, ModeBadge } from '../../games/AttemptGate'
+import { GameShell, ResultCard, requestLogin } from './GameShell'
+import { useRankedGame } from './useRankedGame'
+import { AttemptGate, ModeBadge } from './AttemptGate'
 
 export interface QuizRound {
   prompt: ReactNode

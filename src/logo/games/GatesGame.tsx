@@ -1,5 +1,5 @@
 import { GATE_EXPR, GATE_NAMES, GateSymbol, gateEval, type Gate, type GateStyle } from '../GateSymbols'
-import { QuizGame, pickOne, shuffle, type QuizRound } from './QuizGame'
+import { QuizGame, pickOne, shuffle, type QuizRound } from '../../games/QuizGame'
 
 const GATES: Gate[] = ['AND', 'OR', 'NOT', 'NAND', 'NOR', 'XOR']
 const STYLE_NAMES: Record<GateStyle, string> = { ansi: 'símbolo ANSI', iec: 'símbolo del LOGO! (IEC)', contactos: 'equivalente en contactos' }

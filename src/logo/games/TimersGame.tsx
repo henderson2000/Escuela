@@ -1,6 +1,6 @@
 import { TimingChart } from '../TimingChart'
 import { Simulation, type BlockType, type Program } from '../engine'
-import { QuizGame, pickOne, shuffle, type QuizRound } from './QuizGame'
+import { QuizGame, pickOne, shuffle, type QuizRound } from '../../games/QuizGame'
 
 const STEP = 100 // ms por muestra
 const TOTAL = 14000
