@@ -3,6 +3,7 @@ import type { ComponentDef, Params, PartInfo } from '../catalog/types'
 import { Field, Formula, Readout, Segmented, Slider, Toggle } from '../components/ui'
 import { RPMS, TornoModel, tornoLayout, type Avance, type Montaje, type TornoParams } from '../three/models/Torno'
 import { HerramientasModel, PlatosModel, PuntosModel, type PlatoKind, type PuntoKind, type ToolKind } from '../three/models/TornoAccesorios'
+import { mecanizados } from './mecanizados'
 
 /** Como Field, pero sin <label> (un label con botones adentro "aprieta" el primero al tocar el título). */
 function Group({ label, children }: { label: string; children: ReactNode }) {
@@ -608,4 +609,4 @@ export const herramientas: ComponentDef = {
   ],
 }
 
-export const TORNO_CATALOG: ComponentDef[] = [torno, platos, puntosLunetas, herramientas]
+export const TORNO_CATALOG: ComponentDef[] = [torno, platos, puntosLunetas, herramientas, mecanizados]
