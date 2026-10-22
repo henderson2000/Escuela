@@ -15,7 +15,7 @@ export function TornoGuidePage() {
       <h1>📝 Guía de ejercicios</h1>
       <p className="lead">Cálculos y casos prácticos de torneado. Se corrigen solos y tu progreso queda guardado.</p>
       <div className="card progress-card">
-        <strong>{s.me ? `Progreso de ${s.me.name}` : 'Ingresá con tu nombre para guardar el progreso'}</strong>
+        <strong>Tu progreso (guardado en esta computadora)</strong>
         <div className="progress big">
           <div style={{ width: `${total ? (solved / total) * 100 : 0}%` }} />
         </div>

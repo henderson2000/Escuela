@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { GameShell, ResultCard, requestLogin } from './GameShell'
+import { GameShell, ResultCard } from './GameShell'
 import { useRankedGame } from './useRankedGame'
 import { AttemptGate, ModeBadge } from './AttemptGate'
 
@@ -87,7 +87,7 @@ export function QuizGame({
 
   return (
     <GameShell title={title} icon={icon} info={info}>
-      {!g.playing && !g.lastResult && <AttemptGate g={g} onLogin={requestLogin} intro={intro} />}
+      {!g.playing && !g.lastResult && <AttemptGate g={g} intro={intro} />}
       {g.playing && r && (
         <div className="quiz">
           <div className="hud">

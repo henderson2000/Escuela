@@ -10,7 +10,7 @@ import { boardSize, buildHoles, describeHole, type Hole } from '../lib/breadboar
 import { LEG_NAMES, buildNetlist, type Placed } from '../lib/circuit'
 import { COLORS, valueToBands } from '../lib/resistor'
 import { BB_LEVELS, type BBLevel, type Tool } from './breadboardLevels'
-import { GameShell, requestLogin } from './GameShell'
+import { GameShell } from './GameShell'
 import { useRankedGame } from './useRankedGame'
 import { AttemptGate, LevelTabs, ModeBadge } from './AttemptGate'
 
@@ -297,7 +297,7 @@ function BreadboardLevel({ level, onPlayingChange, onNext }: { level: BBLevel; o
           {won && g.lastResult && (
             <div className="card result inline">
               <p className="record">
-                🎉 ¡Funciona! {g.lastResult.ranked ? `+${won.points} puntos para el ranking` : `${won.points} puntos (práctica, no se guardan)`}
+                🎉 ¡Funciona! {g.lastResult.ranked ? `+${won.points} puntos` : `${won.points} puntos (práctica, no se guardan)`}
               </p>
               {g.lastResult.ranked && g.lastResult.prevBest >= won.points && <p>Tu mejor intento en este nivel sigue siendo {g.lastResult.prevBest}.</p>}
               {g.error && <p className="feedback bad">{g.error}</p>}
@@ -323,7 +323,7 @@ function BreadboardLevel({ level, onPlayingChange, onNext }: { level: BBLevel; o
         </div>
         {!g.playing && !won ? (
           <aside className="toolbox">
-            <AttemptGate g={g} onLogin={requestLogin} />
+            <AttemptGate g={g} />
           </aside>
         ) : (
         <aside className="card toolbox">

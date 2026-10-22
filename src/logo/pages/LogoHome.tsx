@@ -9,7 +9,6 @@ const SECTIONS = [
   { to: '/simulador', icon: '🧩', title: 'Simulador', text: 'Programá en bloques (FUP) como en LOGO!Soft Comfort y probalo en vivo con pulsadores y lámparas.' },
   { to: '/guia', icon: '📝', title: 'Guía de ejercicios', text: 'Los 32 ejercicios de la guía, con corrección automática de tu programa.' },
   { to: '/juegos', icon: '🎮', title: 'Juegos', text: 'Programá situaciones reales, reconocé compuertas y leé diagramas de tiempo. ¡Suman puntos!' },
-  { to: '/ranking', icon: '🏆', title: 'Ranking', text: 'Los puntos se acumulan durante todo el año.' },
 ]
 
 export function LogoHome() {

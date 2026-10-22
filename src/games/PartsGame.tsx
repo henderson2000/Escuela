@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { partsOf, type ComponentDef, type PartInfo } from '../catalog'
 import { useSubject } from '../lib/subject'
 import { Viewer } from '../three/Viewer'
-import { GameShell, ResultCard, requestLogin } from './GameShell'
+import { GameShell, ResultCard } from './GameShell'
 import { useRankedGame } from './useRankedGame'
 import { AttemptGate, ModeBadge } from './AttemptGate'
 
@@ -89,7 +89,7 @@ export function PartsGame({ game = 'partes' }: { game?: string }) {
   return (
     <GameShell title="¿Qué parte es?" icon="🔍" info="El componente aparece despiezado y una pieza tiene un signo “?”. ¿Cuál es? Cuanto más rápido respondas, más puntos.">
       {!g.playing && !g.lastResult && (
-        <AttemptGate g={g} onLogin={requestLogin} intro={<p>10 rondas. Podés girar el modelo para ver mejor. Respuesta correcta: 10 puntos + bonus por rapidez (hasta 10).</p>} />
+        <AttemptGate g={g} intro={<p>10 rondas. Podés girar el modelo para ver mejor. Respuesta correcta: 10 puntos + bonus por rapidez (hasta 10).</p>} />
       )}
       {g.playing && (
         <div className="game-layout">

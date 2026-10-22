@@ -26,7 +26,7 @@ export function ActivitiesPage() {
         Cada tema y cada componente tiene ejercicios con corrección automática. Tu progreso queda guardado.
       </p>
       <div className="card progress-card">
-        <strong>{p ? `Progreso de ${p.name}` : 'Ingresá con tu nombre para guardar el progreso'}</strong>
+        <strong>Tu progreso (guardado en esta computadora)</strong>
         <div className="progress big">
           <div style={{ width: `${(solved / total) * 100}%` }} />
         </div>

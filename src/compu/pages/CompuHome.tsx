@@ -16,7 +16,7 @@ export function CompuHome() {
           </h1>
           <p className="lead">
             Lecciones cortas con un editor de verdad: escribís código, lo ves funcionar al instante y el sistema te dice qué
-            requisitos cumpliste. Todo en castellano, con tu progreso guardado y desafíos que suman puntos para el ranking.
+            requisitos cumpliste. Todo en castellano, con tu progreso guardado y desafíos que suman puntos.
           </p>
           <div className="row">
             <Link to={sub('/curso/html')} className="btn primary big">
@@ -69,11 +69,6 @@ export function CompuHome() {
           <span className="comp-icon">🎮</span>
           <strong>Desafíos y juegos</strong>
           <span>Problemas para resolver con código y juegos de preguntas. ¡Suman puntos!</span>
-        </Link>
-        <Link to={sub('/ranking')} className="comp-card">
-          <span className="comp-icon">🏆</span>
-          <strong>Ranking</strong>
-          <span>Los puntos de los desafíos se acumulan durante todo el año.</span>
         </Link>
       </div>
     </div>

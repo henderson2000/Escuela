@@ -25,7 +25,7 @@ export function GuidePage() {
         mayoría tiene corrección automática: el programa se prueba solo apretando los pulsadores por vos.
       </p>
       <div className="card progress-card">
-        <strong>{s.me ? `Progreso de ${s.me.name}` : 'Ingresá con tu nombre para guardar el progreso'}</strong>
+        <strong>Tu progreso (guardado en esta computadora)</strong>
         <div className="progress big">
           <div style={{ width: `${(solved / EXERCISES.length) * 100}%` }} />
         </div>

@@ -82,6 +82,24 @@ function load(): State {
 }
 
 let state: State = load()
+
+/** Perfil anónimo de esta computadora: no hay inicio de sesión. */
+const LOCAL_ID = 'esta-computadora'
+const LOCAL_PLAYER: Player = { id: LOCAL_ID, name: 'Esta computadora', curso: '' }
+function ensureLocal(s: State): State {
+  // progreso guardado antes (con nombre) se suma al perfil de la compu
+  const acts: Record<string, boolean> = { ...(s.activities[LOCAL_ID] ?? {}) }
+  for (const [pid, a] of Object.entries(s.activities)) if (pid !== LOCAL_ID) Object.assign(acts, a)
+  return {
+    ...s,
+    me: LOCAL_PLAYER,
+    localPlayers: [LOCAL_PLAYER],
+    attempts: s.attempts.map((a) => (a.playerId === LOCAL_ID ? a : { ...a, playerId: LOCAL_ID })),
+    activities: { [LOCAL_ID]: acts },
+    synced: true,
+  }
+}
+state = ensureLocal(state)
 const listeners = new Set<() => void>()
 
 function set(patch: Partial<State>) {

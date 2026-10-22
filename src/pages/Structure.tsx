@@ -16,7 +16,6 @@ import { TheoryPage, TopicPage } from './TheoryPage'
 import { ActivitiesPage } from './ActivitiesPage'
 import { GamesPage } from './GamesPage'
 import { GameRoute } from './GameRoute'
-import { RankingPage } from './RankingPage'
 
 /* ------------------------------------------------------------------ inicio: elegir año */
 
@@ -141,7 +140,6 @@ export function SubjectLayout() {
         <Route path="actividades" element={<ActivitiesPage />} />
         <Route path="juegos" element={<GamesPage />} />
         <Route path="juegos/:id" element={<GameRoute />} />
-        <Route path="ranking" element={<RankingPage />} />
         <Route path="simulador" element={<SimulatorPage />} />
         <Route path="guia" element={<GuidePage />} />
         <Route path="guia/:id" element={<ExercisePage />} />

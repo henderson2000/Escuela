@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { HashRouter, MemoryRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { LegacyRedirect, SubjectLayout, TopNav, YearPage, YearsHome } from './pages/Structure'
-import { PlayerBadge } from './components/PlayerBadge'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
 /**
@@ -46,13 +45,12 @@ export default function App() {
           </span>
         </NavLink>
         <TopNav />
-        <PlayerBadge />
       </header>
       <main>
         <RouteBoundary>
         <Routes>
           <Route path="/" element={<YearsHome />} />
-          {['componentes', 'teoria', 'actividades', 'juegos', 'ranking'].map((p) => (
+          {['componentes', 'teoria', 'actividades', 'juegos'].map((p) => (
             <Route key={p} path={`/${p}/*`} element={<LegacyRedirect />} />
           ))}
           <Route path="/:anio" element={<YearPage />} />

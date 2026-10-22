@@ -86,7 +86,6 @@ export function ActivityList({ activities }: { activities: Activity[] }) {
           {count} / {activities.length} resueltas
         </span>
       </div>
-      {!p && <p className="hint">Ingresá tu nombre arriba a la derecha para que se guarde tu progreso.</p>}
       <ol className="activities">
         {activities.map((a, i) => (
           <ActivityItem key={a.id + (p?.id ?? '')} a={a} n={i + 1} solved={!!done[a.id]} />

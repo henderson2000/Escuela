@@ -13,7 +13,7 @@ export interface Session {
 
 /**
  * Maneja los intentos por puntos de un juego/nivel:
- * cada alumno tiene MAX_ATTEMPTS intentos que suman al ranking, y puede practicar sin límite.
+ * en cada computadora hay MAX_ATTEMPTS intentos por puntos (queda el mejor), y se puede practicar sin límite.
  */
 export function useRankedGame(game: string, level = '') {
   const s = useStore()

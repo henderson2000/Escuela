@@ -33,7 +33,6 @@ export const SUBJECT_CONTENT: Record<string, SubjectEntry> = {
       { to: '/teoria', label: 'Teoría' },
       { to: '/actividades', label: 'Actividades' },
       { to: '/juegos', label: 'Juegos' },
-      { to: '/ranking', label: 'Ranking' },
     ],
   },
   '3/electricidad': {
@@ -48,7 +47,6 @@ export const SUBJECT_CONTENT: Record<string, SubjectEntry> = {
       { to: '/simulador', label: 'Simulador' },
       { to: '/guia', label: 'Guía' },
       { to: '/juegos', label: 'Juegos' },
-      { to: '/ranking', label: 'Ranking' },
     ],
     labels: {
       components: 'Equipos en 3D',
@@ -69,7 +67,6 @@ SUBJECT_CONTENT['3/computacion'] = {
     { to: '/curso/js', label: 'JavaScript' },
     { to: '/taller-libre', label: 'Taller libre' },
     { to: '/juegos', label: 'Juegos' },
-    { to: '/ranking', label: 'Ranking' },
   ],
 }
 
@@ -94,7 +91,6 @@ SUBJECT_CONTENT['3/torno'] = {
     { to: '/teoria', label: 'Teoría' },
     { to: '/ejercicios', label: 'Guía' },
     { to: '/juegos', label: 'Juegos' },
-    { to: '/ranking', label: 'Ranking' },
   ],
   labels: {
     components: 'El torno en 3D',

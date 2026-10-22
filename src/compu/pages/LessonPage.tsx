@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useSub } from '../../lib/nav'
 import { markActivity, useStore } from '../../lib/scores'
-import { requestLogin } from '../../components/PlayerBadge'
 import { findLesson, lessonActivityId } from '../course'
 import { LessonWorkspace } from '../Workspace'
 
@@ -50,14 +49,6 @@ function LessonView({ id }: { id?: string }) {
         onChecked={onChecked}
         actions={
           <>
-            {!s.me && (
-              <p className="hint">
-                Para guardar tu progreso,{' '}
-                <button type="button" className="btn small" onClick={requestLogin}>
-                  ingresá con tu nombre
-                </button>
-              </p>
-            )}
             <div className="lesson-nav">
               {prev ? (
                 <Link to={sub(`/curso/${track.id}/${prev.id}`)} className="btn small">

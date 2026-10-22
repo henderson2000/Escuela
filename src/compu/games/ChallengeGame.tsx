@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { GameShell, requestLogin } from '../../games/GameShell'
+import { GameShell } from '../../games/GameShell'
 import { useRankedGame } from '../../games/useRankedGame'
 import { AttemptGate, LevelTabs, ModeBadge } from '../../games/AttemptGate'
 import { LessonWorkspace } from '../Workspace'
@@ -65,7 +65,7 @@ function ChallengeLevel({ ch, onPlayingChange, onNext }: { ch: Lesson; onPlaying
           {ch.intro}
           {ch.task}
         </div>
-        <AttemptGate g={g} onLogin={requestLogin} />
+        <AttemptGate g={g} />
       </div>
     )
 
@@ -74,7 +74,7 @@ function ChallengeLevel({ ch, onPlayingChange, onNext }: { ch: Lesson; onPlaying
       {won !== null && g.lastResult && (
         <div className="card result inline">
           <p className="record">
-            ✔ ¡Desafío resuelto! {g.lastResult.ranked ? `+${won} puntos para el ranking` : `${won} puntos (práctica, no se guardan)`}
+            ✔ ¡Desafío resuelto! {g.lastResult.ranked ? `+${won} puntos` : `${won} puntos (práctica, no se guardan)`}
           </p>
           {g.lastResult.ranked && g.lastResult.prevBest >= won && <p>Tu mejor intento en este desafío sigue siendo {g.lastResult.prevBest}.</p>}
           {g.error && <p className="feedback bad">{g.error}</p>}

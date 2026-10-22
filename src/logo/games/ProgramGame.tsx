@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { GameShell, requestLogin } from '../../games/GameShell'
+import { GameShell } from '../../games/GameShell'
 import { useRankedGame } from '../../games/useRankedGame'
 import { AttemptGate, LevelTabs, ModeBadge } from '../../games/AttemptGate'
 import { LogoEditor } from '../Editor'
@@ -84,7 +84,7 @@ function ProgramLevel({ level, onPlayingChange, onNext }: { level: Exercise; onP
         ))}
       </div>
       {!showEditor ? (
-        <AttemptGate g={g} onLogin={requestLogin} />
+        <AttemptGate g={g} />
       ) : (
         <>
           <LogoEditor
@@ -120,7 +120,7 @@ function ProgramLevel({ level, onPlayingChange, onNext }: { level: Exercise; onP
           {msg?.ok && g.lastResult && (
             <div className="card result inline">
               <p className="record">
-                ✔ ¡Funciona! {g.lastResult.ranked ? `+${msg.points} puntos para el ranking` : `${msg.points} puntos (práctica, no se guardan)`}
+                ✔ ¡Funciona! {g.lastResult.ranked ? `+${msg.points} puntos` : `${msg.points} puntos (práctica, no se guardan)`}
               </p>
               {g.lastResult.ranked && g.lastResult.prevBest >= msg.points! && <p>Tu mejor intento en este nivel sigue siendo {g.lastResult.prevBest}.</p>}
               {g.error && <p className="feedback bad">{g.error}</p>}

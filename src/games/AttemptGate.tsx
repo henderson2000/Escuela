@@ -4,7 +4,7 @@ import { MAX_ATTEMPTS } from '../lib/config'
 import { bestOf, myAttempts, useStore } from '../lib/scores'
 
 /** Pantalla previa a jugar: muestra los intentos que quedan y deja elegir puntos o práctica. */
-export function AttemptGate({ g, intro, onLogin }: { g: RankedGame; intro?: ReactNode; onLogin: () => void }) {
+export function AttemptGate({ g, intro }: { g: RankedGame; intro?: ReactNode }) {
   return (
     <div className="card gate">
       {intro}
@@ -15,33 +15,24 @@ export function AttemptGate({ g, intro, onLogin }: { g: RankedGame; intro?: Reac
           </span>
         ))}
       </div>
-      {g.loggedIn ? (
-        g.left > 0 ? (
-          <p>
-            Te {g.left === 1 ? 'queda' : 'quedan'} <strong>{g.left}</strong> {g.left === 1 ? 'intento' : 'intentos'} por puntos.
-            {g.used > 0 && <> Tu mejor puntaje: <strong>{g.best}</strong>.</>} El intento cuenta desde que empezás.
-          </p>
-        ) : (
-          <p>
-            Ya usaste tus {g.max} intentos. Tu mejor puntaje quedó en <strong>{g.best}</strong>. Podés seguir practicando.
-          </p>
-        )
+      {g.left > 0 ? (
+        <p>
+          Te {g.left === 1 ? 'queda' : 'quedan'} <strong>{g.left}</strong> {g.left === 1 ? 'intento' : 'intentos'} por puntos en esta computadora.
+          {g.used > 0 && <> Tu mejor puntaje: <strong>{g.best}</strong>.</>} El intento cuenta desde que empezás.
+        </p>
       ) : (
         <p>
-          Para jugar por puntos tenés que ingresar con tu nombre y apellido.{' '}
-          <button type="button" className="btn small primary" onClick={onLogin}>
-            Ingresar
-          </button>
+          Ya se usaron los {g.max} intentos en esta computadora. El mejor puntaje quedó en <strong>{g.best}</strong>. Podés seguir practicando.
         </p>
       )}
       <div className="row center">
         <button
           type="button"
           className="btn primary big"
-          disabled={!g.loggedIn || g.syncing || g.left === 0 || g.starting}
+          disabled={g.left === 0 || g.starting}
           onClick={() => g.start('puntos')}
         >
-          {g.starting ? 'Empezando…' : g.syncing ? 'Cargando tus intentos…' : '🏆 Jugar por puntos'}
+          {g.starting ? 'Empezando…' : '⭐ Jugar por puntos'}
         </button>
         <button type="button" className="btn big" onClick={() => g.start('practica')}>
           Practicar (no suma)

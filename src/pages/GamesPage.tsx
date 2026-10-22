@@ -12,8 +12,8 @@ export function GamesPage() {
     <div className="page">
       <h1>Juegos</h1>
       <p className="lead">
-        Cada juego (y cada nivel) se puede jugar <strong>{MAX_ATTEMPTS} veces por puntos</strong>. En el ranking cuenta tu
-        mejor intento. Después podés seguir practicando todo lo que quieras, pero ya no suma.
+        Cada juego (y cada nivel) se puede jugar <strong>{MAX_ATTEMPTS} veces por puntos</strong> en cada computadora; queda guardado
+        el mejor intento. Después podés seguir practicando todo lo que quieras.
       </p>
       <div className="grid cards games">
         {GAMES.map((g) => {

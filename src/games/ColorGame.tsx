@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Viewer } from '../three/Viewer'
 import { ResistorModel } from '../three/models/Resistor'
 import { formatOhms, randomE12, valueToBands, type ColorName } from '../lib/resistor'
-import { GameShell, ResultCard, requestLogin } from './GameShell'
+import { GameShell, ResultCard } from './GameShell'
 import { useRankedGame } from './useRankedGame'
 import { AttemptGate, ModeBadge } from './AttemptGate'
 
@@ -83,7 +83,7 @@ export function ColorGame() {
       {!g.playing && !g.lastResult && (
         <AttemptGate
           g={g}
-          onLogin={requestLogin}
+         
           intro={<p>Tip: poné la banda dorada a la derecha y leé de izquierda a derecha. Desde la ronda 6 aparecen resistencias de 5 bandas.</p>}
         />
       )}

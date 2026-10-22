@@ -24,7 +24,7 @@ export function TrackPage() {
       </h1>
       <p className="lead">{track.desc}</p>
       <div className="card progress-card">
-        <strong>{s.me ? `Progreso de ${s.me.name}` : 'Ingresá con tu nombre para guardar el progreso'}</strong>
+        <strong>Tu progreso (guardado en esta computadora)</strong>
         <div className="progress big">
           <div style={{ width: `${all.length ? (solved / all.length) * 100 : 0}%` }} />
         </div>

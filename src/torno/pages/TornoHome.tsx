@@ -8,7 +8,6 @@ const SECTIONS = [
   { to: '/teoria', icon: '📘', title: 'Teoría', text: 'Partes, accesorios, transmisión, montajes, herramientas, factores de corte, mecanizados, roscado y seguridad.' },
   { to: '/ejercicios', icon: '📝', title: 'Guía de ejercicios', text: 'Cálculos de rpm, conos y roscas, y casos prácticos con corrección automática.' },
   { to: '/juegos', icon: '🎮', title: 'Juegos', text: 'Reconocé las partes, elegí cómo mecanizar y calculá rápido. ¡Suman puntos!' },
-  { to: '/ranking', icon: '🏆', title: 'Ranking', text: 'Los puntos se acumulan durante todo el año.' },
 ]
 
 export function TornoHome() {

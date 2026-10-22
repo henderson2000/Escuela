@@ -8,7 +8,6 @@ const SECTIONS = [
   { to: '/teoria', icon: '📘', title: 'Teoría', text: 'Ley de Ohm, serie y paralelo, divisor de tensión, PWM… con calculadoras interactivas.' },
   { to: '/actividades', icon: '📝', title: 'Actividades', text: 'Ejercicios con corrección automática para cada tema y componente.' },
   { to: '/juegos', icon: '🎮', title: 'Juegos', text: 'Sumá puntos con desafíos de colores, planos y conexiones en la protoboard 3D.' },
-  { to: '/ranking', icon: '🏆', title: 'Ranking', text: 'Los puntos se acumulan durante todo el año. ¡El que más suma se lleva el premio!' },
 ]
 
 export function ElectronicsHome() {
@@ -22,7 +21,7 @@ export function ElectronicsHome() {
           </h1>
           <p className="lead">
             Mirá cada componente por dentro, cambiale el valor y descubrí cómo funciona. Después poné a prueba lo que
-            sabés con actividades y juegos que suman puntos para el ranking del curso.
+            sabés con actividades y juegos.
           </p>
           <div className="row">
             <Link to={sub('/componentes')} className="btn primary big">

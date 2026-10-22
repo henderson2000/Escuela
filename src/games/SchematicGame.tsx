@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { SYMBOL_NAMES, SymbolIcon, SymbolPaths, type SymbolKind } from '../components/Symbols'
-import { GameShell, requestLogin } from './GameShell'
+import { GameShell } from './GameShell'
 import { useRankedGame } from './useRankedGame'
 import { AttemptGate, LevelTabs, ModeBadge } from './AttemptGate'
 
@@ -197,7 +197,7 @@ function SchematicLevel({ level, onPlayingChange, onNext }: { level: Level; onPl
         </div>
         <p>{level.goal}</p>
         {!showBoard ? (
-          <AttemptGate g={g} onLogin={requestLogin} />
+          <AttemptGate g={g} />
         ) : (
           <>
             <svg viewBox="0 0 400 260" className="schematic">
@@ -248,7 +248,7 @@ function SchematicLevel({ level, onPlayingChange, onNext }: { level: Level; onPl
             {result?.ok && g.lastResult && (
               <div className="card result inline">
                 <p className="record">
-                  ✔ ¡Plano correcto! {g.lastResult.ranked ? `+${result.points} puntos para el ranking` : `${result.points} puntos (práctica, no se guardan)`}
+                  ✔ ¡Plano correcto! {g.lastResult.ranked ? `+${result.points} puntos` : `${result.points} puntos (práctica, no se guardan)`}
                 </p>
                 {g.lastResult.ranked && g.lastResult.prevBest >= result.points! && <p>Tu mejor intento en este nivel sigue siendo {g.lastResult.prevBest}.</p>}
                 {g.error && <p className="feedback bad">{g.error}</p>}
