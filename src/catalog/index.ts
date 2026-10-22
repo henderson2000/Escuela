@@ -5,6 +5,7 @@ import { capacitor } from './capacitor'
 import { arduino, breadboard } from './boards'
 import { button, dht11, ldr, potentiometer, ultrasonic } from './sensors'
 import { buzzer, servo, transistor } from './actuators'
+import { motor } from './motor'
 
 export const CATALOG: ComponentDef[] = [
   resistor,
@@ -19,6 +20,7 @@ export const CATALOG: ComponentDef[] = [
   ultrasonic,
   dht11,
   servo,
+  motor,
   buzzer,
 ]
 

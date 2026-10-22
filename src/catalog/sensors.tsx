@@ -124,9 +124,9 @@ export const potentiometer: ComponentDef = {
   category: 'Sensores y entradas',
   icon: '◔',
   short: 'Resistencia variable con perilla. Funciona como divisor de tensión.',
-  camera: [3.6, 2.8, 5.6],
-  target: [0, 0, 0],
-  shadowY: -1.95,
+  camera: [5.2, 4.3, 8.8],
+  target: [0, 0.85, 0],
+  shadowY: -0.98,
   defaultParams: { angle: 150, total: 10 },
   render: (p) => <PotentiometerModel angle={p.angle} />,
   Controls: ({ params, set }) => {
@@ -147,12 +147,13 @@ export const potentiometer: ComponentDef = {
     )
   },
   parts: [
-    { id: 'pista', name: 'Pista resistiva', desc: 'Arco de carbono con forma de herradura. Sus extremos son los terminales 1 y 3: entre ellos siempre está la resistencia total.' },
-    { id: 'cursor', name: 'Cursor (escobilla)', desc: 'Contacto metálico que se desliza por la pista al girar el eje. Está conectado al terminal 2 (el del medio).' },
-    { id: 'eje', name: 'Eje / perilla', desc: 'Al girarlo se mueve el cursor. Un giro completo es de unos 300°.' },
-    { id: 'carcasa', name: 'Carcasa metálica', desc: 'Protege la pista y sostiene el buje roscado del eje.' },
-    { id: 'base', name: 'Base', desc: 'Soporte plástico donde está impresa la pista.' },
-    { id: 'terminales', name: 'Terminales 1 · 2 · 3', desc: 'Extremos: 5 V y GND. Medio (cursor): la tensión variable que va a una entrada analógica.' },
+    { id: 'eje', name: 'Eje moleteado', desc: 'Eje de 6 mm con 18 estrías y una ranura: la perilla entra a presión. Al girarlo arrastra el cursor. El recorrido total es de unos 300°.' },
+    { id: 'tuerca', name: 'Tuerca y arandela', desc: 'Sirven para fijar el potenciómetro a un panel o gabinete: el buje pasa por un agujero de 7 mm y la tuerca lo aprieta.' },
+    { id: 'carcasa', name: 'Carcasa metálica y buje roscado', desc: 'Lata de chapa de 16 mm que tapa el mecanismo. Tiene el buje roscado (M7) por donde pasa el eje, una pestaña anti-giro para el panel y lengüetas que se doblan por detrás y aprietan la base.' },
+    { id: 'cursor', name: 'Cursor (escobilla)', desc: 'Chapita elástica montada en un rotor plástico que gira con el eje. Sus dedos exteriores se deslizan sobre la pista y el interior toca el anillo colector, que está unido al terminal 2.' },
+    { id: 'pista', name: 'Pista resistiva de carbón', desc: 'Herradura de carbón (~300°) impresa sobre la base. Sus extremos van a los terminales 1 y 3: entre ellos siempre está la resistencia total (10 kΩ en un B10K).' },
+    { id: 'base', name: 'Base de pertinax', desc: 'Disco aislante (fenólico) donde está impresa la pista, el anillo colector plateado y las pistitas que llevan a los remaches de los terminales.' },
+    { id: 'terminales', name: 'Terminales 1 · 2 (cursor) · 3', desc: 'Tres lengüetas remachadas a la base, separadas 5 mm y dobladas 90° para soldar en la placa. Extremos (1 y 3): 5 V y GND. Medio (2, cursor): la tensión variable que va a una entrada analógica.' },
   ],
   theory: (
     <>
@@ -182,9 +183,9 @@ export const button: ComponentDef = {
   category: 'Sensores y entradas',
   icon: '⏺',
   short: 'Interruptor momentáneo: conecta mientras está apretado.',
-  camera: [3.0, 2.4, 4.4],
-  target: [0, -0.3, 0],
-  shadowY: -1.85,
+  camera: [6.2, 4.6, 9.4],
+  target: [0, -0.1, 0],
+  shadowY: -2.08,
   defaultParams: { pressed: false },
   render: (p) => <ButtonModel pressed={p.pressed} />,
   Controls: ({ params, set }) => (
@@ -203,11 +204,11 @@ export const button: ComponentDef = {
     </>
   ),
   parts: [
-    { id: 'boton', name: 'Botón', desc: 'La parte que se aprieta. Empuja la lámina de contacto.' },
-    { id: 'tapa', name: 'Tapa metálica', desc: 'Sujeta el botón y la lámina dentro de la base.' },
-    { id: 'contactos', name: 'Lámina y contactos', desc: 'Una lámina metálica con forma de domo. Al apretar, se aplasta y une los dos contactos internos: el circuito se cierra. Al soltar, vuelve a su forma (por eso es “momentáneo”).' },
-    { id: 'base', name: 'Base plástica', desc: 'Cuerpo aislante de 6 × 6 mm.' },
-    { id: 'terminales', name: 'Terminales (4)', desc: 'Tiene 4 patas, pero están unidas de a pares: las patas enfrentadas siempre están conectadas. El botón une un par con el otro.' },
+    { id: 'boton', name: 'Botón (actuador)', desc: 'Vástago plástico de 3,5 mm que sobresale de la tapa. Tiene una pestaña ancha abajo para no salirse y un topecito que aprieta el centro del domo. Recorre apenas 0,25 mm.' },
+    { id: 'tapa', name: 'Tapa metálica', desc: 'Chapa estampada con un agujero para el botón. Sus 4 lengüetas se doblan por los costados y abrazan el cuerpo: así mantiene todo armado.' },
+    { id: 'domo', name: 'Domo metálico', desc: 'Disco de acero inoxidable con forma de cúpula. Su borde apoya sobre los contactos 1–2. Al apretar se “desploma” de golpe (el clic que sentís) y su centro toca el contacto 3–4: el circuito se cierra. Al soltar vuelve solo a su forma.' },
+    { id: 'base', name: 'Cuerpo plástico', desc: 'Cuerpo aislante de 6 × 6 × 3,5 mm con una cavidad redonda donde van los contactos y el domo. Tiene 4 patitas de apoyo en las esquinas.' },
+    { id: 'terminales', name: 'Marco de contactos y patas (4)', desc: 'Chapa estañada moldeada dentro del cuerpo. Las patas 1 y 2 están unidas entre sí (contacto exterior) y las 3 y 4 también (contacto central). Cada pata sale horizontal, se dobla 90° hacia abajo y tiene un codito que hace de tope en la placa.' },
   ],
   theory: (
     <>
@@ -233,6 +234,7 @@ export const button: ComponentDef = {
     { id: 'btn-2', type: 'mc', q: '¿Para qué sirve la resistencia pull-down?', options: ['Para que el LED brille más', 'Para que la entrada lea LOW cuando no se aprieta (que no “flote”)', 'Para bajar la tensión a 3,3 V', 'Para nada'], answer: 1, explain: 'Fija la entrada en LOW mientras el pulsador está abierto.' },
     { id: 'btn-3', type: 'mc', q: 'Con INPUT_PULLUP, ¿qué lee el pin cuando apretás el pulsador (conectado a GND)?', options: ['HIGH', 'LOW', '1023', 'Nada'], answer: 1, explain: 'Con pull-up la lógica se invierte: apretado = LOW.' },
     { id: 'btn-4', type: 'mc', q: 'Un pulsador de 4 patas…', options: ['Tiene 4 contactos independientes', 'Tiene 2 pares de patas que ya están unidas entre sí', 'Tiene polaridad', 'Necesita 2 botones'], answer: 1, explain: 'Las patas están unidas de a pares; el botón une los dos pares.' },
+    { id: 'btn-5', type: 'mc', q: '¿Qué pieza interna produce el “clic” y cierra el circuito al apretar?', options: ['La tapa metálica', 'El domo metálico que se aplasta', 'Un resorte de plástico', 'Un imán'], answer: 1, explain: 'El domo se desploma de golpe, hace clic y su centro une el contacto central con el exterior.' },
   ],
 }
 
