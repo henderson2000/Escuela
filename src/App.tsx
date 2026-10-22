@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { HashRouter, MemoryRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { LegacyRedirect, SubjectLayout, TopNav, YearPage, YearsHome } from './pages/Structure'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { BulbBadge } from './components/Bulbs'
 
 /**
  * Dentro de otra página (por ejemplo, la vista previa de Claude) la dirección del marco no se puede
@@ -45,6 +46,7 @@ export default function App() {
           </span>
         </NavLink>
         <TopNav />
+        <BulbBadge />
       </header>
       <main>
         <RouteBoundary>

@@ -1,0 +1,141 @@
+.bulb-wrap {
+  position: relative;
+  margin-left: auto;
+}
+.bulb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #5a4a1a;
+  background: linear-gradient(180deg, #2b2410, #1d180a);
+  color: #fde68a;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 0 0 0 #facc1555;
+}
+.bulb-badge b {
+  font-variant-numeric: tabular-nums;
+  min-width: 1.5ch;
+  text-align: right;
+}
+.bulb-icon {
+  filter: drop-shadow(0 0 4px #facc15aa);
+}
+.bulb-toast {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-weight: 800;
+  z-index: 60;
+  animation: bulb-pop 2.6s ease forwards;
+  pointer-events: none;
+}
+.bulb-toast.plus {
+  background: #14532d;
+  color: #bbf7d0;
+  border: 1px solid #22c55e;
+}
+.bulb-toast.minus {
+  background: #3b1d0a;
+  color: #fed7aa;
+  border: 1px solid #f97316;
+}
+.bulb-toast small {
+  font-weight: 400;
+  opacity: 0.85;
+  margin-left: 4px;
+}
+@keyframes bulb-pop {
+  0% {
+    transform: translateY(-6px) scale(0.9);
+    opacity: 0;
+  }
+  10% {
+    transform: translateY(0) scale(1.05);
+    opacity: 1;
+  }
+  20% {
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.bulb-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: min(380px, calc(100vw - 24px));
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  z-index: 70;
+  box-shadow: 0 20px 50px #000a;
+  font-size: 0.9rem;
+}
+.bulb-panel h5 {
+  margin: 8px 0 4px;
+  color: var(--accent2);
+}
+.bulb-panel ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.bulb-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.bulb-log {
+  list-style: none;
+  padding: 0 !important;
+}
+.bulb-log li.plus b {
+  color: var(--ok);
+}
+.bulb-log li.minus b {
+  color: #fb923c;
+}
+.bulb-buy {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bulb-buy .cost {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #3a2f0d;
+  color: #fde68a;
+  font-size: 0.78rem;
+}
+.bulb-buy .cost.short {
+  background: #3a1a1a;
+  color: #fca5a5;
+}
+.owned-tag {
+  margin-left: 6px;
+  font-size: 0.72rem;
+  color: var(--ok);
+}
+@media (max-width: 600px) {
+  .bulb-badge {
+    padding: 4px 10px;
+  }
+}
+.bulb-buy {
+  align-items: flex-start;
+}
+.shop-row {
+  margin-top: 6px;
+}

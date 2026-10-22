@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { MAX_ATTEMPTS } from '../lib/config'
-import { attemptsLeft, bestOf, finishAttempt, myAttempts, refreshMyAttempts, startAttempt, useStore } from '../lib/scores'
+import { BULBS, attemptsLeft, bestOf, earnBulbs, finishAttempt, myAttempts, refreshMyAttempts, startAttempt, useStore } from '../lib/scores'
 
 export type PlayMode = 'puntos' | 'practica'
 
@@ -55,6 +55,7 @@ export function useRankedGame(game: string, level = '') {
     setSession(null)
     setLastResult({ points, ranked: sess?.mode === 'puntos', prevBest: best })
     if (sess?.mode === 'puntos' && sess.attemptId) {
+      earnBulbs(`juego:${sess.attemptId}`, Math.floor(points / BULBS.puntosPorLamparita), 'Juego por puntos')
       try {
         await finishAttempt(sess.attemptId, points)
       } catch (e) {

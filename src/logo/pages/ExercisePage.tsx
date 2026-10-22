@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useSub } from '../../lib/nav'
-import { markActivity, useStore } from '../../lib/scores'
+import { BULBS, markActivity, useStore } from '../../lib/scores'
+import { BulbPurchase } from '../../components/Bulbs'
 import { LogoEditor } from '../Editor'
 import { DEVICE_NAMES, OUTPUT_NAMES, runTests, type Program, type TestResult } from '../engine'
 import { EXERCISES, startProgram, type Exercise } from '../exercises'
@@ -20,7 +21,6 @@ function ExerciseView({ id }: { id: string }) {
   const prog = useRef<Program | null>(null)
   const [result, setResult] = useState<TestResult | null>(null)
   const [tableOk, setTableOk] = useState(false)
-  const [hint, setHint] = useState(false)
   const initial = useMemo(() => (ex ? startProgram(ex.io) : null), [ex])
   const solved = !!(s.me && ex && s.activities[s.me.id]?.[exerciseActivityId(ex.id)])
 
@@ -38,12 +38,12 @@ function ExerciseView({ id }: { id: string }) {
     if (!prog.current || !ex.tests) return
     const r = runTests(prog.current, ex.tests)
     setResult(r)
-    if (r.ok && (!ex.table || tableOk)) markActivity(exerciseActivityId(ex.id), true)
+    if (r.ok && (!ex.table || tableOk)) markActivity(exerciseActivityId(ex.id), true, BULBS.ejercicioLogo, `Ejercicio ${ex.n} de la guía`)
   }
 
   const onTable = (ok: boolean) => {
     setTableOk(ok)
-    if (ok && result?.ok) markActivity(exerciseActivityId(ex.id), true)
+    if (ok && result?.ok) markActivity(exerciseActivityId(ex.id), true, BULBS.ejercicioLogo, `Ejercicio ${ex.n} de la guía`)
   }
 
   return (
@@ -61,12 +61,9 @@ function ExerciseView({ id }: { id: string }) {
             <p key={i}>{l}</p>
           ))}
           {ex.hint && (
-            <p>
-              <button type="button" className="btn small ghost" onClick={() => setHint(!hint)}>
-                💡 {hint ? 'Ocultar pista' : 'Ver una pista'}
-              </button>
-              {hint && <span className="hint"> {ex.hint}</span>}
-            </p>
+            <BulbPurchase itemKey={`hint:logo-${ex.id}`} cost={BULBS.pista} label="Ver una pista" what={`Pista: ejercicio ${ex.n}`}>
+              {ex.hint}
+            </BulbPurchase>
           )}
         </section>
         <IOTable ex={ex} />
@@ -103,7 +100,7 @@ function ExerciseView({ id }: { id: string }) {
         <div className="card check-result">
           Este ejercicio no tiene corrección automática: probalo en el simulador y mostráselo al profe.{' '}
           {s.me && !solved && (
-            <button type="button" className="btn small" onClick={() => markActivity(exerciseActivityId(ex.id), true)}>
+            <button type="button" className="btn small" onClick={() => markActivity(exerciseActivityId(ex.id), true, BULBS.ejercicioMarcado, `Ejercicio ${ex.n} terminado`)}>
               Marcar como terminado
             </button>
           )}

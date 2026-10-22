@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useSub } from '../../lib/nav'
-import { markActivity, useStore } from '../../lib/scores'
+import { BULBS, markActivity, useStore } from '../../lib/scores'
 import { findLesson, lessonActivityId } from '../course'
 import { LessonWorkspace } from '../Workspace'
 
@@ -17,7 +17,10 @@ function LessonView({ id }: { id?: string }) {
   const found = findLesson(id)
   const onChecked = useCallback(
     (_r: boolean[], ok: boolean) => {
-      if (ok && id) markActivity(lessonActivityId(id), true)
+      if (!ok || !id) return
+      const l = findLesson(id)?.lesson
+      const proyecto = !!l && (/proyecto/i.test(l.title) || /proy|mini/.test(l.id))
+      markActivity(lessonActivityId(id), true, proyecto ? BULBS.proyecto : BULBS.leccion, proyecto ? `Mini-proyecto: ${l?.title}` : `Lección: ${l?.title ?? id}`)
     },
     [id],
   )
@@ -47,6 +50,7 @@ function LessonView({ id }: { id?: string }) {
       <LessonWorkspace
         lesson={lesson}
         onChecked={onChecked}
+        shop={lessonActivityId(lesson.id)}
         actions={
           <>
             <div className="lesson-nav">

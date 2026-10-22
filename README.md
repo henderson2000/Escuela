@@ -65,6 +65,10 @@ Para revisar el curso después de cambiar lecciones: `npm run dev` y abrir `/ver
 - No hace falta ingresar: los alumnos entran y usan todo.
 - El progreso (lecciones y actividades resueltas), los intentos y los mejores puntajes se guardan en el navegador de
   cada computadora. Si se borran los datos del navegador, se pierde ese progreso.
+- **💡 Lamparitas**: se empieza con 0. Se ganan una sola vez por cosa resuelta (actividad +5, lección de Computación +20,
+  mini-proyecto +40, ejercicio de la guía LOGO! +30 (+10 si lo marca el alumno), juegos por puntos +1 cada 20 puntos)
+  y se gastan en pistas (−30) o en ver la solución de una lección de Computación (−100; esa lección deja de pagar).
+  Los valores están en `BULBS` (`src/lib/scores.ts`).
 - En **Juegos**, cada nivel muestra cuántos intentos por puntos quedan en esa computadora. Si se cierra la página a
   mitad de un intento, ese intento queda usado con 0 puntos. Para cambiar la cantidad de intentos: `MAX_ATTEMPTS` en
   `src/lib/config.ts`.

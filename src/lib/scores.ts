@@ -54,6 +54,14 @@ interface State {
   busy: boolean
   /** modo online: ya se trajeron del servidor los intentos del jugador actual */
   synced: boolean
+  /** 💡 lamparitas disponibles para comprar pistas */
+  bulbs: number
+  /** cosas que ya dieron lamparitas (cada una paga una sola vez) */
+  rewarded: Record<string, boolean>
+  /** pistas y soluciones ya compradas */
+  owned: Record<string, boolean>
+  /** últimos movimientos de lamparitas */
+  bulbLog: { at: number; delta: number; label: string }[]
 }
 
 const KEY = 'escuela-electronica-v2'
@@ -67,6 +75,10 @@ const empty: State = {
   rankingError: null,
   busy: false,
   synced: !ONLINE,
+  bulbs: 0,
+  rewarded: {},
+  owned: {},
+  bulbLog: [],
 }
 
 function load(): State {
@@ -310,13 +322,70 @@ export async function loadRanking() {
 
 // ------------------------------------------------------------------ actividades (siempre locales)
 
-export function markActivity(activityId: string, correct: boolean) {
+/**
+ * Marca una actividad/lección como resuelta. La primera vez que se resuelve bien da lamparitas
+ * (salvo que se haya comprado la solución).
+ */
+export function markActivity(activityId: string, correct: boolean, reward = BULBS.actividad, label = 'Actividad resuelta') {
   const p = state.me
   if (!p) return
   const mine = { ...(state.activities[p.id] ?? {}) }
   if (mine[activityId]) return
   mine[activityId] = correct
   set({ activities: { ...state.activities, [p.id]: mine } })
+  if (correct && !state.owned[`sol:${activityId}`]) earnBulbs(`act:${activityId}`, reward, label)
+}
+
+/* ------------------------------------------------------------------ 💡 lamparitas */
+
+/** Valores de la economía de lamparitas. */
+export const BULBS = {
+  actividad: 5,
+  leccion: 20,
+  proyecto: 40,
+  ejercicioLogo: 30,
+  ejercicioMarcado: 10,
+  /** juegos por puntos: 1 lamparita cada tantos puntos */
+  puntosPorLamparita: 20,
+  pista: 30,
+  solucion: 100,
+}
+
+type BulbListener = (delta: number, label: string) => void
+const bulbListeners = new Set<BulbListener>()
+/** Para mostrar el cartelito "+20 💡". */
+export function onBulbs(l: BulbListener) {
+  bulbListeners.add(l)
+  return () => {
+    bulbListeners.delete(l)
+  }
+}
+
+function logBulbs(delta: number, label: string) {
+  const bulbLog = [{ at: Date.now(), delta, label }, ...state.bulbLog].slice(0, 25)
+  set({ bulbs: Math.max(0, state.bulbs + delta), bulbLog })
+  bulbListeners.forEach((l) => l(delta, label))
+}
+
+/** Suma lamparitas una sola vez por clave. */
+export function earnBulbs(key: string, amount: number, label: string) {
+  if (amount <= 0 || state.rewarded[key]) return
+  set({ rewarded: { ...state.rewarded, [key]: true } })
+  logBulbs(amount, label)
+}
+
+/** ¿Ya se compró esta pista/solución? */
+export function owns(s: State, key: string) {
+  return !!s.owned[key]
+}
+
+/** Compra algo (pista o solución). Devuelve false si no alcanzan las lamparitas. */
+export function spendBulbs(key: string, amount: number, label: string): boolean {
+  if (state.owned[key]) return true
+  if (state.bulbs < amount) return false
+  set({ owned: { ...state.owned, [key]: true } })
+  logBulbs(-amount, label)
+  return true
 }
 
 export function activitiesDone(s: State, playerId: string): number {

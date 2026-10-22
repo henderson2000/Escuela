@@ -3,6 +3,8 @@ import { CodeEditor } from './CodeEditor'
 import { runConsole, stopConsole, type ConsoleResult } from './js/consoleRunner'
 import { buildDomDoc, loadDoc, makeDomCtx, readDom, watchDom, type DomError } from './js/domRunner'
 import type { DomCode, DomLesson, JsLesson, Lesson, WebCode, WebCtx, WebLesson } from './types'
+import { BulbPurchase } from '../components/Bulbs'
+import { BULBS } from '../lib/scores'
 import './compu.css'
 
 /* ------------------------------------------------------------------ vista previa web (sólo HTML) */
@@ -239,6 +241,8 @@ function saveCode(id: string, code: unknown) {
 interface WsProps<L> {
   lesson: L
   storageId: string
+  /** clave para comprar pista y solución (si no hay, no se pueden comprar: por ejemplo en los desafíos) */
+  shop?: string
   onChecked?: (results: boolean[], ok: boolean) => void
   side?: ReactNode
   actions?: ReactNode
@@ -252,8 +256,11 @@ export function LessonWorkspace({
   side,
   actions,
   checkLabel = 'Comprobar',
+  shop,
 }: {
   lesson: Lesson
+  /** clave para comprar pista y solución con lamparitas */
+  shop?: string
   /** clave para guardar el código (por defecto el id de la lección) */
   storageId?: string
   onChecked?: (results: boolean[], ok: boolean) => void
@@ -262,7 +269,7 @@ export function LessonWorkspace({
   actions?: ReactNode
   checkLabel?: string
 }) {
-  const props = { storageId: storageId ?? lesson.id, onChecked, side, actions, checkLabel }
+  const props = { storageId: storageId ?? lesson.id, onChecked, side, actions, checkLabel, shop }
   if (lesson.kind === 'web') return <WebWorkspace lesson={lesson} {...props} />
   if (lesson.kind === 'js') return <JsWorkspace lesson={lesson} {...props} />
   return <DomWorkspace lesson={lesson} {...props} />
@@ -290,6 +297,8 @@ function SidePanel({
   onReset,
   actions,
   checkLabel,
+  shop,
+  onSolution,
 }: {
   lesson: Lesson
   results: TestState
@@ -299,8 +308,9 @@ function SidePanel({
   onReset: () => void
   actions?: ReactNode
   checkLabel: string
+  shop?: string
+  onSolution: () => void
 }) {
-  const [hint, setHint] = useState(false)
   const ok = !!results && results.every(Boolean)
   return (
     <aside className="lesson-side">
@@ -324,13 +334,24 @@ function SidePanel({
         <button type="button" className="btn ghost small" onClick={onReset}>
           ↺ Reiniciar código
         </button>
-        {lesson.hint && (
-          <button type="button" className="btn ghost small" onClick={() => setHint(!hint)}>
-            💡 {hint ? 'Ocultar pista' : 'Pista'}
-          </button>
-        )}
       </div>
-      {hint && lesson.hint && <div className="hint-box">{lesson.hint}</div>}
+      {shop && (
+        <div className="row wrap shop-row">
+          {lesson.hint && (
+            <BulbPurchase itemKey={`hint:${shop}`} cost={BULBS.pista} label="Ver una pista" what={`Pista: ${lesson.title}`}>
+              {lesson.hint}
+            </BulbPurchase>
+          )}
+          <BulbPurchase
+            itemKey={`sol:${shop}`}
+            cost={BULBS.solucion}
+            label="Ver la solución"
+            what={`Solución: ${lesson.title}`}
+            confirmText={`¿Gastar ${BULBS.solucion} 💡 para cargar la solución en el editor? Esta lección ya no te va a dar lamparitas.`}
+            onBuy={onSolution}
+          />
+        </div>
+      )}
       {actions}
     </aside>
   )
@@ -346,7 +367,7 @@ const runSafe = <C,>(fn: (c: C) => boolean, c: C) => {
 
 /* ---------------- HTML */
 
-function WebWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel }: WsProps<WebLesson>) {
+function WebWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel, shop }: WsProps<WebLesson>) {
   const [code, setCode] = useState<WebCode>(() => loadCode(storageId, lesson.starter))
   const [results, setResults] = useState<TestState>(null)
   const [checking, setChecking] = useState(false)
@@ -381,6 +402,11 @@ function WebWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel 
         }}
         actions={actions}
         checkLabel={checkLabel}
+        shop={shop}
+        onSolution={() => {
+          setCode(lesson.solution as never)
+          setResults(null)
+        }}
       />
       <section className="lesson-work">
         <div className="file-tabs">
@@ -407,7 +433,7 @@ function WebWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel 
 
 /* ---------------- JavaScript en consola */
 
-function JsWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel }: WsProps<JsLesson>) {
+function JsWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel, shop }: WsProps<JsLesson>) {
   const [code, setCode] = useState<string>(() => loadCode(storageId, lesson.starter))
   const [input, setInput] = useState(lesson.sampleInput ?? '')
   const [results, setResults] = useState<TestState>(null)
@@ -464,6 +490,11 @@ function JsWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel }
         }}
         actions={actions}
         checkLabel={checkLabel}
+        shop={shop}
+        onSolution={() => {
+          setCode(lesson.solution as never)
+          setResults(null)
+        }}
       />
       <section className="lesson-work">
         <div className="file-tabs">
@@ -509,7 +540,7 @@ function JsWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel }
 
 /* ---------------- JavaScript con HTML */
 
-function DomWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel }: WsProps<DomLesson>) {
+function DomWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel, shop }: WsProps<DomLesson>) {
   const [code, setCode] = useState<DomCode>(() => loadCode(storageId, lesson.starter))
   const [tab, setTab] = useState<'html' | 'js'>(lesson.edit.includes('js') ? 'js' : 'html')
   const [results, setResults] = useState<TestState>(null)
@@ -556,6 +587,11 @@ function DomWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel 
         }}
         actions={actions}
         checkLabel={checkLabel}
+        shop={shop}
+        onSolution={() => {
+          setCode(lesson.solution as never)
+          setResults(null)
+        }}
       />
       <section className="lesson-work">
         <div className="file-tabs">
