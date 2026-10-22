@@ -2118,3 +2118,73 @@ table.lt-ref svg {
 .lt-wide > svg {
   min-width: 540px;
 }
+
+/* ---------- barra de despiece sobre el visor ---------- */
+.lab-stage {
+  position: relative;
+}
+.explode-bar {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(13, 19, 30, 0.82);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+  z-index: 30;
+}
+.explode-range {
+  flex: 1 1 220px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+.explode-range input {
+  flex: 1;
+  accent-color: var(--accent);
+}
+.explode-range b {
+  min-width: 44px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+@media (min-width: 901px) {
+  .lab-view {
+    position: sticky;
+    top: 72px;
+  }
+}
+@media (max-width: 600px) {
+  .explode-bar {
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    padding: 6px 8px;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+  .explode-range {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 6px;
+    font-size: 0.8rem;
+  }
+  .explode-range input {
+    min-width: 0;
+  }
+  .explode-range b {
+    display: none;
+  }
+  .explode-bar .btn.small {
+    white-space: nowrap;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+}

@@ -4,7 +4,6 @@ import { partsOf } from '../catalog'
 import { useSubject } from '../lib/subject'
 import { Viewer } from '../three/Viewer'
 import { ActivityList } from '../components/ActivityList'
-import { Slider, Toggle } from '../components/ui'
 import { useSub } from '../lib/nav'
 
 type Tab = '3d' | 'teoria' | 'actividades'
@@ -68,6 +67,7 @@ function Detail({ id }: { id: string }) {
       {tab === '3d' && (
         <div className="lab">
           <div className="lab-view">
+            <div className="lab-stage">
             <Viewer
               key={def.id}
               camera={def.camera}
@@ -78,6 +78,27 @@ function Detail({ id }: { id: string }) {
             >
               {def.render(params)}
             </Viewer>
+              <div className="explode-bar">
+                <label className="explode-range">
+                  <span>Despiezar</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={Math.round(explode * 100)}
+                    onChange={(e) => setExplode(Number(e.target.value) / 100)}
+                    aria-label="Despiezar"
+                  />
+                  <b>{Math.round(explode * 100)} %</b>
+                </label>
+                <button type="button" className="btn small" onClick={() => setExplode(explode > 0.5 ? 0 : 1)}>
+                  {explode > 0.5 ? 'Armar' : 'Despiezar'}
+                </button>
+                <button type="button" className={`btn small ${labels ? 'primary' : ''}`} onClick={() => setLabels(!labels)} aria-pressed={labels}>
+                  🏷 Nombres
+                </button>
+              </div>
+            </div>
             <div className="viewer-help">🖱️ Arrastrá para girar · rueda para zoom · clic derecho para mover · clic en una pieza para ver qué es</div>
           </div>
 
@@ -89,8 +110,7 @@ function Detail({ id }: { id: string }) {
 
             <section className="card">
               <h3>Partes</h3>
-              <Toggle label="Mostrar nombres de las partes" value={labels} onChange={setLabels} />
-              <Slider label="Despiezar" value={Math.round(explode * 100)} min={0} max={100} onChange={(v) => setExplode(v / 100)} format={(v) => `${v} %`} />
+              <p className="hint">Tildá o destildá para mostrar u ocultar cada pieza. Tocá el nombre para ver qué es.</p>
               <ul className="parts-list">
                 {parts.map((p) => (
                   <li key={p.id} className={selected === p.id ? 'active' : ''}>
@@ -109,9 +129,6 @@ function Detail({ id }: { id: string }) {
               <div className="row">
                 <button className="btn small" type="button" onClick={() => setHidden({})}>
                   Mostrar todo
-                </button>
-                <button className="btn small" type="button" onClick={() => setExplode(explode > 0.5 ? 0 : 1)}>
-                  {explode > 0.5 ? 'Armar' : 'Despiezar'}
                 </button>
               </div>
               {sel && (
