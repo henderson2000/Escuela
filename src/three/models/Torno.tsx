@@ -1163,13 +1163,13 @@ export function TornoModel(p: TornoParams) {
       <Part id="tapa" offset={[-36, 0, 0]} labelAt={[-100, 41, 4]}>
         <TapaLira open={p.tapa} />
       </Part>
-      <Part id="cabezal" offset={[0, 34, -12]} labelAt={[-70, 45, 6]}>
+      <Part id="cabezal" offset={[0, 27, -14]} labelAt={[-70, 45, 6]}>
         <Cabezal rpmIdx={p.rpmIdx} />
       </Part>
-      <Part id="mando" offset={[0, 34, 0]} labelAt={[-56, 19, 18]}>
+      <Part id="mando" offset={[0, 27, 0]} labelAt={[-56, 19, 18]}>
         <Mando on={p.on} />
       </Part>
-      <Part id="husillo" offset={[-6, 0, 0]} labelAt={[-50, AXIS + 11, 0]}>
+      <Part id="husillo" offset={[-6, -1.5, 0]} labelAt={[-50, AXIS + 11, 0]}>
         <group position={[0, AXIS, 0]}>
           <Rot angle={angle}>
             <Husillo />

@@ -190,8 +190,16 @@ function runWasi(module: WebAssembly.Module, stdin: string, onOut: (s: string) =
 
 /** Pequeños arreglos al código para esquivar límites conocidos de la biblioteca del navegador. */
 function patchSource(src: string): string {
-  // %n dentro de printf/format no está soportado: se cambia por \n (mismo resultado)
-  return src.replace(/"(?:[^"\\\n]|\\.)*"/g, (lit) => lit.replace(/%n/g, '\\n'))
+  // Se recorre el código separando textos, caracteres y comentarios (que no se tocan) del resto.
+  return src.replace(/("(?:[^"\\\n]|\\.)*")|('(?:[^'\\\n]|\\.)*')|(\/\/[^\n]*)|(\/\*[\s\S]*?\*\/)|([^"'/]+|\/)/g, (m, str, _chr, _lc, _bc, code) => {
+    // %n dentro de printf/format no está soportado: se cambia por \n (mismo resultado)
+    if (str) return str.replace(/%n/g, '\\n')
+    if (code)
+      // las anotaciones (@Override, @Deprecated, @SuppressWarnings(...)) hacen fallar al compilador del navegador:
+      // se reemplazan por espacios para que los números de línea no cambien
+      return code.replace(/@(?!interface\b)[A-Za-z_][\w.]*(\s*\([^()]*\))?/g, (a: string) => a.replace(/[^\n]/g, ' '))
+    return m
+  })
 }
 
 self.onmessage = async (ev: MessageEvent<ToWorker>) => {

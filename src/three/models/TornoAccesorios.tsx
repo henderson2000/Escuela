@@ -1534,7 +1534,17 @@ export function IntegralCara({ which }: { which: 'ataque' | 'flanco' | 'filo' })
 }
 
 /** Corte de la cuña con los ángulos α (incidencia), β (filo) y γ (ataque), dibujado delante de la punta. */
-export function AngulosHerramienta({ x = 4.2 }: { x?: number }) {
+export function AngulosHerramienta({ x: x0 = 4.2, k = 2 }: { x?: number; k?: number }) {
+  // se dibuja ampliado ×k alrededor del filo, en un plano paralelo al corte
+  return (
+    <group position={[x0, HSS.S * (1 - k), (HSS.S / 2) * (1 - k)]} scale={k}>
+      <AngulosSeccion />
+    </group>
+  )
+}
+
+function AngulosSeccion() {
+  const x = 0
   const s = HSS.S
   const a = HSS.alpha * D
   const g = HSS.gamma * D
@@ -1552,7 +1562,7 @@ export function AngulosHerramienta({ x = 4.2 }: { x?: number }) {
   const angDown = -Math.PI / 2
   const angFlank = Math.atan2(flankDir[1], flankDir[0])
   const angRake = Math.atan2(rakeDir[1], rakeDir[0])
-  const angBack = Math.PI
+  const angBack = -Math.PI
   const section: Vec3[] = [
     [x, s, s / 2],
     [x, s - s * Math.tan(g), -s / 2],
@@ -1565,16 +1575,16 @@ export function AngulosHerramienta({ x = 4.2 }: { x?: number }) {
     <group>
       <Line points={section} color="#ffffff" lineWidth={2} />
       {/* referencias: vertical (dirección del corte) y horizontal */}
-      <Line points={[P(E, [0, -1], 0), P(E, [0, -1], 3.2)]} color="#aab4c3" lineWidth={1} dashed dashSize={0.2} gapSize={0.15} />
-      <Line points={[P(E, [-1, 0], 0), P(E, [-1, 0], 3.6)]} color="#aab4c3" lineWidth={1} dashed dashSize={0.2} gapSize={0.15} />
-      <Line points={[P(E, flankDir, 0), P(E, flankDir, 3.2)]} color="#ff7a59" lineWidth={2} />
-      <Line points={[P(E, rakeDir, 0), P(E, rakeDir, 3.6)]} color="#4fa3ff" lineWidth={2} />
-      <Line points={arc(2.6, angDown, angFlank)} color="#ff7a59" lineWidth={3} />
+      <Line points={[P(E, [0, -1], 0), P(E, [0, -1], 2.4)]} color="#aab4c3" lineWidth={1} dashed dashSize={0.2} gapSize={0.15} />
+      <Line points={[P(E, [-1, 0], 0), P(E, [-1, 0], 2.8)]} color="#aab4c3" lineWidth={1} dashed dashSize={0.2} gapSize={0.15} />
+      <Line points={[P(E, flankDir, 0), P(E, flankDir, 2.4)]} color="#ff7a59" lineWidth={2} />
+      <Line points={[P(E, rakeDir, 0), P(E, rakeDir, 2.8)]} color="#4fa3ff" lineWidth={2} />
+      <Line points={arc(2.0, angDown, angFlank)} color="#ff7a59" lineWidth={3} />
       <Line points={arc(1.3, angFlank, angRake)} color="#ffd23f" lineWidth={3} />
-      <Line points={arc(3.1, angRake, angBack)} color="#4fa3ff" lineWidth={3} />
-      <TextSprite text={`α = ${HSS.alpha}°`} position={(() => { const m = mid(2.6, angDown, angFlank); return [m[0], m[1] - 0.9, m[2] + 0.6] as Vec3 })()} size={0.75} color="#ff9d85" />
-      <TextSprite text={`β = ${90 - HSS.alpha - HSS.gamma}°`} position={(() => { const m = mid(1.3, angFlank, angRake); return [m[0], m[1] - 0.9, m[2] - 1.0] as Vec3 })()} size={0.75} color="#ffe27a" />
-      <TextSprite text={`γ = ${HSS.gamma}°`} position={(() => { const m = mid(3.1, angRake, angBack); return [m[0], m[1] + 0.8, m[2] - 0.6] as Vec3 })()} size={0.75} color="#8cc3ff" />
+      <Line points={arc(2.5, angRake, angBack)} color="#4fa3ff" lineWidth={3} />
+      <TextSprite text={`α = ${HSS.alpha}°`} position={(() => { const m = mid(2.0, angDown, angFlank); return [m[0], m[1] - 0.9, m[2] + 0.6] as Vec3 })()} size={0.45} color="#ff9d85" />
+      <TextSprite text={`β = ${90 - HSS.alpha - HSS.gamma}°`} position={(() => { const m = mid(1.3, angFlank, angRake); return [m[0], m[1] - 0.9, m[2] - 1.0] as Vec3 })()} size={0.45} color="#ffe27a" />
+      <TextSprite text={`γ = ${HSS.gamma}°`} position={(() => { const m = mid(2.5, angRake, angBack); return [m[0], m[1] + 0.8, m[2] - 0.6] as Vec3 })()} size={0.45} color="#8cc3ff" />
     </group>
   )
 }
@@ -1956,14 +1966,14 @@ export function PuntosModel({ kind, tool, barD, spin }: { kind: PuntoKind; tool:
   }
   if (kind === 'giratorio') {
     return (
-      <group position={[5, 0, 0]}>
-        <Part id="cuerpo" offset={[-6, 0, 0]} labelAt={[-7, 3.3, 0]}>
+      <group position={[3, 0, 0]}>
+        <Part id="cuerpo" offset={[-4, 0, 0]} labelAt={[-7, 3.3, 0]}>
           <PuntoGiratorioCuerpo />
         </Part>
-        <Part id="rodamiento-trasero" offset={[3.5, 0, 0]} labelAt={[-8.75, 3.0, 0]}>
+        <Part id="rodamiento-trasero" offset={[2.5, 0, 0]} labelAt={[-8.75, 3.0, 0]}>
           <PuntoGiratorioRodamientos which="a" />
         </Part>
-        <Part id="rodamiento-delantero" offset={[6, 0, 0]} labelAt={[-5.2, 3.0, 0]}>
+        <Part id="rodamiento-delantero" offset={[5, 0, 0]} labelAt={[-5.2, 3.0, 0]}>
           <PuntoGiratorioRodamientos which="b" />
         </Part>
         <Part id="punta" offset={[10, 0, 0]} labelAt={[-1.5, 2.6, 0]}>
@@ -1999,7 +2009,7 @@ export function PuntosModel({ kind, tool, barD, spin }: { kind: PuntoKind; tool:
       </group>
     )
   }
-  const s = 0.62
+  const s = 0.42
   if (kind === 'luneta-fija') {
     return (
       <group scale={s} position={[0, -12 * s, 0]}>
@@ -2103,7 +2113,7 @@ export function HerramientasModel({ kind, angles }: { kind: ToolKind; angles: bo
             <Part id="filo" labelAt={[2.0, 2.4, 1.2]}>
               <IntegralCara which="filo" />
             </Part>
-            <AngulosHerramienta x={4.6} />
+            <AngulosHerramienta x={4.0} k={1.25} />
           </>
         )}
       </group>

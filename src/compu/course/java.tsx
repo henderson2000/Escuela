@@ -3232,11 +3232,11 @@ public class Main {
             definiste, muestra algo como <code>Producto@1b6d3586</code>. Para que muestre algo útil, lo <b>redefinís</b>:
           </p>
           <pre>
-            <code>{'class Equipo {\n    String nombre;\n    int puntos;\n    ...\n    // @Override\n    public String toString() {\n        return nombre + " (" + puntos + " pts)";\n    }\n}\nSystem.out.println(e);   // Talleres (10 pts)'}</code>
+            <code>{'class Equipo {\n    String nombre;\n    int puntos;\n    ...\n    @Override\n    public String toString() {\n        return nombre + " (" + puntos + " pts)";\n    }\n}\nSystem.out.println(e);   // Talleres (10 pts)'}</code>
           </pre>
           <p>
-            La línea <code>// @Override</code> es un comentario que avisa que el método reemplaza a uno que ya existía (lo vas a ver en
-            el módulo de herencia).
+            La línea <code>@Override</code> es una <b>anotación</b>: avisa que el método reemplaza a uno que ya existía (lo vas a ver
+            en el módulo de herencia).
           </p>
         </>
       ),
@@ -3293,7 +3293,7 @@ class Producto {
         this.stock = stock;
     }
 
-    // @Override
+    @Override
     public String toString() {
         if (stock == 0) {
             return nombre + " - $" + precio + " (sin stock)";
@@ -3556,12 +3556,11 @@ public class Main {
             la madre puede guardar cualquier hija, y al llamar al método se ejecuta <b>el de la hija</b>. Eso es <b>polimorfismo</b>:
           </p>
           <pre>
-            <code>{'class Saludo { String texto() { return "Hola"; } }\nclass SaludoCordobes extends Saludo {\n    // @Override\n    String texto() { return "¿Qué hacé, loco?"; }\n}\n...\nSaludo s = new SaludoCordobes();\nSystem.out.println(s.texto());   // usa el de SaludoCordobes'}</code>
+            <code>{'class Saludo {\n    String texto() { return "Hola"; }\n}\nclass SaludoCordobes extends Saludo {\n    @Override\n    String texto() { return "¿Qué hacé?"; }\n}\n...\nSaludo s = new SaludoCordobes();\n// usa el texto() de SaludoCordobes:\nSystem.out.println(s.texto());'}</code>
           </pre>
           <p>
-            En Java se marca el método redefinido con la anotación <code>@Override</code> arriba. En este editor las anotaciones (lo que
-            empieza con <code>@</code>) todavía no funcionan, así que la escribimos como comentario: <code>// @Override</code>. El método
-            se redefine igual: lo que importa es que tenga <b>el mismo nombre y los mismos parámetros</b> que el de la madre.
+            En Java se marca el método redefinido con la anotación <code>@Override</code> arriba. No es obligatoria, pero ayuda: si
+            te equivocás en el nombre, Java te avisa. Lo que importa es que tenga <b>el mismo nombre y los mismos parámetros</b> que el de la madre.
           </p>
         </>
       ),
@@ -3570,7 +3569,7 @@ public class Main {
           <p>
             Para la peña de la cooperadora hay entradas <code>General</code> ($3000), <code>Socio</code> ($2000) y <code>Menor</code>{' '}
             ($1500). Ya está la clase <code>Entrada</code> (la general). Creá <code>EntradaSocio</code> y <code>EntradaMenor</code> que
-            hereden de <code>Entrada</code> y redefinan <code>tipo()</code> y <code>precio()</code> (con el comentario <code>// @Override</code> arriba). Después hacé
+            hereden de <code>Entrada</code> y redefinan <code>tipo()</code> y <code>precio()</code> (con <code>@Override</code> arriba). Después hacé
             que el main cree la entrada que corresponde a cada letra (G, S o M):
           </p>
           <pre>
@@ -3629,24 +3628,24 @@ class Entrada {
 }
 
 class EntradaSocio extends Entrada {
-    // @Override
+    @Override
     String tipo() {
         return "Socio";
     }
 
-    // @Override
+    @Override
     int precio() {
         return 2000;
     }
 }
 
 class EntradaMenor extends Entrada {
-    // @Override
+    @Override
     String tipo() {
         return "Menor";
     }
 
-    // @Override
+    @Override
     int precio() {
         return 1500;
     }
@@ -3952,7 +3951,7 @@ public class Main {
             lista polimórfica. Un cuadrado <b>es un</b> rectángulo con base y altura iguales, así que puede heredar de él:
           </p>
           <pre>
-            <code>{'class Cuadrado extends Rectangulo {\n    Cuadrado(double lado) { super(lado, lado); }\n    // @Override\n    String nombre() { return "Cuadrado"; }\n}'}</code>
+            <code>{'class Cuadrado extends Rectangulo {\n    Cuadrado(double lado) { super(lado, lado); }\n    @Override\n    String nombre() { return "Cuadrado"; }\n}'}</code>
           </pre>
           <p>
             <code>String.format</code> funciona como <code>printf</code> pero devuelve el texto en vez de mostrarlo.
@@ -4007,7 +4006,7 @@ abstract class Figura {
     abstract double perimetro();
     abstract String nombre();
 
-    // @Override
+    @Override
     public String toString() {
         return String.format("%s: área %.2f, perímetro %.2f", nombre(), area(), perimetro());
     }
@@ -4031,7 +4030,7 @@ class Rectangulo extends Figura {
 
 class Cuadrado extends Rectangulo {
     Cuadrado(double lado) { super(lado, lado); }
-    // @Override
+    @Override
     String nombre() { return "Cuadrado"; }
 }
 

@@ -2,6 +2,7 @@
 import { lines, type Lesson } from './types'
 
 import { WEB_CHALLENGES } from './challenges-web'
+import { JAVA_CHALLENGES } from './challenges-java'
 
 const BASE: Lesson[] = [
   {
@@ -53,4 +54,13 @@ const BASE: Lesson[] = [
 ]
 
 /** todos los desafíos, alternando un poco los de web y Java */
-export const CHALLENGES: Lesson[] = [...BASE, ...WEB_CHALLENGES]
+export const CHALLENGES: Lesson[] = (() => {
+  const web = [BASE[1], ...WEB_CHALLENGES]
+  const java = [BASE[0], ...JAVA_CHALLENGES]
+  const out: Lesson[] = []
+  for (let i = 0; i < Math.max(web.length, java.length); i++) {
+    if (java[i]) out.push(java[i])
+    if (web[i]) out.push(web[i])
+  }
+  return out
+})()
