@@ -237,14 +237,15 @@ function DinRail({ length, x = 0 }: { length: number; x?: number }) {
     s.closePath()
     const g = new THREE.ExtrudeGeometry(s, { depth: length, bevelEnabled: false })
     // forma en (x=z, y=y), extruida en z → se gira para que la extrusión vaya por x
-    g.rotateY(Math.PI / 2)
-    g.translate(-length / 2, 0, 0)
+    // (rotar −90° deja el perfil con z hacia atrás: alas en z = 0, alma en z = −0,75)
+    g.rotateY(-Math.PI / 2)
+    g.translate(length / 2, 0, 0)
     return g
   }, [length])
   const slots = useBoxes(
     Array.from({ length: Math.floor(length / 2.5) }, (_, i) => ({
-      p: [-length / 2 + 1.25 + i * 2.5, 0, -0.69] as Vec3,
-      s: [1.5, 0.52, 0.02] as Vec3,
+      p: [-length / 2 + 1.25 + i * 2.5, 0, -0.8] as Vec3,
+      s: [1.5, 0.52, 0.12] as Vec3,
     })),
     [length],
   )
@@ -258,6 +259,82 @@ function DinRail({ length, x = 0 }: { length: number; x?: number }) {
         <meshStandardMaterial color="#0d0f12" roughness={0.9} />
       </mesh>
     </group>
+  )
+}
+
+/** Profundidad del canal para el riel en la espalda de los equipos y media altura del canal. */
+const DIN_D = 0.15
+const DIN_Y = 1.85
+/** Ancho de la corredera de traba (y de su guía). */
+const LATCH_W = 1.6
+/** El riel se dibuja con las alas metidas en el canal, al ras de la espalda. */
+const railZ = (zb: number) => zb + DIN_D
+
+/**
+ * Espalda de un equipo para riel DIN: dos "costillas" arriba y abajo que dejan entre
+ * ellas el canal de 35 mm donde apoyan las alas del riel, con el gancho fijo arriba.
+ * Abajo queda la guía donde corre la corredera de traba (DinLatch).
+ * El cuerpo del equipo tiene que empezar en zb + DIN_D.
+ */
+function DinBack({ w, h, zb, color }: { w: number; h: number; zb: number; color: string }) {
+  const band = h / 2 - DIN_Y
+  const d = DIN_D + 0.25
+  const sideW = w / 2 - LATCH_W / 2 - 0.04
+  return (
+    <>
+      <RoundedBox args={[w, band, d]} radius={0.06} smoothness={2} position={[0, DIN_Y + band / 2, zb + d / 2]} castShadow>
+        <meshStandardMaterial color={color} roughness={0.6} />
+      </RoundedBox>
+      {[-1, 1].map((sx) => (
+        <RoundedBox key={sx} args={[sideW, band, d]} radius={0.06} smoothness={2} position={[sx * (w / 2 - sideW / 2), -DIN_Y - band / 2, zb + d / 2]} castShadow>
+          <meshStandardMaterial color={color} roughness={0.6} />
+        </RoundedBox>
+      ))}
+      {/* gancho fijo: labio que tapa el borde del ala superior del riel */}
+      <mesh position={[0, DIN_Y - 0.12, zb + 0.025]}>
+        <boxGeometry args={[w - 0.5, 0.26, 0.05]} />
+        <meshStandardMaterial color={color} roughness={0.6} />
+      </mesh>
+    </>
+  )
+}
+
+/**
+ * Corredera de traba para riel DIN (el resorte va adentro y no se ve). Arriba tiene la uña
+ * que agarra el ala inferior del riel; abajo asoma unos mm bajo la carcasa con el ojal
+ * para el destornillador.
+ */
+function DinLatch({ h, zb, color = '#bdc0bb' }: { h: number; zb: number; color?: string }) {
+  const yb = -h / 2
+  const ext = 0.25
+  const hw = LATCH_W / 2
+  const box = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number) => ({
+    p: [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2] as Vec3,
+    s: [x1 - x0, y1 - y0, z1 - z0] as Vec3,
+  })
+  const body = useBoxes(
+    [
+      box(-hw, hw, yb + 0.12, -DIN_Y, zb, zb + DIN_D), // placa
+      box(-hw, -0.28, yb - ext, yb + 0.12, zb, zb + DIN_D), // marco del ojal
+      box(0.28, hw, yb - ext, yb + 0.12, zb, zb + DIN_D),
+      box(-0.28, 0.28, yb - ext, yb - ext + 0.08, zb, zb + DIN_D),
+      box(-hw + 0.1, hw - 0.1, -DIN_Y, -DIN_Y + 0.24, zb, zb + 0.05), // uña sobre el ala del riel
+      box(-hw, hw, yb - ext, yb - 0.02, zb + DIN_D, zb + 0.45), // pie bajo la carcasa
+      ...[0.4, 0.52, 0.64].map((dy) => box(-0.5, 0.5, yb + dy, yb + dy + 0.05, zb - 0.035, zb)), // estrías para el dedo
+    ],
+    [h, zb],
+  )
+  return (
+    <>
+      <mesh geometry={body} castShadow>
+        <meshStandardMaterial color={color} roughness={0.62} />
+      </mesh>
+      {/* fondo oscuro del ojal */}
+      <mesh position={[0, yb - 0.025, zb + 0.12]}>
+        <boxGeometry args={[0.56, 0.29, 0.04]} />
+        <meshStandardMaterial color="#25292d" roughness={0.9} />
+      </mesh>
+    </>
   )
 }
 
@@ -608,8 +685,42 @@ function LogoHousing() {
   // ranuras de ventilación arriba y abajo
   const vents = useBoxes(
     [-1, 1].flatMap((sy) =>
-      Array.from({ length: 9 }, (_, i) => ({ p: [-2.8 + i * 0.7, (sy * LH) / 2, LB + 1.0] as Vec3, s: [0.42, 0.01, 1.3] as Vec3 })),
+      Array.from({ length: 11 }, (_, i) => ({ p: [-2.75 + i * 0.55, (sy * LH) / 2, LB + 1.15] as Vec3, s: [0.14, 0.006, 0.9] as Vec3 })),
     ),
+    [],
+  )
+  // inscripciones moldeadas en la espalda (se leen mirando desde atrás) y ranura para atornillar
+  const backTex = useCanvasTexture(
+    Math.round((LW - 0.3) * S),
+    Math.round((LH / 2 - DIN_Y - 0.3) * S),
+    (ctx, w, h) => {
+      ctx.clearRect(0, 0, w, h)
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillStyle = 'rgba(70,76,80,0.55)'
+      ctx.font = `bold ${0.3 * S}px Arial, sans-serif`
+      ctx.fillText('SIEMENS', w / 2, 0.42 * S)
+      ctx.font = `bold italic ${0.26 * S}px Arial, sans-serif`
+      ctx.fillText('LOGO! 8', w / 2 - 1.5 * S, 1.6 * S)
+      ctx.font = `${0.17 * S}px Arial, sans-serif`
+      ctx.fillText('6ED1052-1FB08-0BA1', w / 2 + 1.2 * S, 1.6 * S)
+      ctx.fillText('115…240 V AC/DC  ·  IP20  ·  CE', w / 2, 1.95 * S)
+      // ranura para fijar con tornillo sobre una placa (alternativa al riel)
+      const cx = w / 2
+      const cy = 1.0 * S
+      const r = 0.15 * S
+      ctx.fillStyle = '#9da19d'
+      ctx.beginPath()
+      ctx.roundRect(cx - r - 6, cy - r - 0.12 * S - 6, 2 * r + 12, 2 * r + 0.24 * S + 12, r + 6)
+      ctx.fill()
+      const g = ctx.createLinearGradient(0, cy - r - 0.12 * S, 0, cy + r + 0.12 * S)
+      g.addColorStop(0, '#15181b')
+      g.addColorStop(1, '#3a3f43')
+      ctx.fillStyle = g
+      ctx.beginPath()
+      ctx.roundRect(cx - r, cy - r - 0.12 * S, 2 * r, 2 * r + 0.24 * S, r)
+      ctx.fill()
+    },
     [],
   )
   const recess = useMemo(() => new THREE.RingGeometry(0.19, 0.25, 24), [])
@@ -617,9 +728,15 @@ function LogoHousing() {
   return (
     <>
       {/* cuerpo trasero (ancho completo) y parte central que sobresale */}
-      <RoundedBox args={[LW, LH, LS - LB]} radius={0.1} smoothness={3} position={[0, 0, (LB + LS) / 2]} castShadow>
+      <RoundedBox args={[LW, LH, LS - LB - DIN_D]} radius={0.1} smoothness={3} position={[0, 0, (LB + DIN_D + LS) / 2]} castShadow>
         <meshStandardMaterial color={RAL7035} roughness={0.6} />
       </RoundedBox>
+      {/* espalda: canal del riel DIN con el gancho fijo arriba y la guía de la corredera abajo */}
+      <DinBack w={LW} h={LH} zb={LB} color={RAL7035} />
+      <mesh position={[0, (DIN_Y + LH / 2) / 2, LB - 0.002]} rotation={[0, Math.PI, 0]}>
+        <planeGeometry args={[LW - 0.3, LH / 2 - DIN_Y - 0.3]} />
+        <meshStandardMaterial map={backTex} transparent depthWrite={false} roughness={0.6} />
+      </mesh>
       <RoundedBox args={[LW, 2 * LC, LF - LS + 0.3]} radius={0.12} smoothness={3} position={[0, 0, (LS - 0.3 + LF) / 2]} castShadow>
         <meshStandardMaterial color="#d0d3cf" roughness={0.55} />
       </RoundedBox>
@@ -640,7 +757,7 @@ function LogoHousing() {
         <meshStandardMaterial color="#121416" roughness={0.9} />
       </mesh>
       <mesh geometry={vents}>
-        <meshStandardMaterial color="#2a2e31" roughness={0.9} />
+        <meshStandardMaterial color="#3b4044" roughness={0.9} />
       </mesh>
       {TOP_X.map((x) => (
         <mesh key={`t${x}`} geometry={recess} position={[x, SCREW_Y, LS + 0.003]}>
@@ -656,11 +773,6 @@ function LogoHousing() {
       <mesh position={[LW / 2 + 0.002, 0, -0.2]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[2.2, 2.6]} />
         <meshStandardMaterial color="#b9bdb9" roughness={0.6} />
-      </mesh>
-      {/* ganchos fijos de arriba que se enganchan en el ala del riel */}
-      <mesh position={[0, 1.9, LB - 0.08]}>
-        <boxGeometry args={[4.5, 0.3, 0.16]} />
-        <meshStandardMaterial color="#c4c7c3" roughness={0.6} />
       </mesh>
     </>
   )
@@ -922,33 +1034,7 @@ function MicroSd() {
 }
 
 function DinClip() {
-  const spring = useMemo(() => springGeometry(0.12, 0.02, 7), [])
-  return (
-    <group>
-      {/* corredera que traba el ala inferior del riel */}
-      <mesh position={[0, -3.1, LB - 0.06]}>
-        <boxGeometry args={[1.8, 2.9, 0.12]} />
-        <meshStandardMaterial color="#c9ccc8" roughness={0.6} />
-      </mesh>
-      <mesh position={[0, -1.72, LB - 0.2]}>
-        <boxGeometry args={[1.8, 0.16, 0.25]} />
-        <meshStandardMaterial color="#c9ccc8" roughness={0.6} />
-      </mesh>
-      {/* lengüeta para el destornillador */}
-      <mesh position={[0, -LH / 2 - 0.15, LB + 0.35]}>
-        <boxGeometry args={[1.1, 0.3, 0.7]} />
-        <meshStandardMaterial color="#c9ccc8" roughness={0.6} />
-      </mesh>
-      <mesh position={[0, -LH / 2 - 0.301, LB + 0.35]} rotation={[Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[0.5, 0.18]} />
-        <meshStandardMaterial color="#222" />
-      </mesh>
-      {/* resorte interno de la corredera */}
-      <mesh geometry={spring} position={[0, -2.3, LB - 0.25]} rotation={[Math.PI / 2, 0, 0]} scale={[1, 1, 1.2]}>
-        <meshStandardMaterial {...metal} />
-      </mesh>
-    </group>
-  )
+  return <DinLatch h={LH} zb={LB} />
 }
 
 /* ---------------------------------------------------- tablero de prueba */
@@ -1274,7 +1360,7 @@ export function LogoModel({
       </Part>
       {rail && (
         <Part id="riel" offset={[0, 0, -4]} labelAt={[showBoard ? -5.5 : -5, 0, LB - 0.4]}>
-          <group position={[0, 0, LB]}>
+          <group position={[0, 0, railZ(LB)]}>
             <DinRail length={showBoard ? 25 : 12.5} x={showBoard ? 5.2 : 0} />
           </group>
         </Part>
@@ -1474,9 +1560,12 @@ function ContactorHousing() {
   const recess = useMemo(() => new THREE.RingGeometry(0.2, 0.27, 24), [])
   return (
     <>
-      <RoundedBox args={[CW, CH, CSZ - CB]} radius={0.1} smoothness={3} position={[0, 0, (CB + CSZ) / 2]} castShadow>
+      <RoundedBox args={[CW, CH, CSZ - CB - DIN_D]} radius={0.1} smoothness={3} position={[0, 0, (CB + DIN_D + CSZ) / 2]} castShadow>
         <meshStandardMaterial color="#a9adaa" roughness={0.6} />
       </RoundedBox>
+      {/* espalda: canal del riel, gancho fijo arriba y corredera de traba abajo */}
+      <DinBack w={CW} h={CH} zb={CB} color="#a9adaa" />
+      <DinLatch h={CH} zb={CB} color="#9fa3a0" />
       <RoundedBox args={[CW, 2 * CC, CFZ - CSZ + 0.3]} radius={0.14} smoothness={3} position={[0, 0, (CSZ - 0.3 + CFZ) / 2]} castShadow>
         <meshStandardMaterial color="#bcbfbb" roughness={0.55} />
       </RoundedBox>
@@ -1507,14 +1596,6 @@ function ContactorHousing() {
           <meshStandardMaterial color="#3a3f44" roughness={0.8} />
         </mesh>
       ))}
-      <mesh position={[0, 1.95, CB - 0.08]}>
-        <boxGeometry args={[3.2, 0.3, 0.16]} />
-        <meshStandardMaterial color="#b9bcb8" roughness={0.6} />
-      </mesh>
-      <mesh position={[0, -CH / 2 - 0.12, CB + 0.35]}>
-        <boxGeometry args={[1.0, 0.25, 0.7]} />
-        <meshStandardMaterial color="#b9bcb8" roughness={0.6} />
-      </mesh>
     </>
   )
 }
@@ -1683,7 +1764,7 @@ export function ContactorModel({ energized }: { energized: boolean }) {
         ))}
       </Part>
       <Part id="riel" offset={[0, 0, -3]} labelAt={[-4, 0, CB - 0.4]}>
-        <group position={[0, 0, CB]}>
+        <group position={[0, 0, railZ(CB)]}>
           <DinRail length={10} />
         </group>
       </Part>
@@ -2247,9 +2328,12 @@ function BreakerHousing() {
   const recess = useMemo(() => new THREE.RingGeometry(0.22, 0.29, 24), [])
   return (
     <>
-      <RoundedBox args={[GW, GH, GS - GB]} radius={0.1} smoothness={3} position={[0, 0, (GB + GS) / 2]} castShadow>
+      <RoundedBox args={[GW, GH, GS - GB - DIN_D]} radius={0.1} smoothness={3} position={[0, 0, (GB + DIN_D + GS) / 2]} castShadow>
         <meshStandardMaterial color="#a9adaa" roughness={0.6} />
       </RoundedBox>
+      {/* espalda: canal del riel, gancho fijo arriba y corredera de traba abajo */}
+      <DinBack w={GW} h={GH} zb={GB} color="#a9adaa" />
+      <DinLatch h={GH} zb={GB} color="#9fa3a0" />
       <RoundedBox args={[GW, 2 * GC, GF - GS + 0.3]} radius={0.14} smoothness={3} position={[0, 0, (GS - 0.3 + GF) / 2]} castShadow>
         <meshStandardMaterial color="#bcbfbb" roughness={0.55} />
       </RoundedBox>
@@ -2279,10 +2363,6 @@ function BreakerHousing() {
       <mesh position={[0, KNOB_Y, GF + 0.02]}>
         <circleGeometry args={[1.45, 48]} />
         <meshStandardMaterial color="#2a2e32" roughness={0.6} />
-      </mesh>
-      <mesh position={[0, -GH / 2 - 0.12, GB + 0.4]}>
-        <boxGeometry args={[1.0, 0.25, 0.7]} />
-        <meshStandardMaterial color="#b9bcb8" roughness={0.6} />
       </mesh>
     </>
   )
@@ -2544,9 +2624,15 @@ export function MotorBreakerModel({ state, setting, cause }: { state: BreakerSta
       </Part>
       <Part id="auxiliar" offset={[-3.2, 0, 0.6]} labelAt={[-GW / 2 - 0.5, 3.6, 0]}>
         <group position={[-GW / 2 - 0.47, 0, 0]}>
-          <RoundedBox args={[0.9, 7.2, 5.4]} radius={0.08} smoothness={2} position={[0, 0, GB + 2.7]} castShadow>
+          <RoundedBox args={[0.9, 7.2, 5.4 - DIN_D]} radius={0.08} smoothness={2} position={[0, 0, GB + (5.4 + DIN_D) / 2]} castShadow>
             <meshStandardMaterial color="#a9adaa" roughness={0.6} />
           </RoundedBox>
+          {/* la espalda sigue el mismo canal del riel que el guardamotor */}
+          {[-1, 1].map((sy) => (
+            <RoundedBox key={sy} args={[0.9, 3.6 - DIN_Y, DIN_D + 0.25]} radius={0.05} smoothness={2} position={[0, sy * (DIN_Y + (3.6 - DIN_Y) / 2), GB + (DIN_D + 0.25) / 2]} castShadow>
+              <meshStandardMaterial color="#a9adaa" roughness={0.6} />
+            </RoundedBox>
+          ))}
           {[-1, 1].flatMap((sy) =>
             [-0.2, 0.2].map((dx) => <FrontScrew key={`${sy}${dx}`} position={[dx, sy * 3.1, GB + 5.42]} r={0.14} />),
           )}
@@ -2554,7 +2640,7 @@ export function MotorBreakerModel({ state, setting, cause }: { state: BreakerSta
         </group>
       </Part>
       <Part id="riel" offset={[0, 0, -3]} labelAt={[-4.4, 0, GB - 0.4]}>
-        <group position={[0, 0, GB]}>
+        <group position={[0, 0, railZ(GB)]}>
           <DinRail length={11} x={-0.5} />
         </group>
       </Part>
