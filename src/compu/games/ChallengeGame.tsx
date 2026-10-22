@@ -15,7 +15,7 @@ export function ChallengeGame() {
     <GameShell
       title="Desafíos de código"
       icon="🧩"
-      info="Problemas para resolver con Java, HTML y CSS. Cada desafío vale 100 puntos; cada comprobación con requisitos sin cumplir resta 10."
+      info="Problemas para resolver con HTML y JavaScript. Cada desafío vale 100 puntos; cada comprobación con requisitos sin cumplir resta 10."
     >
       <LevelTabs game={CHALLENGE_GAME} levels={CHALLENGES.map((c, i) => ({ id: c.id, title: `${i + 1}. ${c.kind === 'web' ? '🧱' : '⚡'} ${c.title}` }))} current={li} locked={playing} onSelect={setLi} />
       <ChallengeLevel key={CHALLENGES[li].id} ch={CHALLENGES[li]} onPlayingChange={setPlaying} onNext={li + 1 < CHALLENGES.length ? () => setLi(li + 1) : undefined} />

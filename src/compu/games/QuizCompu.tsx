@@ -1,10 +1,12 @@
 import { QuizGame, shuffle, type QuizRound } from '../../games/QuizGame'
 import './quiz.css'
 
-type Lang = 'html' | 'css' | 'java'
+type Lang = 'html' | 'js'
 
 interface Q {
   lang: Lang
+  /** las opciones son lo que muestra la consola (se ven con letra de código) */
+  out?: boolean
   prompt: string
   code: string
   /** la primera opción es la correcta (después se mezclan) */
@@ -12,7 +14,7 @@ interface Q {
   explain: string
 }
 
-const LANG_NAME: Record<Lang, string> = { html: 'HTML', css: 'CSS', java: 'Java' }
+const LANG_NAME: Record<Lang, string> = { html: 'HTML', js: 'JavaScript' }
 
 /* ------------------------------------------------------------------ preguntas */
 
@@ -36,70 +38,66 @@ const POOL: Q[] = [
   { lang: 'html', prompt: '¿Qué hace el atributo required?', code: '<input type="email" required>', options: ['No deja enviar el formulario si el campo está vacío', 'Oculta el campo', 'Pone el campo en rojo siempre', 'Escribe un mail de ejemplo'], explain: 'required hace que el campo sea obligatorio.' },
   { lang: 'html', prompt: '¿Cuál es la celda de encabezado de una tabla?', code: '<tr><??>Equipo</??><??>Puntos</??></tr>', options: ['th', 'td', 'thead', 'caption'], explain: 'th es una celda de encabezado (negrita y centrada). thead es la parte que agrupa esas filas.' },
 
-  /* ---------------------------------------------------------------- CSS */
-  { lang: 'css', prompt: '¿De qué color queda el párrafo?', code: 'p { color: red; }\np { color: blue; }', options: ['Azul', 'Rojo', 'Violeta (se mezclan)', 'Negro'], explain: 'Las dos reglas son igual de específicas: gana la que está más abajo (cascada).' },
-  { lang: 'css', prompt: '¿De qué color queda el título?', code: '<h1 id="t" class="t">Hola</h1>\n\n#t { color: red; }\n.t { color: green; }', options: ['Rojo', 'Verde', 'Negro', 'Depende del orden'], explain: 'Un id es más específico que una clase, así que gana #t aunque esté arriba.' },
-  { lang: 'css', prompt: '¿De qué color queda el párrafo?', code: '<div><p class="x">Hola</p></div>\n\n.x { color: green; }\ndiv p { color: orange; }', options: ['Verde', 'Naranja', 'Negro', 'Depende del navegador'], explain: 'Una clase (.x) le gana a dos etiquetas (div p), aunque esté más arriba.' },
-  { lang: 'css', prompt: '¿A qué elementos se aplica este selector?', code: '.menu a { color: white; }', options: ['A los links que están dentro de .menu', 'A los links con clase menu', 'A .menu y a todos los links', 'Solo al primer link'], explain: 'El espacio es el selector descendiente: elementos a dentro de un elemento con clase menu.' },
-  { lang: 'css', prompt: '¿A qué elementos se aplica este selector?', code: 'h1, h2 { color: navy; }', options: ['A todos los h1 y a todos los h2', 'Solo a los h2 dentro de h1', 'Solo al primer h1', 'A ninguno: la coma es un error'], explain: 'La coma agrupa: la misma regla para varios selectores.' },
-  { lang: 'css', prompt: '¿Cuánto mide de ancho en total la caja?', code: '.caja {\n  width: 200px;\n  padding: 10px;\n  border: 5px solid black;\n}', options: ['230px', '200px', '215px', '210px'], explain: 'Por defecto (content-box): 200 + 10 + 10 de padding + 5 + 5 de borde = 230px.' },
-  { lang: 'css', prompt: '¿Cuánto mide de ancho en total la caja?', code: '.caja {\n  box-sizing: border-box;\n  width: 200px;\n  padding: 10px;\n  border: 5px solid black;\n}', options: ['200px', '230px', '170px', '215px'], explain: 'Con border-box, el width ya incluye padding y borde.' },
-  { lang: 'css', prompt: '¿Cuánto margen queda a la izquierda?', code: 'p { margin: 10px 20px; }', options: ['20px', '10px', '30px', '0'], explain: 'Con dos valores: el primero es arriba/abajo y el segundo izquierda/derecha.' },
-  { lang: 'css', prompt: '¿Cuánto padding queda a la izquierda?', code: 'div { padding: 1px 2px 3px 4px; }', options: ['4px', '1px', '2px', '3px'], explain: 'Con cuatro valores el orden es como el reloj: arriba, derecha, abajo, izquierda.' },
-  { lang: 'css', prompt: '¿Qué color es?', code: 'color: #ff0000;', options: ['Rojo', 'Verde', 'Azul', 'Blanco'], explain: 'En hexadecimal van rojo, verde y azul: ff es el máximo de rojo y 00 nada de los otros.' },
-  { lang: 'css', prompt: '¿Qué color es?', code: 'background-color: rgb(0, 0, 255);', options: ['Azul', 'Rojo', 'Negro', 'Verde'], explain: 'rgb(rojo, verde, azul): solo azul al máximo.' },
-  { lang: 'css', prompt: '¿Qué pasa con el elemento?', code: '.aviso { display: none; }', options: ['Desaparece y no ocupa lugar', 'Se vuelve transparente pero ocupa su lugar', 'Se pone en gris', 'Queda en una línea'], explain: 'display: none lo saca de la página por completo.' },
-  { lang: 'css', prompt: '¿Cómo quedan los hijos de .fila?', code: '.fila {\n  display: flex;\n  justify-content: center;\n}', options: ['En fila, centrados horizontalmente', 'Uno debajo del otro', 'En fila, pegados a la derecha', 'Centrados solo verticalmente'], explain: 'flex pone los hijos en fila y justify-content: center los junta en el medio de esa fila.' },
-  { lang: 'css', prompt: '¿Cómo quedan los hijos de .lista?', code: '.lista {\n  display: flex;\n  flex-direction: column;\n}', options: ['Uno debajo del otro', 'Uno al lado del otro', 'Superpuestos', 'En una grilla de 2 columnas'], explain: 'flex-direction: column cambia la dirección a vertical.' },
-  { lang: 'css', prompt: '¿Cuántas columnas tiene la grilla?', code: '.galeria {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n}', options: ['3 columnas iguales', '1 columna de 3fr', '3 filas', '4 columnas'], explain: 'repeat(3, 1fr) es lo mismo que 1fr 1fr 1fr.' },
-  { lang: 'css', prompt: '¿Cuándo se aplica esta regla?', code: '.boton:hover { background: darkgreen; }', options: ['Mientras el mouse está encima del botón', 'Cuando se hace doble clic', 'Siempre', 'Cuando la página carga'], explain: ':hover es el estado de "mouse encima".' },
-  { lang: 'css', prompt: '¿Qué filas se pintan?', code: 'tr:nth-child(even) { background: #eee; }', options: ['Las pares (2ª, 4ª, 6ª…)', 'Las impares (1ª, 3ª, 5ª…)', 'Solo la primera', 'Todas'], explain: 'even = pares, odd = impares.' },
-  { lang: 'css', prompt: '¿Cuándo se aplica lo de adentro?', code: '@media (max-width: 600px) {\n  .menu { flex-direction: column; }\n}', options: ['Cuando la pantalla mide 600px o menos', 'Cuando la pantalla mide más de 600px', 'Siempre', 'Solo al imprimir'], explain: 'max-width: 600px = "hasta 600px de ancho": pantallas angostas como la del celular.' },
-  { lang: 'css', prompt: '¿Qué tamaño de letra tiene el span?', code: '<p>Hola <span>Córdoba</span></p>\n\np { font-size: 20px; }\nspan { font-size: 2em; }', options: ['40px', '20px', '2px', '32px'], explain: 'em es relativo a la letra del padre: 2 × 20px = 40px.' },
-  { lang: 'css', prompt: '¿Qué forma tiene la caja?', code: '.luz {\n  width: 60px;\n  height: 60px;\n  border-radius: 50%;\n}', options: ['Un círculo', 'Un cuadrado', 'Un óvalo acostado', 'Un triángulo'], explain: 'Una caja cuadrada con border-radius: 50% queda redonda.' },
-  { lang: 'css', prompt: '¿Qué selector elige solo el párrafo con clase aviso?', code: '<p class="aviso">¡Atención!</p>\n<p>Texto común</p>', options: ['p.aviso', 'p .aviso', '#aviso', 'p, .aviso'], explain: 'p.aviso (sin espacio) es "un p que además tiene la clase aviso". Con espacio buscaría un .aviso dentro de un p.' },
-  { lang: 'css', prompt: '¿Qué hace esta regla con los links?', code: 'a { text-decoration: none; }', options: ['Les saca el subrayado', 'Los oculta', 'Los pone en negrita', 'Los deja sin color'], explain: 'text-decoration: none quita el subrayado.' },
+  { lang: 'html', prompt: '¿Qué se ve en la página?', code: '<ul>\n  <li>Fútbol</li>\n  <li>Vóley</li>\n</ul>', options: ['Dos ítems con viñetas', 'Dos ítems numerados 1 y 2', '"Fútbol Vóley" en una línea', 'Una tabla de dos filas'], explain: 'ul es una lista sin orden: cada li aparece con una viñeta (un puntito).' },
+  { lang: 'html', prompt: '¿Qué campo sirve para escribir un texto largo, de varias líneas?', code: '<label for="msj">Mensaje</label>\n<?? id="msj"></??>', options: ['textarea', 'input', 'text', 'p'], explain: 'textarea es un campo de varias líneas; input es de una sola línea.' },
+  { lang: 'html', prompt: '¿Qué hace colspan="2"?', code: '<tr>\n  <td colspan="2">Recreo</td>\n</tr>', options: ['La celda ocupa el ancho de dos columnas', 'Repite la celda dos veces', 'La celda ocupa dos filas', 'Pone dos espacios de margen'], explain: 'colspan une columnas; para unir filas se usa rowspan.' },
+  { lang: 'html', prompt: '¿Qué se ve con este input?', code: '<input type="checkbox" id="acepto">\n<label for="acepto">Acepto</label>', options: ['Una casilla para tildar', 'Un círculo para elegir una opción', 'Un campo para escribir', 'Un botón que dice Acepto'], explain: 'checkbox es una casilla que se tilda y destilda. Varias casillas se pueden marcar a la vez.' },
+  { lang: 'html', prompt: '¿Qué etiqueta va al pie de la página, con los datos de contacto o el ©?', code: '<body>\n  <header>…</header>\n  <main>…</main>\n  <??>© 2026 ITS Villada</??>\n</body>', options: ['footer', 'bottom', 'aside', 'end'], explain: 'footer es el pie de la página (o de una sección).' },
+  { lang: 'html', prompt: '¿Qué atributo indica qué archivo de imagen se muestra?', code: '<img ??="escudo.png" alt="Escudo de la escuela">', options: ['src', 'href', 'alt', 'link'], explain: 'src (source) es la dirección de la imagen. href es para los links.' },
 
-  /* ---------------------------------------------------------------- JAVA */
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'int a = 7 / 2;\nSystem.out.println(a);', options: ['3', '3.5', '4', '3.0'], explain: 'La división entre dos int es entera: se descarta la parte decimal.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'System.out.println(7 % 3);', options: ['1', '2', '2.33', '0'], explain: '% es el resto de la división: 7 = 3 × 2 + 1.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'System.out.println("1" + 2 + 3);', options: ['123', '6', '15', '33'], explain: 'Se evalúa de izquierda a derecha: "1" + 2 da "12" (texto), y "12" + 3 da "123".' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'System.out.println(1 + 2 + "3");', options: ['33', '123', '6', '15'], explain: 'Primero 1 + 2 = 3 (números), después 3 + "3" = "33".' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'double d = 7 / 2;\nSystem.out.println(d);', options: ['3.0', '3.5', '3', '4.0'], explain: '7 / 2 se calcula como int (da 3) y recién después se guarda en el double: 3.0.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'System.out.println(7 / 2.0);', options: ['3.5', '3', '3.0', '4'], explain: 'Si uno de los dos es decimal, la división es decimal.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'int x = 5;\nx += 3;\nx *= 2;\nSystem.out.println(x);', options: ['16', '11', '13', '10'], explain: 'x += 3 deja 8; x *= 2 deja 16.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'int i = 5;\ni++;\nSystem.out.println(i);', options: ['6', '5', '7', 'i++'], explain: 'i++ suma 1 a la variable.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'for (int i = 0; i < 3; i++) {\n    System.out.print(i);\n}', options: ['012', '0123', '123', '333'], explain: 'i vale 0, 1 y 2; cuando llega a 3 la condición i < 3 es falsa y termina.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'for (int i = 1; i <= 10; i += 3) {\n    System.out.print(i + " ");\n}', options: ['1 4 7 10', '1 4 7', '1 3 6 9', '3 6 9'], explain: 'Empieza en 1 y suma 3: 1, 4, 7, 10. El 13 ya no cumple i <= 10.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'int nota = 6;\nif (nota >= 7) {\n    System.out.println("Aprobado");\n} else {\n    System.out.println("Recupera");\n}', options: ['Recupera', 'Aprobado', 'Aprobado y Recupera', 'Nada'], explain: '6 >= 7 es falso, así que se ejecuta el else.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'int n = 10;\nif (n > 5 && n < 8) {\n    System.out.println("A");\n} else if (n >= 10) {\n    System.out.println("B");\n} else {\n    System.out.println("C");\n}', options: ['B', 'A', 'C', 'AB'], explain: 'n < 8 es falso, así que el primer if no entra; n >= 10 es verdadero: imprime B.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'String s = "Villada";\nSystem.out.println(s.length());', options: ['7', '6', '8', 'Villada'], explain: 'length() cuenta los caracteres: V-i-l-l-a-d-a son 7.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'System.out.println("Hola".charAt(1));', options: ['o', 'H', 'l', 'a'], explain: 'Las posiciones empiezan en 0: H es la 0, o es la 1.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'int suma = 0;\nfor (int i = 1; i <= 4; i++) {\n    suma += i;\n}\nSystem.out.println(suma);', options: ['10', '4', '6', '15'], explain: '1 + 2 + 3 + 4 = 10.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'int n = 1;\nwhile (n < 20) {\n    n *= 3;\n}\nSystem.out.println(n);', options: ['27', '9', '20', '18'], explain: 'n pasa por 1, 3, 9, 27. Con 27 la condición n < 20 es falsa y sale.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'System.out.println(10 - 2 * 3);', options: ['4', '24', '-4', '6'], explain: 'La multiplicación se hace antes que la resta: 10 - 6 = 4.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'System.out.println((10 - 2) * 3);', options: ['24', '4', '16', '30'], explain: 'Los paréntesis se resuelven primero: 8 × 3 = 24.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'int a = 3, b = 4;\nSystem.out.println(a + b + "!");', options: ['7!', '34!', 'a + b!', '7'], explain: 'Primero se suman los números (7) y después se pega el "!".' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'System.out.println("Total: " + 3 + 4);', options: ['Total: 34', 'Total: 7', 'Total: 3 + 4', 'Total:34'], explain: 'Como empieza con un texto, todo lo que sigue se va pegando: "Total: 3" y después "Total: 34".' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: "System.out.println('a' + 1);", options: ['98', 'a1', 'b', '97'], explain: "Un char sumado a un int da un int: 'a' es el 97 en la tabla de caracteres, más 1 es 98." },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'int x = 10;\nSystem.out.println(x == 10);', options: ['true', 'false', '10', 'x == 10'], explain: '== compara y da un boolean: x vale 10, entonces true.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'System.out.println(5 > 3 && 2 > 4);', options: ['false', 'true', '5', 'Error'], explain: '&& necesita que las dos sean verdaderas, y 2 > 4 es falso.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'System.out.println(5 > 3 || 2 > 4);', options: ['true', 'false', '3', 'Error'], explain: '|| alcanza con que una sea verdadera, y 5 > 3 lo es.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'int x = 17;\nif (x % 2 == 0) {\n    System.out.println("par");\n} else {\n    System.out.println("impar");\n}', options: ['impar', 'par', '1', '8'], explain: '17 % 2 es 1 (no es 0), así que es impar.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'int c = 0;\nfor (int i = 0; i < 3; i++) {\n    for (int j = 0; j < 2; j++) {\n        c++;\n    }\n}\nSystem.out.println(c);', options: ['6', '5', '3', '2'], explain: 'El for de adentro da 2 vueltas por cada una de las 3 vueltas del de afuera: 3 × 2 = 6.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'String t = "";\nfor (int i = 3; i > 0; i--) {\n    t += i;\n}\nSystem.out.println(t);', options: ['321', '123', '6', '3210'], explain: 'i vale 3, 2 y 1, y se van pegando al texto. Con 0 la condición i > 0 es falsa.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'int a = 5;\nint b = a;\nb = 8;\nSystem.out.println(a);', options: ['5', '8', '13', '0'], explain: 'b = a copia el valor. Cambiar b después no cambia a.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'System.out.println(Math.max(3, 9));', options: ['9', '3', '12', '39'], explain: 'Math.max devuelve el mayor de los dos.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'System.out.println(20 / 3 * 3);', options: ['18', '20', '20.0', '6'], explain: '20 / 3 es 6 (división entera) y 6 × 3 = 18.' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'String nombre = "Ana";\nSystem.out.println("Hola, " + nombre + "!");', options: ['Hola, Ana!', 'Hola, nombre!', 'Hola,Ana!', '"Hola, " + nombre + "!"'], explain: 'Se reemplaza la variable por su valor y se pegan los textos (incluidos los espacios que están entre comillas).' },
-  { lang: 'java', prompt: '¿Qué imprime?', code: 'int puntos = 0;\npuntos = puntos + 3;\npuntos = puntos + 1;\nSystem.out.println(puntos);', options: ['4', '3', '1', '0'], explain: 'Ganó (3) y empató (1): 0 + 3 + 1 = 4.' },
+  /* ---------------------------------------------------------------- JAVASCRIPT: ¿qué muestra? */
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log("1" + 2);', options: ['12', '3', '1 2', 'Error'], explain: 'Si uno de los dos es texto, + pega: "1" + 2 da el texto "12".' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(1 + 2 + "3");', options: ['33', '123', '6', '15'], explain: 'Se resuelve de izquierda a derecha: 1 + 2 = 3 (números) y después 3 + "3" = "33".' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log("Total: " + 3 + 4);', options: ['Total: 34', 'Total: 7', 'Total: 3 + 4', 'Error'], explain: 'Como empieza con un texto, se va pegando: "Total: 3" y después "Total: 34".' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log("5" - 2);', options: ['3', '52', '5-2', 'NaN'], explain: 'El signo - solo sirve para restar números, así que JavaScript convierte "5" en 5: da 3. (Con + hubiera pegado los textos.)' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(Number("12") + 3);', options: ['15', '123', '12 3', 'NaN'], explain: 'Number convierte el texto "12" en el número 12, y 12 + 3 = 15.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(Number("hola"));', options: ['NaN', '0', 'hola', 'undefined'], explain: 'NaN (Not a Number) es el resultado cuando un texto no se puede convertir en número.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(typeof 42);', options: ['number', 'string', '42', 'int'], explain: 'typeof dice el tipo de un valor. En JavaScript los números enteros y con coma son todos number.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(typeof "42");', options: ['string', 'number', '42', 'text'], explain: 'Entre comillas es un texto (string), aunque tenga dígitos adentro.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(typeof true);', options: ['boolean', 'string', 'true', 'number'], explain: 'true y false son valores de tipo boolean.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(5 === "5");', options: ['false', 'true', '5', 'Error'], explain: '=== compara el valor y el tipo: un número nunca es === a un texto.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(5 == "5");', options: ['true', 'false', '55', 'Error'], explain: '== convierte antes de comparar, así que da true. Por eso conviene usar === siempre.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(7 % 3);', options: ['1', '2', '2.33', '0'], explain: '% es el resto de la división: 7 = 3 × 2 + 1.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(7 / 2);', options: ['3.5', '3', '4', '3,5'], explain: 'En JavaScript la división da con decimales. Los decimales se escriben con punto.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(Math.floor(7 / 2));', options: ['3', '3.5', '4', '7'], explain: 'Math.floor redondea para abajo: 3.5 queda en 3.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(10 - 2 * 3);', options: ['4', '24', '-4', '6'], explain: 'La multiplicación se hace antes que la resta: 10 - 6 = 4.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'let x = 10;\nx += 5;\nx = x * 2;\nconsole.log(x);', options: ['30', '25', '20', '15'], explain: 'x += 5 deja 15 y después x * 2 da 30.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'let a = 5;\nlet b = a;\nb = 8;\nconsole.log(a);', options: ['5', '8', '13', 'undefined'], explain: 'b = a copia el valor. Cambiar b después no cambia a.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'const nota = 6;\nif (nota >= 7) {\n  console.log("Aprobado");\n} else {\n  console.log("Recupera");\n}', options: ['Recupera', 'Aprobado', 'Aprobado\nRecupera', 'Nada'], explain: '6 >= 7 es falso, así que se ejecuta el else.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'const n = 15;\nif (n > 20) {\n  console.log("A");\n} else if (n > 10) {\n  console.log("B");\n} else {\n  console.log("C");\n}', options: ['B', 'A', 'C', 'B\nC'], explain: 'n > 20 es falso; n > 10 es verdadero, así que muestra B y no sigue mirando el resto.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(5 > 3 && 2 > 4);', options: ['false', 'true', '5', 'Error'], explain: '&& necesita que las dos condiciones sean verdaderas, y 2 > 4 es falso.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log(5 > 3 || 2 > 4);', options: ['true', 'false', '3', 'Error'], explain: '|| alcanza con que una sea verdadera, y 5 > 3 lo es.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'let t = "";\nfor (let i = 1; i <= 4; i++) {\n  t = t + i;\n}\nconsole.log(t);', options: ['1234', '10', '123', '4'], explain: 't es un texto, así que cada número se pega al final: "1", "12", "123", "1234".' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'let suma = 0;\nfor (let i = 1; i <= 4; i++) {\n  suma = suma + i;\n}\nconsole.log(suma);', options: ['10', '4', '6', '1234'], explain: 'suma es un número: 1 + 2 + 3 + 4 = 10.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'for (let i = 0; i < 3; i++) {\n  console.log(i);\n}', options: ['0\n1\n2', '1\n2\n3', '0\n1\n2\n3', '3'], explain: 'i vale 0, 1 y 2. Cuando llega a 3, la condición i < 3 es falsa y el for termina.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'let n = 1;\nwhile (n < 20) {\n  n = n * 3;\n}\nconsole.log(n);', options: ['27', '9', '20', '81'], explain: 'n pasa por 1, 3, 9 y 27. Con 27 la condición n < 20 es falsa y sale del while.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'let c = 0;\nfor (let i = 0; i < 3; i++) {\n  for (let j = 0; j < 2; j++) {\n    c++;\n  }\n}\nconsole.log(c);', options: ['6', '5', '3', '2'], explain: 'El for de adentro da 2 vueltas por cada una de las 3 del de afuera: 3 × 2 = 6.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'function doble(n) {\n  return n * 2;\n}\nconsole.log(doble(4) + 1);', options: ['9', '10', '8', '41'], explain: 'doble(4) devuelve 8, y 8 + 1 = 9.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'function saludar(nombre) {\n  return "Hola, " + nombre + "!";\n}\nconsole.log(saludar("Ana"));', options: ['Hola, Ana!', 'Hola, nombre!', 'Hola,Ana!', 'undefined'], explain: 'Al llamar a la función, nombre vale "Ana" y se pegan los textos (con el espacio que está entre las comillas).' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'function avisar() {\n  console.log("Hola");\n}\nconsole.log("Chau");', options: ['Chau', 'Hola\nChau', 'Chau\nHola', 'Hola'], explain: 'Definir una función no la ejecuta: avisar nunca se llamó, así que solo se muestra Chau.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'const notas = [10, 20, 30];\nconsole.log(notas[1]);', options: ['20', '10', '30', 'undefined'], explain: 'Las posiciones de un arreglo empiezan en 0: notas[0] es 10 y notas[1] es 20.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'const notas = [5, 8, 2];\nconsole.log(notas[3]);', options: ['undefined', '2', 'Error', '0'], explain: 'Con 3 elementos las posiciones son 0, 1 y 2. La posición 3 no existe y da undefined.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'const merienda = ["mate", "facturas"];\nmerienda.push("tortitas");\nconsole.log(merienda.length);', options: ['3', '2', '1', 'tortitas'], explain: 'push agrega un elemento al final, así que el arreglo pasa a tener 3.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'const letras = ["a", "b", "c"];\nlet t = "";\nfor (let i = letras.length - 1; i >= 0; i--) {\n  t = t + letras[i];\n}\nconsole.log(t);', options: ['cba', 'abc', 'cb', 'ba'], explain: 'i empieza en la última posición (2) y baja hasta 0: se pegan c, b y a.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log("Villada".length);', options: ['7', '6', '8', 'Villada'], explain: 'length cuenta los caracteres: V-i-l-l-a-d-a son 7.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'const s = "Hola";\nconsole.log(s[1]);', options: ['o', 'H', 'l', 'undefined'], explain: 'Las posiciones de un texto también empiezan en 0: H es la 0 y o es la 1.' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'console.log("Córdoba".toUpperCase());', options: ['CÓRDOBA', 'Córdoba', 'córdoba', 'CORDOBA'], explain: 'toUpperCase pasa todas las letras a mayúscula (las tildes se mantienen).' },
+  { lang: 'js', out: true, prompt: '¿Qué muestra la consola?', code: 'const materias = 3 + 2;\nconsole.log(`Tengo ${materias} materias`);', options: ['Tengo 5 materias', 'Tengo ${materias} materias', 'Tengo 3 + 2 materias', 'Tengo materias materias'], explain: 'Entre comillas invertidas, ${…} se reemplaza por el valor de lo que está adentro.' },
+
+  /* ---------------------------------------------------------------- JAVASCRIPT: la página */
+  { lang: 'js', prompt: '¿Qué devuelve esta línea?', code: '<h1 id="titulo">Bienvenidos</h1>\n\nconst t = document.getElementById("titulo");', options: ['El elemento h1 que tiene id="titulo"', 'El texto "titulo"', 'Todos los h1 de la página', 'El texto "Bienvenidos"'], explain: 'getElementById busca en la página el elemento con ese id y lo devuelve, para poder cambiarlo.' },
+  { lang: 'js', prompt: '¿Qué pasa en la página?', code: '<p id="msj">Hola</p>\n\nconst p = document.getElementById("msj");\np.textContent = "Chau";', options: ['El párrafo pasa a decir "Chau"', 'El párrafo dice "HolaChau"', 'Aparece un párrafo nuevo con "Chau"', 'Nada, porque falta console.log'], explain: 'textContent es el texto del elemento: al asignarle un valor, se reemplaza el que tenía.' },
+  { lang: 'js', prompt: '¿Cuándo se ejecuta la función saludar?', code: 'const b = document.getElementById("boton");\nb.addEventListener("click", saludar);', options: ['Cada vez que tocan el botón', 'Una sola vez, al cargar la página', 'Nunca', 'Cuando pasan el mouse por encima'], explain: 'addEventListener("click", …) deja la función esperando: se ejecuta en cada clic.' },
+  { lang: 'js', prompt: 'Si en el campo escribieron 5, ¿qué muestra la consola?', code: '<input id="edad" type="number">\n\nconst campo = document.getElementById("edad");\nconsole.log(campo.value + 1);', options: ['51', '6', '5', 'NaN'], explain: 'value siempre es un texto ("5"), así que + pega: "51". Para sumar hay que usar Number(campo.value).' },
+  { lang: 'js', prompt: '¿Qué hace este código?', code: '<ul id="lista"></ul>\n\nconst li = document.createElement("li");\nli.textContent = "Leche";\ndocument.getElementById("lista").appendChild(li);', options: ['Agrega el ítem "Leche" al final de la lista', 'Borra la lista', 'Cambia el id de la lista por "Leche"', 'Nada: el li no se ve hasta que se recarga'], explain: 'createElement crea un elemento nuevo y appendChild lo pone adentro de la lista, al final.' },
+  { lang: 'js', prompt: 'En la página no hay ningún elemento con id="foto". ¿Qué muestra la consola?', code: 'console.log(document.getElementById("foto"));', options: ['null', 'undefined', 'foto', '""'], explain: 'Si no encuentra el id, getElementById devuelve null. Si después usás ese null (por ejemplo null.textContent), da error.' },
 ]
 
 /* ------------------------------------------------------------------ rondas */
 
 function toRound(q: Q): QuizRound {
   // las opciones que son código se muestran con letra de código; las frases, con letra normal
-  const isCode = (t: string) => q.lang === 'java' || (!/^[A-ZÁÉÍÓÚ"][a-záéíóúñ]/.test(t) && !/ (y|de|la|el|que|en) /.test(t))
+  const isCode = (t: string) => q.out || (!/^[A-ZÁÉÍÓÚ"][a-záéíóúñ]/.test(t) && !/ (y|de|la|el|que|en) /.test(t))
   const opts = shuffle(q.options.map((label, i) => ({ id: `o${i}`, label: isCode(label) ? <code className="quiz-opt">{label}</code> : label })))
   return {
     prompt: (
@@ -114,10 +112,10 @@ function toRound(q: Q): QuizRound {
   }
 }
 
-/** 10 preguntas: 3 de HTML, 3 de CSS y 4 de Java, mezcladas */
+/** 10 preguntas: 4 de HTML y 6 de JavaScript, mezcladas */
 function makeRounds(): QuizRound[] {
   const by = (l: Lang, n: number) => shuffle(POOL.filter((q) => q.lang === l)).slice(0, n)
-  return shuffle([...by('html', 3), ...by('css', 3), ...by('java', 4)]).map(toRound)
+  return shuffle([...by('html', 4), ...by('js', 6)]).map(toRound)
 }
 
 export const QUIZ_POOL_SIZE = POOL.length
@@ -128,11 +126,10 @@ export function QuizCompu() {
       game="compu-quiz"
       title="¿Qué hace este código?"
       icon="🤔"
-      info="Leé un pedacito de HTML, CSS o Java y adiviná qué hace, qué se ve o qué imprime. Cuanto más rápido, más puntos."
+      info="Leé un pedacito de HTML o JavaScript y adiviná qué hace, qué se ve o qué muestra la consola. Cuanto más rápido, más puntos."
       intro={
         <p>
-          10 preguntas mezcladas de HTML, CSS y Java. Respuesta correcta: 15 puntos + hasta 5 de bonus por rapidez (máximo 200). En las de
-          Java, el código está adentro del <code>main</code>.
+          10 preguntas mezcladas: 4 de HTML y 6 de JavaScript. Respuesta correcta: 15 puntos + hasta 5 de bonus por rapidez (máximo 200).
         </p>
       }
       makeRounds={makeRounds}
