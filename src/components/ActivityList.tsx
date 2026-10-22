@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Activity } from '../catalog/types'
 import { markActivity, useStore } from '../lib/scores'
 
@@ -11,9 +11,26 @@ function check(a: Activity, value: string | number): boolean {
   return Math.abs(n - a.answer) <= Math.abs(a.answer) * tol + 1e-9
 }
 
+/** Orden de las opciones mezclado, siempre igual para la misma pregunta (no cambia al recargar). */
+function shuffledOrder(id: string, n: number): number[] {
+  let h = 2166136261
+  for (let i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 16777619)
+  const rand = () => {
+    h = Math.imul(h ^ (h >>> 15), 2246822507) ^ Math.imul(h ^ (h >>> 13), 3266489909)
+    return ((h ^= h >>> 16) >>> 0) / 4294967296
+  }
+  const order = Array.from({ length: n }, (_, i) => i)
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1))
+    ;[order[i], order[j]] = [order[j], order[i]]
+  }
+  return order
+}
+
 function ActivityItem({ a, n, solved }: { a: Activity; n: number; solved: boolean }) {
   const [value, setValue] = useState<string | number>('')
   const [result, setResult] = useState<null | boolean>(solved ? true : null)
+  const order = useMemo(() => (a.type === 'mc' ? shuffledOrder(a.id, a.options.length) : []), [a])
 
   const submit = () => {
     if (value === '') return
@@ -30,7 +47,7 @@ function ActivityItem({ a, n, solved }: { a: Activity; n: number; solved: boolea
       </div>
       {a.type === 'mc' ? (
         <div className="options">
-          {a.options.map((o, i) => (
+          {order.map((i) => (
             <button
               key={i}
               type="button"
@@ -40,7 +57,7 @@ function ActivityItem({ a, n, solved }: { a: Activity; n: number; solved: boolea
                 setResult(null)
               }}
             >
-              {o}
+              {a.options[i]}
             </button>
           ))}
         </div>
@@ -73,9 +90,8 @@ function ActivityItem({ a, n, solved }: { a: Activity; n: number; solved: boolea
 
 export function ActivityList({ activities }: { activities: Activity[] }) {
   const s = useStore()
-  const p = s.me
-  const done = p ? s.activities[p.id] ?? {} : {}
-  const count = activities.filter((a) => done[a.id]).length
+  const done = s.done
+  const count = activities.filter((a) => done[a.id] === true).length
   return (
     <div>
       <div className="progress-line">
@@ -88,7 +104,7 @@ export function ActivityList({ activities }: { activities: Activity[] }) {
       </div>
       <ol className="activities">
         {activities.map((a, i) => (
-          <ActivityItem key={a.id + (p?.id ?? '')} a={a} n={i + 1} solved={!!done[a.id]} />
+          <ActivityItem key={a.id} a={a} n={i + 1} solved={done[a.id] === true} />
         ))}
       </ol>
     </div>

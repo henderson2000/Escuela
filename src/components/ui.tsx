@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { ReactNode } from 'react'
 
 export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: ReactNode }) {
@@ -82,4 +83,22 @@ export function Readout({ label, value }: { label: string; value: ReactNode }) {
 
 export function Formula({ children }: { children: ReactNode }) {
   return <div className="formula">{children}</div>
+}
+
+/** Cartel para un link que lleva a algo que no existe (ejercicio, juego, tema…). */
+export function NotFound({ what, back, backLabel }: { what: string; back: string; backLabel: string }) {
+  return (
+    <div className="page narrow">
+      <div className="card coming-soon">
+        <span className="rotation-icon" aria-hidden>
+          🔎
+        </span>
+        <h1>No encontramos {what}</h1>
+        <p>Puede que el link esté mal escrito o que el contenido haya cambiado de lugar.</p>
+        <Link to={back} className="btn primary">
+          {backLabel}
+        </Link>
+      </div>
+    </div>
+  )
 }

@@ -27,12 +27,8 @@ export function GamesPage() {
               <span>{g.desc}</span>
               <span className="game-meta">
                 Puntos: {g.max}
-                {s.me && (
-                  <>
-                    {' '}
-                    · Tus puntos: <b>{best}</b> · Intentos disponibles: <b>{left}</b>
-                  </>
-                )}
+                {' '}
+                · Tus puntos: <b>{best}</b> · Intentos disponibles: <b>{left}</b>
               </span>
             </Link>
           )

@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useSubject } from '../lib/subject'
 import { ActivityList } from '../components/ActivityList'
 import { useSub } from '../lib/nav'
+import { NotFound } from '../components/ui'
 
 export function TheoryPage() {
   const sub = useSub()
@@ -40,7 +41,7 @@ export function TopicPage() {
   const { id = '' } = useParams()
   const { topics: TOPICS } = useSubject()
   const t = TOPICS.find((x) => x.id === id)
-  if (!t) return <div className="page">Tema no encontrado.</div>
+  if (!t) return <NotFound what="ese tema" back={sub('/teoria')} backLabel="Ver la teoría" />
   const idx = TOPICS.indexOf(t)
   const next = TOPICS[idx + 1]
   return (

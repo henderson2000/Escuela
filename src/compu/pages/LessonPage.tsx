@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useSub } from '../../lib/nav'
-import { BULBS, markActivity, useStore } from '../../lib/scores'
+import { BULBS, isDone, markActivity, useStore } from '../../lib/scores'
 import { findLesson, lessonActivityId } from '../course'
 import { LessonWorkspace } from '../Workspace'
 
@@ -29,7 +29,7 @@ function LessonView({ id }: { id?: string }) {
   const prev = all[index - 1]
   const next = all[index + 1]
   const mod = track.modules.find((m) => m.lessons.some((l) => l.id === lesson.id))
-  const done = !!(s.me && s.activities[s.me.id]?.[lessonActivityId(lesson.id)])
+  const done = isDone(s, lessonActivityId(lesson.id))
 
   return (
     <div className="page wide">

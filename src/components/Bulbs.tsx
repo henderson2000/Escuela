@@ -1,4 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { BULBS, onBulbs, owns, spendBulbs, useStore } from '../lib/scores'
 import './bulbs.css'
 
@@ -7,6 +8,24 @@ export function BulbBadge() {
   const s = useStore()
   const [open, setOpen] = useState(false)
   const [toast, setToast] = useState<{ id: number; delta: number; label: string } | null>(null)
+  const wrap = useRef<HTMLDivElement>(null)
+
+  // se cierra tocando afuera o con Escape
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: PointerEvent) => {
+      if (!wrap.current?.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
 
   useEffect(
     () =>
@@ -19,8 +38,8 @@ export function BulbBadge() {
   )
 
   return (
-    <div className="bulb-wrap">
-      <button type="button" className="bulb-badge" onClick={() => setOpen(!open)} aria-expanded={open} title="Tus lamparitas para comprar pistas">
+    <div className="bulb-wrap" ref={wrap}>
+      <button type="button" className="bulb-badge" onClick={() => setOpen(!open)} aria-expanded={open} title="Tus lamparitas para comprar pistas" aria-label={`${s.bulbs} lamparitas. Ver cómo se ganan y se gastan`}>
         <span className="bulb-icon" aria-hidden>
           💡
         </span>
@@ -32,7 +51,7 @@ export function BulbBadge() {
         </div>
       )}
       {open && (
-        <div className="bulb-panel">
+        <div className="bulb-panel" role="dialog" aria-label="Lamparitas">
           <div className="row space">
             <strong>💡 Lamparitas: {s.bulbs}</strong>
             <button type="button" className="btn small ghost" onClick={() => setOpen(false)} aria-label="Cerrar">
@@ -45,7 +64,7 @@ export function BulbBadge() {
               <h5>Ganás</h5>
               <ul>
                 <li>
-                  Pregunta de actividad <b>+{BULBS.actividad}</b>
+                  Pregunta de actividad <b>+{BULBS.actividad}</b> (al primer intento; si no, <b>+{BULBS.actividadReintento}</b>)
                 </li>
                 <li>
                   Lección de Computación <b>+{BULBS.leccion}</b>
@@ -74,6 +93,9 @@ export function BulbBadge() {
               <p className="hint">Cada cosa paga una sola vez. Lo que compraste queda desbloqueado.</p>
             </div>
           </div>
+          <Link to="/progreso" className="btn small" onClick={() => setOpen(false)}>
+            📊 Ver el progreso de esta computadora
+          </Link>
           {s.bulbLog.length > 0 && (
             <>
               <h5>Últimos movimientos</h5>

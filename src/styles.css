@@ -90,6 +90,7 @@ code {
   flex: 1;
   overflow-x: auto;
   scrollbar-width: none;
+  position: relative;
 }
 
 .nav a {
@@ -110,39 +111,6 @@ code {
   background: var(--accent);
 }
 
-.player-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  color: var(--text);
-  border-radius: 999px;
-  padding: 5px 12px 5px 5px;
-  cursor: pointer;
-  white-space: nowrap;
-  font: inherit;
-}
-
-.player-badge > span:only-child {
-  padding-left: 8px;
-}
-
-.avatar {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--accent2);
-  color: #1b1200;
-  font-weight: 700;
-}
-
-.player-name small {
-  color: var(--muted);
-}
-
 .pts {
   color: var(--accent2);
   font-weight: 700;
@@ -156,12 +124,6 @@ code {
   .nav {
     order: 3;
     flex-basis: 100%;
-  }
-  .player-badge {
-    margin-left: auto;
-  }
-  .player-name {
-    display: none;
   }
 }
 
@@ -676,7 +638,7 @@ input[type='range'] {
 
 .lab {
   display: grid;
-  grid-template-columns: 1fr 360px;
+  grid-template-columns: minmax(0, 1fr) 360px;
   gap: 16px;
   align-items: start;
 }
@@ -699,7 +661,7 @@ input[type='range'] {
 
 @media (max-width: 980px) {
   .lab {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .lab .viewer {
     height: 420px;
@@ -1110,12 +1072,6 @@ th {
   color: var(--accent2) !important;
 }
 
-.center-block {
-  text-align: center;
-  max-width: 640px;
-  margin: 20px auto;
-}
-
 .game-layout {
   position: relative;
   display: flex;
@@ -1408,71 +1364,8 @@ th {
 }
 
 /* ---------- ranking ---------- */
-.ranking td.pos {
-  font-size: 1.2rem;
-  width: 40px;
-}
-
-.ranking tr.me {
-  background: rgba(54, 194, 255, 0.1);
-}
-
-.pts-cell {
-  font-weight: 800;
-  color: var(--accent2);
-  font-size: 1.1rem;
-}
-
-.teacher {
-  margin-top: 24px;
-}
-
-.teacher h3 {
-  margin: 0;
-}
-
-@media (max-width: 700px) {
-  .hide-sm {
-    display: none;
-  }
-}
 
 /* ---------- modal ---------- */
-.modal-bg {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: grid;
-  place-items: center;
-  z-index: 100;
-  padding: 16px;
-}
-
-.modal {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 22px;
-  width: min(440px, 100%);
-  max-height: 90vh;
-  overflow: auto;
-}
-
-.modal h2 {
-  margin-top: 0;
-}
-
-.modal h3 {
-  font-size: 0.95rem;
-  color: var(--muted);
-}
-
-.player-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 12px;
-}
 
 @media (max-width: 600px) {
   .page {
@@ -1544,34 +1437,9 @@ th {
   cursor: not-allowed;
 }
 
-.chip-main,
-.chip-x {
-  background: none;
-  border: 0;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-  padding: 0;
-}
-
-.chip-x {
-  margin-left: 8px;
-  opacity: 0.6;
-}
-
-.chip-x:hover {
-  opacity: 1;
-}
-
 .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
-}
-
-.ranking td.actions {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
 }
 
 .confirm {
@@ -1693,6 +1561,8 @@ th {
 @media (max-width: 760px) {
   .year-buttons {
     grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 20px auto;
   }
 }
 
@@ -1710,6 +1580,13 @@ th {
   transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
+.year-btn .pill {
+  align-self: center;
+  margin-top: 6px;
+}
+.year-btn.soon .year-num {
+  opacity: 0.55;
+}
 .year-btn:hover,
 .year-btn:focus-visible {
   transform: translateY(-3px);
@@ -1763,14 +1640,6 @@ a.rotation-card:hover {
 
 .rotation-card.soon {
   opacity: 0.75;
-}
-
-.rotation-n {
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent2);
 }
 
 .rotation-icon {
@@ -2187,4 +2056,136 @@ table.lt-ref svg {
     padding: 4px 8px;
     font-size: 0.8rem;
   }
+}
+
+/* ---------- cargando ---------- */
+.page-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 40vh;
+  color: var(--muted);
+}
+.spinner {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+/* ---------- progreso de la computadora ---------- */
+.pg-bulbs {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.pg-bulb-n {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #facc15;
+}
+.pg-subject {
+  margin-bottom: 16px;
+}
+.pg-subject h2 {
+  margin: 0 0 12px;
+  font-size: 1.25rem;
+}
+.pg-subject h2 a {
+  color: inherit;
+}
+.pg-subject h2 small {
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+.pg-bar {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  font-size: 0.95rem;
+}
+.pg-bar b {
+  font-variant-numeric: tabular-nums;
+  min-width: 64px;
+  text-align: right;
+}
+.pg-games {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 0.92rem;
+}
+.pg-games th,
+.pg-games td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+}
+.pg-games th {
+  color: var(--muted);
+  font-weight: 500;
+}
+.pg-games td:not(:first-child),
+.pg-games th:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 600px) {
+  .pg-bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .pg-bar .progress {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+.home-footer-links {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+
+/* textos de ayuda según se use mouse o pantalla táctil */
+.only-touch {
+  display: none;
+}
+@media (pointer: coarse) {
+  .only-touch {
+    display: inline;
+  }
+  .only-mouse {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .year-btn {
+    padding: 18px 14px 16px;
+  }
+  .year-num {
+    font-size: 2.8rem;
+  }
+}
+
+/* foco visible para quien navega con teclado */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }

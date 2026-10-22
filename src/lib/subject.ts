@@ -3,7 +3,7 @@ import type { ComponentDef } from '../catalog/types'
 import type { Topic } from '../data/theory'
 import type { GameDef } from '../games/registry'
 
-/** Contenido de un taller: lo usan las páginas comunes (componentes, teoría, juegos, ranking). */
+/** Contenido de un taller: lo usan las páginas comunes (componentes, teoría, actividades, juegos). */
 export interface SubjectContent {
   catalog: ComponentDef[]
   topics: Topic[]

@@ -1,8 +1,11 @@
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { HashRouter, MemoryRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom'
-import { LegacyRedirect, SubjectLayout, TopNav, YearPage, YearsHome } from './pages/Structure'
+import { DocumentTitle, LegacyRedirect, PageLoading, SubjectLayout, TopNav, YearPage, YearsHome } from './pages/Structure'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { BulbBadge } from './components/Bulbs'
+import { lazyNamed } from './lib/lazy'
+
+const ProgressPage = lazyNamed(() => import('./pages/ProgressPage'), 'ProgressPage')
 
 /**
  * Dentro de otra página (por ejemplo, la vista previa de Claude) la dirección del marco no se puede
@@ -38,6 +41,7 @@ export default function App() {
     <ErrorBoundary>
     <Router>
       <ScrollToTop />
+      <DocumentTitle />
       <header className="topbar">
         <NavLink to="/" className="brand">
           <span className="brand-icon">🛠</span>
@@ -52,6 +56,14 @@ export default function App() {
         <RouteBoundary>
         <Routes>
           <Route path="/" element={<YearsHome />} />
+          <Route
+            path="/progreso"
+            element={
+              <Suspense fallback={<PageLoading />}>
+                <ProgressPage />
+              </Suspense>
+            }
+          />
           {['componentes', 'teoria', 'actividades', 'juegos'].map((p) => (
             <Route key={p} path={`/${p}/*`} element={<LegacyRedirect />} />
           ))}

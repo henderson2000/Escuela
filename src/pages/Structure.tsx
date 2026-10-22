@@ -1,21 +1,30 @@
+import { Suspense, use, useEffect, useRef } from 'react'
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { SUBJECTS, YEARS, getRotation, getYear } from '../data/curriculum'
 import { BaseContext } from '../lib/nav'
 import { SubjectContext } from '../lib/subject'
-import { getSubjectContent } from '../subjects'
-import { SimulatorPage } from '../logo/pages/SimulatorPage'
-import { GuidePage } from '../logo/pages/GuidePage'
-import { ExercisePage } from '../logo/pages/ExercisePage'
-import { TrackPage } from '../compu/pages/TrackPage'
-import { LessonPage } from '../compu/pages/LessonPage'
-import { PlaygroundPage } from '../compu/pages/PlaygroundPage'
-import { TornoGuidePage } from '../torno/pages/TornoGuidePage'
-import { ComponentsPage } from './ComponentsPage'
-import { ComponentDetail } from './ComponentDetail'
-import { TheoryPage, TopicPage } from './TheoryPage'
-import { ActivitiesPage } from './ActivitiesPage'
-import { GamesPage } from './GamesPage'
-import { GameRoute } from './GameRoute'
+import { lazyNamed } from '../lib/lazy'
+import { ErrorBoundary } from '../components/ErrorBoundary'
+import { SUBJECT_NAV, hasSubjectContent, loadSubject, subjectKey } from '../subjects'
+
+// páginas comunes a todos los talleres: se descargan recién cuando se abren
+const ComponentsPage = lazyNamed(() => import('./ComponentsPage'), 'ComponentsPage')
+const ComponentDetail = lazyNamed(() => import('./ComponentDetail'), 'ComponentDetail')
+const TheoryPage = lazyNamed(() => import('./TheoryPage'), 'TheoryPage')
+const TopicPage = lazyNamed(() => import('./TheoryPage'), 'TopicPage')
+const ActivitiesPage = lazyNamed(() => import('./ActivitiesPage'), 'ActivitiesPage')
+const GamesPage = lazyNamed(() => import('./GamesPage'), 'GamesPage')
+const GameRoute = lazyNamed(() => import('./GameRoute'), 'GameRoute')
+
+/** Cartel mientras se descarga una parte de la página. */
+export function PageLoading() {
+  return (
+    <div className="page page-loading" role="status" aria-live="polite">
+      <span className="spinner" aria-hidden />
+      Cargando…
+    </div>
+  )
+}
 
 /* ------------------------------------------------------------------ inicio: elegir año */
 
@@ -31,16 +40,23 @@ export function YearsHome() {
       <div className="year-buttons">
         {YEARS.map((y) => {
           const subjects = y.rotations.map((r) => r.subject).filter(Boolean) as string[]
+          const ready = y.rotations.filter((r) => r.ready && hasSubjectContent(y.id, r.subject ?? '')).length
           return (
-            <Link key={y.id} to={`/${y.id}`} className="year-btn">
+            <Link key={y.id} to={`/${y.id}`} className={`year-btn ${ready ? '' : 'soon'}`}>
               <span className="year-num">{y.short}</span>
               <span className="year-name">{y.name}</span>
               <span className="year-detail">
                 {subjects.length ? subjects.map((s) => SUBJECTS[s].name).join(' · ') : 'Próximamente'}
               </span>
+              <span className={`pill ${ready ? 'ok' : ''}`}>{ready ? `${ready} ${ready === 1 ? 'taller disponible' : 'talleres disponibles'}` : 'Próximamente'}</span>
             </Link>
           )
         })}
+      </div>
+      <div className="home-footer-links">
+        <Link to="/progreso" className="btn ghost">
+          📊 Progreso de esta computadora
+        </Link>
       </div>
     </div>
   )
@@ -117,39 +133,53 @@ function ComingSoon({ yearId, subjectId }: { yearId: string; subjectId: string }
   )
 }
 
-/** Contenido de un taller (sólo los que figuran en SUBJECT_CONTENT tienen páginas). */
+/** Contenido de un taller (sólo los que tienen contenido cargado tienen páginas). */
 export function SubjectLayout() {
   const { anio = '', materia = '' } = useParams()
   const year = getYear(anio)
   const subject = SUBJECTS[materia]
   const rotation = getRotation(anio, materia)
   if (!year || !subject || !rotation) return <Navigate to={year ? `/${anio}` : '/'} replace />
-  const content = getSubjectContent(anio, materia)
-  if (!rotation.ready || !content) return <ComingSoon yearId={anio} subjectId={materia} />
-  const Home = content.Home
+  if (!rotation.ready || !hasSubjectContent(anio, materia)) return <ComingSoon yearId={anio} subjectId={materia} />
+  const key = subjectKey(anio, materia)
+  return (
+    <ErrorBoundary key={key}>
+      <Suspense fallback={<PageLoading />}>
+        <SubjectRoutes subjectKey={key} base={`/${anio}/${materia}`} />
+      </Suspense>
+    </ErrorBoundary>
+  )
+}
 
+function SubjectRoutes({ subjectKey: key, base }: { subjectKey: string; base: string }) {
+  const content = use(loadSubject(key))
+  const Home = content.Home
   return (
     <SubjectContext.Provider value={content}>
-    <BaseContext.Provider value={`/${anio}/${materia}`}>
-      <Routes>
-        <Route index element={<Home />} />
-        <Route path="componentes" element={<ComponentsPage />} />
-        <Route path="componentes/:id" element={<ComponentDetail />} />
-        <Route path="teoria" element={<TheoryPage />} />
-        <Route path="teoria/:id" element={<TopicPage />} />
-        <Route path="actividades" element={<ActivitiesPage />} />
-        <Route path="juegos" element={<GamesPage />} />
-        <Route path="juegos/:id" element={<GameRoute />} />
-        <Route path="simulador" element={<SimulatorPage />} />
-        <Route path="guia" element={<GuidePage />} />
-        <Route path="guia/:id" element={<ExercisePage />} />
-        <Route path="curso/:track" element={<TrackPage />} />
-        <Route path="curso/:track/:lesson" element={<LessonPage />} />
-        <Route path="taller-libre" element={<PlaygroundPage />} />
-        <Route path="ejercicios" element={<TornoGuidePage />} />
-        <Route path="*" element={<Navigate to={`/${anio}/${materia}`} replace />} />
-      </Routes>
-    </BaseContext.Provider>
+      <BaseContext.Provider value={base}>
+        <Suspense fallback={<PageLoading />}>
+          <Routes>
+            <Route index element={<Home />} />
+            {content.catalog.length > 0 && (
+              <>
+                <Route path="componentes" element={<ComponentsPage />} />
+                <Route path="componentes/:id" element={<ComponentDetail />} />
+              </>
+            )}
+            {content.topics.length > 0 && (
+              <>
+                <Route path="teoria" element={<TheoryPage />} />
+                <Route path="teoria/:id" element={<TopicPage />} />
+                <Route path="actividades" element={<ActivitiesPage />} />
+              </>
+            )}
+            <Route path="juegos" element={<GamesPage />} />
+            <Route path="juegos/:id" element={<GameRoute />} />
+            {content.routes?.map(({ path, Page }) => <Route key={path} path={path} element={<Page />} />)}
+            <Route path="*" element={<Navigate to={base} replace />} />
+          </Routes>
+        </Suspense>
+      </BaseContext.Provider>
     </SubjectContext.Provider>
   )
 }
@@ -169,7 +199,17 @@ export function TopNav() {
   const year = getYear(anio)
   const subject = year && materia ? SUBJECTS[materia] : undefined
   const base = subject ? `/${anio}/${materia}` : ''
-  const content = getSubjectContent(anio, materia)
+  const nav = SUBJECT_NAV[subjectKey(anio, materia)]
+  const navRef = useRef<HTMLElement>(null)
+
+  // en pantallas angostas el menú se desliza: que se vea la sección activa
+  useEffect(() => {
+    const el = navRef.current
+    const a = el?.querySelector<HTMLElement>('a.active')
+    if (!el || !a) return
+    const left = a.offsetLeft - (el.clientWidth - a.offsetWidth) / 2
+    el.scrollTo({ left: Math.max(0, left), behavior: 'smooth' })
+  }, [pathname])
 
   return (
     <div className="topnav">
@@ -188,9 +228,9 @@ export function TopNav() {
           )}
         </nav>
       )}
-      {subject && getRotation(anio, materia)?.ready && content && (
-        <nav className="nav">
-          {content.nav.map((n) => (
+      {subject && getRotation(anio, materia)?.ready && nav && (
+        <nav className="nav" aria-label="Secciones del taller" ref={navRef}>
+          {nav.map((n) => (
             <NavLink key={n.to} to={base + n.to} end={n.end}>
               {n.label}
             </NavLink>
@@ -199,4 +239,27 @@ export function TopNav() {
       )}
     </div>
   )
+}
+
+/** Título de la pestaña según dónde se está (ej. "Juegos · Electrónica · 3er año · ITS Villada"). */
+export function DocumentTitle() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    const [, anio, materia, ...rest] = pathname.split('/')
+    const parts: string[] = []
+    if (anio === 'progreso') parts.push('Progreso')
+    const year = getYear(anio)
+    const subject = year && materia ? SUBJECTS[materia] : undefined
+    if (subject) {
+      const nav = SUBJECT_NAV[subjectKey(anio, materia)] ?? []
+      const here = '/' + rest.join('/')
+      const section = nav.filter((n) => n.to && (here === n.to || here.startsWith(n.to + '/'))).sort((a, b) => b.to.length - a.to.length)[0]
+      if (section) parts.push(section.label)
+      parts.push(subject.name)
+    }
+    if (year) parts.push(year.name)
+    parts.push('ITS Villada · Talleres')
+    document.title = parts.join(' · ')
+  }, [pathname])
+  return null
 }

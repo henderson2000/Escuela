@@ -5,6 +5,7 @@ import { useSubject } from '../lib/subject'
 import { Viewer } from '../three/Viewer'
 import { ActivityList } from '../components/ActivityList'
 import { useSub } from '../lib/nav'
+import { NotFound } from '../components/ui'
 
 type Tab = '3d' | 'teoria' | 'actividades'
 
@@ -29,12 +30,7 @@ function Detail({ id }: { id: string }) {
   const names = useMemo(() => Object.fromEntries(parts.map((p) => [p.id, p.name])), [parts])
 
   if (!def) {
-    return (
-      <div className="page">
-        <p>No encontramos ese componente.</p>
-        <Link to={sub('/componentes')}>Volver</Link>
-      </div>
-    )
+    return <NotFound what="ese componente" back={sub('/componentes')} backLabel={`Ver ${texts?.componentsBack ?? 'Componentes'}`} />
   }
 
   const sel = parts.find((p) => p.id === selected)
@@ -99,7 +95,10 @@ function Detail({ id }: { id: string }) {
                 </button>
               </div>
             </div>
-            <div className="viewer-help">🖱️ Arrastrá para girar · rueda para zoom · clic derecho para mover · clic en una pieza para ver qué es</div>
+            <div className="viewer-help">
+              <span className="only-mouse">🖱️ Arrastrá para girar · rueda para zoom · clic derecho para mover · clic en una pieza para ver qué es</span>
+              <span className="only-touch">👆 Deslizá para girar · pellizcá para zoom · dos dedos para mover · tocá una pieza para ver qué es</span>
+            </div>
           </div>
 
           <aside className="lab-panel">

@@ -6,7 +6,7 @@ import './torno-pages.css'
 
 export function TornoGuidePage() {
   const s = useStore()
-  const done = s.me ? s.activities[s.me.id] ?? {} : {}
+  const done = s.done
   const [open, setOpen] = useState<string | undefined>(TORNO_GUIDE[0]?.id)
   const total = TORNO_GUIDE.reduce((a, g) => a + g.activities.length, 0)
   const solved = TORNO_GUIDE.reduce((a, g) => a + g.activities.filter((x) => done[x.id]).length, 0)

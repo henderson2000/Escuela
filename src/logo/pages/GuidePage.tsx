@@ -15,7 +15,7 @@ const GROUPS = [
 export function GuidePage() {
   const sub = useSub()
   const s = useStore()
-  const done = s.me ? s.activities[s.me.id] ?? {} : {}
+  const done = s.done
   const solved = EXERCISES.filter((e) => done[exerciseActivityId(e.id)]).length
   return (
     <div className="page">

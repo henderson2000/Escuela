@@ -84,6 +84,7 @@ export function CodeEditor({
           ]),
           langOf(lang),
           errorField,
+          EditorView.contentAttributes.of({ 'aria-label': lang === 'html' ? 'Editor de código HTML' : 'Editor de código JavaScript' }),
           oneDark,
           theme,
           ro.current.of([EditorState.readOnly.of(readOnly), EditorView.editable.of(!readOnly)]),

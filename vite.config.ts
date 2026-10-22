@@ -5,6 +5,6 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: './',
   plugins: [react()],
-  // three.js pesa ~1 MB: es esperable que el bundle supere el límite por defecto
-  build: { chunkSizeWarningLimit: 2000 },
+  // cada taller se descarga aparte; el visor 3D (three.js) y el editor de Computación rondan 1 MB cada uno
+  build: { chunkSizeWarningLimit: 1100 },
 })

@@ -9,7 +9,7 @@ export function TrackPage() {
   const s = useStore()
   const track = getTrack(tid)
   if (!track) return <Navigate to={sub('')} replace />
-  const done = s.me ? s.activities[s.me.id] ?? {} : {}
+  const done = s.done
   const all = lessonsOf(track)
   const solved = all.filter((l) => done[lessonActivityId(l.id)]).length
   const next = all.find((l) => !done[lessonActivityId(l.id)]) ?? all[0]

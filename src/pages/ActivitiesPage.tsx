@@ -8,9 +8,8 @@ export function ActivitiesPage() {
   const s = useStore()
   const { topics: TOPICS, catalog: CATALOG } = useSubject()
   const sub = useSub()
-  const p = s.me
-  const done = p ? s.activities[p.id] ?? {} : {}
-  const progress = (acts: Activity[]) => acts.filter((a) => done[a.id]).length
+  const done = s.done
+  const progress = (acts: Activity[]) => acts.filter((a) => done[a.id] === true).length
 
   const groups = [
     ...TOPICS.map((t) => ({ key: t.id, to: `/teoria/${t.id}`, icon: t.icon, title: t.title, acts: t.activities })),

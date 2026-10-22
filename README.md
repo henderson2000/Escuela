@@ -11,7 +11,7 @@ Al entrar se elige el año (**1ro, 2do o 3ro**). Cada año tiene **4 rotaciones*
 - **2do:** Electrónica, Computación, Electricidad y Soldadura.
 - **3ro:** Electrónica (con todo el contenido), Computación, Electricidad y Torno.
 
-Por ahora tienen contenido los cuatro talleres de 3ro (**Electrónica**, **Computación**, **Electricidad (LOGO!)** y **Torno**); el resto muestra "Próximamente". El contenido de cada taller se registra en [`src/subjects.tsx`](src/subjects.tsx). Los años y talleres se configuran en
+Por ahora tienen contenido los cuatro talleres de 3ro (**Electrónica**, **Computación**, **Electricidad (LOGO!)** y **Torno**); el resto muestra "Próximamente". El contenido de cada taller se registra en [`src/subjects/`](src/subjects) (un archivo por taller, que se descarga recién cuando se entra). Los años y talleres se configuran en
 [`src/data/curriculum.ts`](src/data/curriculum.ts).
 
 ## Qué incluye (taller de Electrónica, 3er año)
@@ -20,7 +20,7 @@ Por ahora tienen contenido los cuatro talleres de 3ro (**Electrónica**, **Compu
 | --- | --- |
 | **Componentes 3D** | Resistencia (4/5 bandas, se edita el valor y cambian los colores), LED, capacitor, **transistor NPN**, protoboard (tocás un orificio y se iluminan los conectados), **Arduino UNO** (modelado con medidas reales), potenciómetro, pulsador, LDR, sensor ultrasónico HC-SR04, DHT11, **servomotor SG90** y **buzzer** (suena de verdad). Cada uno con: mostrar/ocultar partes, nombres, despiece animado y descripción de cada pieza. |
 | **Teoría** | Tensión/corriente/resistencia, Ley de Ohm, potencia, serie y paralelo, divisor de tensión, PWM y símbolos, con calculadoras interactivas. |
-| **Actividades** | Más de 90 ejercicios con corrección automática y progreso guardado por alumno. |
+| **Actividades** | Más de 90 ejercicios con corrección automática y progreso guardado en cada computadora. Las opciones se muestran mezcladas (siempre en el mismo orden para cada pregunta). |
 | **Juegos** | 🔌 *Conexiones en la protoboard* (circuitos reales en 3D con el Arduino, 6 niveles) · 📐 *Completá el plano* (6 niveles) · 🎨 *Código de colores contrarreloj* · 🔍 *¿Qué parte es?* |
 | **Puntajes** | Sin iniciar sesión. Cada juego/nivel se puede jugar **2 veces por puntos en cada computadora** (el intento cuenta desde que empieza); después se sigue practicando sin sumar. Queda guardado el mejor intento. |
 
@@ -65,15 +65,18 @@ Para revisar el curso después de cambiar lecciones: `npm run dev` y abrir `/ver
 - No hace falta ingresar: los alumnos entran y usan todo.
 - El progreso (lecciones y actividades resueltas), los intentos y los mejores puntajes se guardan en el navegador de
   cada computadora. Si se borran los datos del navegador, se pierde ese progreso.
-- **💡 Lamparitas**: se empieza con 0. Se ganan una sola vez por cosa resuelta (actividad +5, lección de Computación +20,
+- **📊 Progreso** (`#/progreso`, también desde el contador 💡 y el inicio): lo resuelto en cada taller, el mejor
+  puntaje de cada juego y los intentos usados. Desde ahí se puede **descargar una copia** del progreso, **cargarla**
+  (en la misma u otra computadora) y **borrar todo** (pide escribir BORRAR).
+- **💡 Lamparitas**: se empieza con 0. Se ganan una sola vez por cosa resuelta (actividad +5 al primer intento, +2 si antes se respondió mal; lección de Computación +20,
   mini-proyecto +40, ejercicio de la guía LOGO! +30 (+10 si lo marca el alumno), juegos por puntos +1 cada 20 puntos)
   y se gastan en pistas (−30) o en ver la solución de una lección de Computación (−100; esa lección deja de pagar).
   Los valores están en `BULBS` (`src/lib/scores.ts`).
 - En **Juegos**, cada nivel muestra cuántos intentos por puntos quedan en esa computadora. Si se cierra la página a
-  mitad de un intento, ese intento queda usado con 0 puntos. Para cambiar la cantidad de intentos: `MAX_ATTEMPTS` en
-  `src/lib/config.ts`.
-
-> La carpeta `supabase/` y el código del modo online quedan de una versión anterior con ranking; hoy no se usan.
+  mitad de un intento (el navegador avisa antes) o se abandona, ese intento queda usado con 0 puntos. Para cambiar la
+  cantidad de intentos: `MAX_ATTEMPTS` en `src/lib/config.ts`.
+- **Sin conexión**: la versión publicada guarda en la computadora lo que ya se abrió, así que si se corta internet en
+  el aula sigue funcionando. Al volver la conexión se descarga sola la versión nueva.
 
 ## Desarrollo
 
@@ -87,13 +90,17 @@ npm run build                # genera dist/
 
 ```
 src/
-  catalog/      fichas de cada componente: partes, teoría, actividades y controles
+  subjects/     un archivo por taller (contenido, páginas propias y grupos de progreso) + menú de cada taller
+  catalog/      fichas de cada componente de Electrónica: partes, teoría, actividades y controles
   three/        visor 3D, sistema de partes despiezables y modelos procedurales
-  games/        los 4 juegos, sus niveles y el manejo de intentos
-  data/         temas de teoría
-  lib/          código de colores, protoboard, análisis de circuitos, puntajes guardados en la computadora
-  pages/        páginas de la app
-supabase/       (sin uso) base de datos de la versión anterior con ranking
+  games/        juegos comunes, sus niveles y el manejo de intentos
+  data/         temas de teoría de Electrónica y estructura de años/talleres
+  logo/         taller de Electricidad (LOGO!): simulador, guía, teoría, juegos y modelos
+  compu/        taller de Computación: curso HTML + JavaScript, editor, ejecución de código y juegos
+  torno/        taller de Torno: catálogo 3D, teoría, guía y juegos
+  lib/          puntajes y lamparitas (guardados en la computadora), carga diferida, utilidades
+  pages/        páginas comunes (inicio, años, componentes, teoría, actividades, juegos, progreso)
+public/sw.js    guarda la plataforma para usarla sin conexión
 ```
 
 Para agregar un componente nuevo: crear su modelo en `src/three/models/`, su ficha en `src/catalog/` y sumarlo a

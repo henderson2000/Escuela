@@ -83,12 +83,10 @@ export function LevelTabs({
             onClick={() => onSelect(i)}
           >
             {l.title}
-            {s.me && (
-              <small>
-                {' '}
-                · {best} pts · {at.length}/{MAX_ATTEMPTS}
-              </small>
-            )}
+            <small>
+              {' '}
+              · {best} pts · {at.length}/{MAX_ATTEMPTS}
+            </small>
           </button>
         )
       })}

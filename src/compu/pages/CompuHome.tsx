@@ -6,7 +6,7 @@ import { TRACKS, lessonActivityId, lessonsOf } from '../course'
 export function CompuHome() {
   const sub = useSub()
   const s = useStore()
-  const done = s.me ? s.activities[s.me.id] ?? {} : {}
+  const done = s.done
   return (
     <div className="page home">
       <section className="hero compu-hero">

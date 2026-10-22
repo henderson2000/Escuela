@@ -41,3 +41,10 @@ createRoot(rootEl, {
     <App />
   </StrictMode>,
 )
+
+// funciona sin internet lo que ya se abrió (sólo en la versión publicada y fuera de otras páginas)
+if (import.meta.env.PROD && 'serviceWorker' in navigator && window.self === window.top) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => undefined)
+  })
+}

@@ -1,12 +1,13 @@
 import { useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useSub } from '../../lib/nav'
-import { BULBS, markActivity, useStore } from '../../lib/scores'
+import { BULBS, isDone, markActivity, useStore } from '../../lib/scores'
 import { BulbPurchase } from '../../components/Bulbs'
 import { LogoEditor } from '../Editor'
 import { DEVICE_NAMES, OUTPUT_NAMES, runTests, type Program, type TestResult } from '../engine'
 import { EXERCISES, startProgram, type Exercise } from '../exercises'
 import { exerciseActivityId } from './GuidePage'
+import { NotFound } from '../../components/ui'
 
 export function ExercisePage() {
   const { id = '' } = useParams()
@@ -22,14 +23,10 @@ function ExerciseView({ id }: { id: string }) {
   const [result, setResult] = useState<TestResult | null>(null)
   const [tableOk, setTableOk] = useState(false)
   const initial = useMemo(() => (ex ? startProgram(ex.io) : null), [ex])
-  const solved = !!(s.me && ex && s.activities[s.me.id]?.[exerciseActivityId(ex.id)])
+  const solved = !!ex && isDone(s, exerciseActivityId(ex.id))
 
   if (!ex || !initial) {
-    return (
-      <div className="page">
-        Ejercicio no encontrado. <Link to={sub('/guia')}>Volver a la guía</Link>
-      </div>
-    )
+    return <NotFound what="ese ejercicio" back={sub('/guia')} backLabel="Ir a la guía de ejercicios" />
   }
   const prev = EXERCISES[idx - 1]
   const next = EXERCISES[idx + 1]
@@ -99,7 +96,7 @@ function ExerciseView({ id }: { id: string }) {
       {!ex.tests && (
         <div className="card check-result">
           Este ejercicio no tiene corrección automática: probalo en el simulador y mostráselo al profe.{' '}
-          {s.me && !solved && (
+          {!solved && (
             <button type="button" className="btn small" onClick={() => markActivity(exerciseActivityId(ex.id), true, BULBS.ejercicioMarcado, `Ejercicio ${ex.n} terminado`)}>
               Marcar como terminado
             </button>
