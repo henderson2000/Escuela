@@ -18,10 +18,7 @@ const count = (re: RegExp, s: string) => (s.match(new RegExp(re.source, 'g' + re
 /** líneas de la salida aceptando coma decimal (7,50 → 7.50) */
 const L = (o: string) => lines(o.replace(/(\d),(\d)/g, '$1.$2'))
 
-/** la salida tiene una línea igual a s (sin importar espacios a los costados) */
-const hasLine = (o: string, s: string) => L(o).includes(s)
-
-/** el código usa Scanner y lo lee de verdad */
+/** el código (sin comentarios ni textos) cumple la expresión */
 const usa = (code: string, re: RegExp) => re.test(codeOnly(code))
 
 /* ================================================================== 1. Primeros pasos */
@@ -187,7 +184,7 @@ const VARIABLES: CourseModule = {
   desc: 'Guardar datos: int, double, String, boolean, char y constantes.',
   lessons: [
     {
-      id: 'java-variables',
+      id: 'java-int-string',
       kind: 'java',
       title: 'Variables: int y String',
       intro: (
@@ -2853,4 +2850,1242 @@ public class Main {
       ],
     },
   ],
+}
+
+/* ================================================================== 10. Objetos */
+
+const OBJETOS: CourseModule = {
+  id: 'java-objetos',
+  title: 'Objetos',
+  desc: 'Clases, constructores, métodos, encapsulamiento, toString y ArrayList.',
+  lessons: [
+    {
+      id: 'java-clase',
+      kind: 'java',
+      title: 'Clases y objetos',
+      intro: (
+        <>
+          <p>
+            Una <b>clase</b> es un molde que describe cómo es algo: qué datos tiene (<b>atributos</b>). Cada <b>objeto</b> se crea con{' '}
+            <code>new</code> a partir de ese molde y tiene sus propios valores:
+          </p>
+          <pre>
+            <code>{'class Alumno {          // va arriba de Main, sin public\n    String nombre;\n    double promedio;\n}\n...\nAlumno a = new Alumno();\na.nombre = "Ana";\na.promedio = 8.5;\nSystem.out.println(a.nombre);'}</code>
+          </pre>
+          <p>Con el punto (<code>a.nombre</code>) accedés a los atributos de ese objeto en particular.</p>
+        </>
+      ),
+      task: (
+        <>
+          <p>
+            Se leen dos alumnos (nombre y promedio). Guardá cada uno en un <b>objeto</b> <code>Alumno</code> distinto y mostrá los dos y
+            quién tiene mejor promedio (si empatan, el primero):
+          </p>
+          <pre>
+            <code>{'Entrada:\nAna 8.5\nLuis 6\nSalida:\nAna tiene promedio 8.5\nLuis tiene promedio 6.0\nMejor promedio: Ana'}</code>
+          </pre>
+          <p>El promedio se muestra con 1 decimal.</p>
+        </>
+      ),
+      hint: <p>Alumno a1 = new Alumno(); a1.nombre = sc.next(); a1.promedio = sc.nextDouble(); … y lo mismo con a2.</p>,
+      sampleInput: 'Ana 8.5\nLuis 6',
+      starter: J(`
+import java.util.Scanner;
+
+class Alumno {
+    String nombre;
+    double promedio;
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        // creá los dos alumnos y cargá sus datos
+
+    }
+}
+`),
+      solution: J(`
+import java.util.Scanner;
+
+class Alumno {
+    String nombre;
+    double promedio;
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        Alumno a1 = new Alumno();
+        a1.nombre = sc.next();
+        a1.promedio = sc.nextDouble();
+        Alumno a2 = new Alumno();
+        a2.nombre = sc.next();
+        a2.promedio = sc.nextDouble();
+        System.out.printf("%s tiene promedio %.1f%n", a1.nombre, a1.promedio);
+        System.out.printf("%s tiene promedio %.1f%n", a2.nombre, a2.promedio);
+        Alumno mejor = a1;
+        if (a2.promedio > a1.promedio) {
+            mejor = a2;
+        }
+        System.out.println("Mejor promedio: " + mejor.nombre);
+    }
+}
+`),
+      tests: [
+        { text: 'Con Ana 8.5 y Luis 6: el ejemplo', input: 'Ana 8.5\nLuis 6', check: (o) => L(o).join('|') === 'Ana tiene promedio 8.5|Luis tiene promedio 6.0|Mejor promedio: Ana' },
+        { text: 'Con Tomi 7 y Sofi 9.5: mejor Sofi', input: 'Tomi 7\nSofi 9.5', check: (o) => L(o).join('|') === 'Tomi tiene promedio 7.0|Sofi tiene promedio 9.5|Mejor promedio: Sofi' },
+        { text: 'Crea dos objetos con new Alumno()', check: (_o, c) => count(/new\s+Alumno\s*\(/, codeOnly(c)) >= 2 },
+      ],
+    },
+    {
+      id: 'java-constructor',
+      kind: 'java',
+      title: 'Constructor y this',
+      intro: (
+        <>
+          <p>
+            El <b>constructor</b> es un método especial con el mismo nombre que la clase, sin tipo de retorno. Se ejecuta al hacer{' '}
+            <code>new</code> y sirve para darle valores iniciales al objeto. <code>this</code> es «este objeto»: distingue el atributo del
+            parámetro cuando se llaman igual.
+          </p>
+          <pre>
+            <code>{'class Libro {\n    String titulo;\n    int paginas;\n\n    Libro(String titulo, int paginas) {\n        this.titulo = titulo;\n        this.paginas = paginas;\n    }\n}\n...\nLibro l = new Libro("Martín Fierro", 200);'}</code>
+          </pre>
+        </>
+      ),
+      task: (
+        <>
+          <p>
+            Agregale a la clase <code>Socio</code> un constructor <code>Socio(String nombre, int numero)</code> que use <code>this</code>. Se
+            leen la cantidad de socios y, para cada uno, nombre y número. Creá cada socio con el constructor y mostrá:
+          </p>
+          <pre>
+            <code>{'Entrada:\n2\nAna 12\nLuis 7\nSalida:\nSocio #12: Ana\nSocio #7: Luis'}</code>
+          </pre>
+        </>
+      ),
+      hint: <p>Dentro del for: Socio s = new Socio(sc.next(), sc.nextInt()); y después mostrás s.numero y s.nombre.</p>,
+      sampleInput: '2\nAna 12\nLuis 7',
+      starter: J(`
+import java.util.Scanner;
+
+class Socio {
+    String nombre;
+    int numero;
+    // constructor
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        // tu código
+    }
+}
+`),
+      solution: J(`
+import java.util.Scanner;
+
+class Socio {
+    String nombre;
+    int numero;
+
+    Socio(String nombre, int numero) {
+        this.nombre = nombre;
+        this.numero = numero;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        for (int i = 0; i < n; i++) {
+            Socio s = new Socio(sc.next(), sc.nextInt());
+            System.out.println("Socio #" + s.numero + ": " + s.nombre);
+        }
+    }
+}
+`),
+      tests: [
+        { text: 'Con Ana 12 y Luis 7: "Socio #12: Ana" y "Socio #7: Luis"', input: '2\nAna 12\nLuis 7', check: (o) => lines(o).join('|') === 'Socio #12: Ana|Socio #7: Luis' },
+        { text: 'Con tres socios: los tres en orden', input: '3\nMica 101\nJuan 5\nSofi 33', check: (o) => lines(o).join('|') === 'Socio #101: Mica|Socio #5: Juan|Socio #33: Sofi' },
+        { text: 'Tiene el constructor Socio(String, int) y usa this', check: (_o, c) => usa(c, /Socio\s*\(\s*String\s+\w+\s*,\s*int\s+\w+\s*\)\s*\{/) && usa(c, /this\.\w+\s*=/) },
+      ],
+    },
+    {
+      id: 'java-metodos-obj',
+      kind: 'java',
+      title: 'Métodos de un objeto',
+      intro: (
+        <>
+          <p>
+            Además de datos, una clase tiene <b>métodos</b>: cosas que el objeto sabe hacer con sus propios datos. Estos métodos{' '}
+            <b>no</b> llevan <code>static</code>, porque trabajan con un objeto en particular:
+          </p>
+          <pre>
+            <code>{'class Rectangulo {\n    double base, altura;\n    Rectangulo(double b, double h) { base = b; altura = h; }\n\n    double area() {\n        return base * altura;\n    }\n}\n...\nRectangulo r = new Rectangulo(3, 4);\nSystem.out.println(r.area());   // 12.0'}</code>
+          </pre>
+          <p>Un método puede llamar a otro del mismo objeto directamente por su nombre.</p>
+        </>
+      ),
+      task: (
+        <>
+          <p>
+            Completá en la clase <code>Materia</code> los métodos <code>double promedio()</code> (de las 3 notas) y{' '}
+            <code>boolean estaAprobada()</code> (promedio 6 o más, usando <code>promedio()</code>). El main ya lee dos materias y
+            muestra:
+          </p>
+          <pre>
+            <code>{'Entrada:\nMatematica 7 8 7\nLengua 5 6 4\nSalida:\nMatematica: 7.33 (aprobada)\nLengua: 5.00 (desaprobada)'}</code>
+          </pre>
+        </>
+      ),
+      hint: <p>return (n1 + n2 + n3) / 3; y return promedio() {'>='} 6;</p>,
+      sampleInput: 'Matematica 7 8 7\nLengua 5 6 4',
+      starter: J(`
+import java.util.Scanner;
+
+class Materia {
+    String nombre;
+    double n1, n2, n3;
+
+    Materia(String nombre, double n1, double n2, double n3) {
+        this.nombre = nombre;
+        this.n1 = n1;
+        this.n2 = n2;
+        this.n3 = n3;
+    }
+
+    double promedio() {
+        return 0;
+    }
+
+    boolean estaAprobada() {
+        return false;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        for (int i = 0; i < 2; i++) {
+            Materia m = new Materia(sc.next(), sc.nextDouble(), sc.nextDouble(), sc.nextDouble());
+            String estado = m.estaAprobada() ? "aprobada" : "desaprobada";
+            System.out.printf("%s: %.2f (%s)%n", m.nombre, m.promedio(), estado);
+        }
+    }
+}
+`),
+      solution: J(`
+import java.util.Scanner;
+
+class Materia {
+    String nombre;
+    double n1, n2, n3;
+
+    Materia(String nombre, double n1, double n2, double n3) {
+        this.nombre = nombre;
+        this.n1 = n1;
+        this.n2 = n2;
+        this.n3 = n3;
+    }
+
+    double promedio() {
+        return (n1 + n2 + n3) / 3;
+    }
+
+    boolean estaAprobada() {
+        return promedio() >= 6;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        for (int i = 0; i < 2; i++) {
+            Materia m = new Materia(sc.next(), sc.nextDouble(), sc.nextDouble(), sc.nextDouble());
+            String estado = m.estaAprobada() ? "aprobada" : "desaprobada";
+            System.out.printf("%s: %.2f (%s)%n", m.nombre, m.promedio(), estado);
+        }
+    }
+}
+`),
+      tests: [
+        { text: 'Con Matematica 7 8 7 y Lengua 5 6 4: el ejemplo', input: 'Matematica 7 8 7\nLengua 5 6 4', check: (o) => L(o).join('|') === 'Matematica: 7.33 (aprobada)|Lengua: 5.00 (desaprobada)' },
+        { text: 'Con Fisica 6 6 6 y Quimica 10 9 8: las dos aprobadas', input: 'Fisica 6 6 6\nQuimica 10 9 8', check: (o) => L(o).join('|') === 'Fisica: 6.00 (aprobada)|Quimica: 9.00 (aprobada)' },
+        { text: 'Con Historia 5 6 6.5 y Ingles 1 2 3: 5.83 y 2.00, desaprobadas', input: 'Historia 5 6 6.5\nIngles 1 2 3', check: (o) => L(o).join('|') === 'Historia: 5.83 (desaprobada)|Ingles: 2.00 (desaprobada)' },
+        { text: 'estaAprobada() usa promedio()', check: (_o, c) => /boolean\s+estaAprobada\s*\(\s*\)\s*\{[^}]*promedio\s*\(\s*\)/.test(codeOnly(c)) },
+      ],
+    },
+    {
+      id: 'java-encapsular',
+      kind: 'java',
+      title: 'Encapsulamiento: private, getters y setters',
+      intro: (
+        <>
+          <p>
+            Si cualquiera puede cambiar un atributo, alguien podría poner un saldo negativo. Por eso los atributos se hacen{' '}
+            <code>private</code> (solo la propia clase los toca) y se ofrecen <b>métodos</b> que controlan los cambios. A eso se le dice{' '}
+            <b>encapsulamiento</b>:
+          </p>
+          <pre>
+            <code>{'class Termo {\n    private int litros;\n\n    public int getLitros() {          // getter: deja leer\n        return litros;\n    }\n\n    public void setLitros(int l) {    // setter: deja cambiar, con control\n        if (l >= 0 && l <= 2) litros = l;\n    }\n}'}</code>
+          </pre>
+        </>
+      ),
+      task: (
+        <>
+          <p>
+            Hacé la clase <code>TarjetaComedor</code> con <code>private int saldo</code>, <code>getSaldo()</code>,{' '}
+            <code>boolean cargar(int monto)</code> (solo si el monto es mayor a 0) y <code>boolean pagar(int precio)</code> (solo si
+            alcanza el saldo). Ambos devuelven si se pudo. El main lee operaciones hasta <code>F</code>: <code>C monto</code> carga y{' '}
+            <code>P precio</code> paga. Mostrá:
+          </p>
+          <pre>
+            <code>{'Entrada: C 2000 P 1500 P 800 C -50 F\nSalida:\nCarga: $2000\nPago: $1500\nSaldo insuficiente\nCarga inválida\nSaldo: $500'}</code>
+          </pre>
+        </>
+      ),
+      hint: <p>En el main, op.equals("C") → if (t.cargar(m)) … else …; al final t.getSaldo().</p>,
+      sampleInput: 'C 2000 P 1500 P 800 C -50 F',
+      starter: J(`
+import java.util.Scanner;
+
+class TarjetaComedor {
+    int saldo;
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        TarjetaComedor t = new TarjetaComedor();
+        while (true) {
+            String op = sc.next();
+            if (op.equals("F")) break;
+            int monto = sc.nextInt();
+            // usá los métodos de la tarjeta
+        }
+        System.out.println("Saldo: $" + t.saldo);
+    }
+}
+`),
+      solution: J(`
+import java.util.Scanner;
+
+class TarjetaComedor {
+    private int saldo;
+
+    public int getSaldo() {
+        return saldo;
+    }
+
+    public boolean cargar(int monto) {
+        if (monto <= 0) return false;
+        saldo += monto;
+        return true;
+    }
+
+    public boolean pagar(int precio) {
+        if (precio > saldo) return false;
+        saldo -= precio;
+        return true;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        TarjetaComedor t = new TarjetaComedor();
+        while (true) {
+            String op = sc.next();
+            if (op.equals("F")) break;
+            int monto = sc.nextInt();
+            if (op.equals("C")) {
+                if (t.cargar(monto)) System.out.println("Carga: $" + monto);
+                else System.out.println("Carga inválida");
+            } else if (op.equals("P")) {
+                if (t.pagar(monto)) System.out.println("Pago: $" + monto);
+                else System.out.println("Saldo insuficiente");
+            }
+        }
+        System.out.println("Saldo: $" + t.getSaldo());
+    }
+}
+`),
+      tests: [
+        { text: 'Con C 2000 P 1500 P 800 C -50 F: el ejemplo', input: 'C 2000 P 1500 P 800 C -50 F', check: (o) => lines(o).join('|') === 'Carga: $2000|Pago: $1500|Saldo insuficiente|Carga inválida|Saldo: $500' },
+        { text: 'Con P 100 C 0 C 700 P 700 F: no paga sin saldo y queda en $0', input: 'P 100 C 0 C 700 P 700 F', check: (o) => lines(o).join('|') === 'Saldo insuficiente|Carga inválida|Carga: $700|Pago: $700|Saldo: $0' },
+        { text: 'Con F: "Saldo: $0"', input: 'F', check: (o) => lines(o).join('|') === 'Saldo: $0' },
+        { text: 'El saldo es private y hay getSaldo()', check: (_o, c) => usa(c, /private\s+int\s+saldo/) && usa(c, /int\s+getSaldo\s*\(\s*\)/) },
+      ],
+    },
+    {
+      id: 'java-tostring',
+      kind: 'java',
+      title: 'toString',
+      intro: (
+        <>
+          <p>
+            Si hacés <code>System.out.println(objeto)</code>, Java llama al método <code>toString()</code> del objeto. Si no lo
+            definiste, muestra algo como <code>Producto@1b6d3586</code>. Para que muestre algo útil, lo <b>redefinís</b>:
+          </p>
+          <pre>
+            <code>{'class Equipo {\n    String nombre;\n    int puntos;\n    ...\n    // @Override\n    public String toString() {\n        return nombre + " (" + puntos + " pts)";\n    }\n}\nSystem.out.println(e);   // Talleres (10 pts)'}</code>
+          </pre>
+          <p>
+            La línea <code>// @Override</code> es un comentario que avisa que el método reemplaza a uno que ya existía (lo vas a ver en
+            el módulo de herencia).
+          </p>
+        </>
+      ),
+      task: (
+        <>
+          <p>
+            Agregale a <code>Producto</code> un <code>toString()</code> para que el main (que hace <code>println(p)</code>) muestre cada
+            producto así; si el stock es 0, en vez del stock dice <code>sin stock</code>:
+          </p>
+          <pre>
+            <code>{'Entrada:\n2\nAlfajor 800 12\nTurron 300 0\nSalida:\nAlfajor - $800 (stock: 12)\nTurron - $300 (sin stock)'}</code>
+          </pre>
+        </>
+      ),
+      hint: <p>public String toString() {'{'} if (stock == 0) return …; return …; {'}'}</p>,
+      sampleInput: '2\nAlfajor 800 12\nTurron 300 0',
+      starter: J(`
+import java.util.Scanner;
+
+class Producto {
+    String nombre;
+    int precio;
+    int stock;
+
+    Producto(String nombre, int precio, int stock) {
+        this.nombre = nombre;
+        this.precio = precio;
+        this.stock = stock;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        for (int i = 0; i < n; i++) {
+            Producto p = new Producto(sc.next(), sc.nextInt(), sc.nextInt());
+            System.out.println(p);
+        }
+    }
+}
+`),
+      solution: J(`
+import java.util.Scanner;
+
+class Producto {
+    String nombre;
+    int precio;
+    int stock;
+
+    Producto(String nombre, int precio, int stock) {
+        this.nombre = nombre;
+        this.precio = precio;
+        this.stock = stock;
+    }
+
+    // @Override
+    public String toString() {
+        if (stock == 0) {
+            return nombre + " - $" + precio + " (sin stock)";
+        }
+        return nombre + " - $" + precio + " (stock: " + stock + ")";
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        for (int i = 0; i < n; i++) {
+            Producto p = new Producto(sc.next(), sc.nextInt(), sc.nextInt());
+            System.out.println(p);
+        }
+    }
+}
+`),
+      tests: [
+        { text: 'Con Alfajor y Turron: el ejemplo', input: '2\nAlfajor 800 12\nTurron 300 0', check: (o) => lines(o).join('|') === 'Alfajor - $800 (stock: 12)|Turron - $300 (sin stock)' },
+        { text: 'Con Gaseosa 1200 5: "Gaseosa - $1200 (stock: 5)"', input: '1\nGaseosa 1200 5', check: (o) => lines(o).join('|') === 'Gaseosa - $1200 (stock: 5)' },
+        { text: 'Define public String toString()', check: (_o, c) => usa(c, /public\s+String\s+toString\s*\(\s*\)/) },
+      ],
+    },
+    {
+      id: 'java-proy-registro',
+      kind: 'java',
+      title: 'Mini-proyecto: registro de alumnos con ArrayList',
+      intro: (
+        <>
+          <p>
+            <b>Mini-proyecto.</b> Un arreglo tiene tamaño fijo; un <code>ArrayList</code> crece solo a medida que agregás cosas. Es
+            ideal para guardar objetos:
+          </p>
+          <pre>
+            <code>{'import java.util.ArrayList;\n...\nArrayList<Alumno> lista = new ArrayList<>();\nlista.add(new Alumno("Ana", 8));\nlista.size()        // cantidad\nlista.get(0)        // el primero\nfor (Alumno a : lista) {     // for-each: recorre todos\n    System.out.println(a.getNombre());\n}'}</code>
+          </pre>
+        </>
+      ),
+      task: (
+        <>
+          <p>
+            Hacé una clase <code>Alumno</code> con atributos <b>private</b> <code>nombre</code> y <code>nota</code> (entera), constructor y
+            getters. Se lee la cantidad y los alumnos; guardalos en un <code>{'ArrayList<Alumno>'}</code> y mostrá el registro, los
+            aprobados (nota 6 o más, separados por coma y espacio, o <code>ninguno</code>) y la mejor nota (si empatan, el primero):
+          </p>
+          <pre>
+            <code>{'Entrada:\n3\nAna 8\nLuis 5\nSofi 9\nSalida:\nRegistro (3 alumnos):\n- Ana: 8\n- Luis: 5\n- Sofi: 9\nAprobados: Ana, Sofi\nMejor nota: Sofi'}</code>
+          </pre>
+        </>
+      ),
+      hint: <p>Para los aprobados armá un String: si ya tiene algo, agregale ", " antes del próximo nombre.</p>,
+      sampleInput: '3\nAna 8\nLuis 5\nSofi 9',
+      starter: J(`
+import java.util.ArrayList;
+import java.util.Scanner;
+
+// clase Alumno
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        // tu código
+    }
+}
+`),
+      solution: J(`
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class Alumno {
+    private String nombre;
+    private int nota;
+
+    Alumno(String nombre, int nota) {
+        this.nombre = nombre;
+        this.nota = nota;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public int getNota() {
+        return nota;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        ArrayList<Alumno> lista = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            lista.add(new Alumno(sc.next(), sc.nextInt()));
+        }
+        System.out.println("Registro (" + lista.size() + " alumnos):");
+        String aprobados = "";
+        Alumno mejor = lista.get(0);
+        for (Alumno a : lista) {
+            System.out.println("- " + a.getNombre() + ": " + a.getNota());
+            if (a.getNota() >= 6) {
+                if (!aprobados.isEmpty()) aprobados += ", ";
+                aprobados += a.getNombre();
+            }
+            if (a.getNota() > mejor.getNota()) mejor = a;
+        }
+        System.out.println("Aprobados: " + (aprobados.isEmpty() ? "ninguno" : aprobados));
+        System.out.println("Mejor nota: " + mejor.getNombre());
+    }
+}
+`),
+      tests: [
+        {
+          text: 'Con Ana 8, Luis 5, Sofi 9: el ejemplo',
+          input: '3\nAna 8\nLuis 5\nSofi 9',
+          check: (o) => lines(o).join('|') === 'Registro (3 alumnos):|- Ana: 8|- Luis: 5|- Sofi: 9|Aprobados: Ana, Sofi|Mejor nota: Sofi',
+        },
+        {
+          text: 'Sin aprobados: "Aprobados: ninguno"',
+          input: '2\nTomi 4\nMica 3',
+          check: (o) => lines(o).join('|') === 'Registro (2 alumnos):|- Tomi: 4|- Mica: 3|Aprobados: ninguno|Mejor nota: Tomi',
+        },
+        {
+          text: 'Con empate en la mejor nota: el primero',
+          input: '4\nJuan 10\nLu 6\nCami 10\nPedro 7',
+          check: (o) => lines(o).join('|') === 'Registro (4 alumnos):|- Juan: 10|- Lu: 6|- Cami: 10|- Pedro: 7|Aprobados: Juan, Lu, Cami, Pedro|Mejor nota: Juan',
+        },
+        { text: 'Usa ArrayList<Alumno> y atributos private', check: (_o, c) => usa(c, /ArrayList\s*<\s*Alumno\s*>/) && usa(c, /private\s+String\s+nombre/) && usa(c, /private\s+int\s+nota/) },
+      ],
+    },
+  ],
+}
+
+/* ================================================================== 11. Herencia y polimorfismo */
+
+const HERENCIA: CourseModule = {
+  id: 'java-herencia',
+  title: 'Herencia y polimorfismo',
+  desc: 'extends, super, redefinir métodos, polimorfismo, clases abstractas e interfaces.',
+  lessons: [
+    {
+      id: 'java-extends',
+      kind: 'java',
+      title: 'Herencia: extends y super',
+      intro: (
+        <>
+          <p>
+            Con <code>extends</code> una clase <b>hereda</b> todo lo de otra y le agrega lo suyo. Así no repetís código: un alumno y un
+            docente son los dos <i>personas</i>. Con <code>super(...)</code> se llama al constructor de la clase de arriba (la «madre»):
+          </p>
+          <pre>
+            <code>{'class Persona {\n    protected String nombre;\n    Persona(String nombre) { this.nombre = nombre; }\n}\n\nclass Preceptor extends Persona {\n    String turno;\n    Preceptor(String nombre, String turno) {\n        super(nombre);          // primero, la parte de Persona\n        this.turno = turno;\n    }\n}'}</code>
+          </pre>
+          <p>
+            <code>protected</code> deja que las clases hijas usen el atributo.
+          </p>
+        </>
+      ),
+      task: (
+        <>
+          <p>
+            Ya está <code>Persona</code>. Creá <code>Alumno extends Persona</code> (con un <code>int anio</code>) y{' '}
+            <code>Docente extends Persona</code> (con un <code>String materia</code>), cada uno con su constructor que use{' '}
+            <code>super</code> y un método <code>String descripcion()</code>. El main ya está escrito:
+          </p>
+          <pre>
+            <code>{'Entrada:\nAna 3\nMarta Fisica\nSalida:\nAlumno/a Ana, año 3\nDocente Marta, materia Fisica'}</code>
+          </pre>
+        </>
+      ),
+      hint: <p>class Alumno extends Persona {'{'} int anio; Alumno(String nombre, int anio) {'{'} super(nombre); … {'}'} … {'}'}</p>,
+      sampleInput: 'Ana 3\nMarta Fisica',
+      starter: J(`
+import java.util.Scanner;
+
+class Persona {
+    protected String nombre;
+
+    Persona(String nombre) {
+        this.nombre = nombre;
+    }
+}
+
+// clases Alumno y Docente
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        Alumno a = new Alumno(sc.next(), sc.nextInt());
+        Docente d = new Docente(sc.next(), sc.next());
+        System.out.println(a.descripcion());
+        System.out.println(d.descripcion());
+    }
+}
+`),
+      solution: J(`
+import java.util.Scanner;
+
+class Persona {
+    protected String nombre;
+
+    Persona(String nombre) {
+        this.nombre = nombre;
+    }
+}
+
+class Alumno extends Persona {
+    int anio;
+
+    Alumno(String nombre, int anio) {
+        super(nombre);
+        this.anio = anio;
+    }
+
+    String descripcion() {
+        return "Alumno/a " + nombre + ", año " + anio;
+    }
+}
+
+class Docente extends Persona {
+    String materia;
+
+    Docente(String nombre, String materia) {
+        super(nombre);
+        this.materia = materia;
+    }
+
+    String descripcion() {
+        return "Docente " + nombre + ", materia " + materia;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        Alumno a = new Alumno(sc.next(), sc.nextInt());
+        Docente d = new Docente(sc.next(), sc.next());
+        System.out.println(a.descripcion());
+        System.out.println(d.descripcion());
+    }
+}
+`),
+      tests: [
+        { text: 'Con Ana 3 y Marta Fisica: el ejemplo', input: 'Ana 3\nMarta Fisica', check: (o) => lines(o).join('|') === 'Alumno/a Ana, año 3|Docente Marta, materia Fisica' },
+        { text: 'Con Leo 5 y Raul Taller: "Alumno/a Leo, año 5" y "Docente Raul, materia Taller"', input: 'Leo 5\nRaul Taller', check: (o) => lines(o).join('|') === 'Alumno/a Leo, año 5|Docente Raul, materia Taller' },
+        { text: 'Alumno y Docente heredan de Persona y usan super', check: (_o, c) => usa(c, /class\s+Alumno\s+extends\s+Persona/) && usa(c, /class\s+Docente\s+extends\s+Persona/) && count(/\bsuper\s*\(/, codeOnly(c)) >= 2 },
+      ],
+    },
+    {
+      id: 'java-override',
+      kind: 'java',
+      title: 'Redefinir métodos y polimorfismo',
+      intro: (
+        <>
+          <p>
+            Una clase hija puede <b>redefinir</b> un método de la madre escribiendo un método con el mismo nombre y parámetros. Y lo mejor: una variable del tipo de
+            la madre puede guardar cualquier hija, y al llamar al método se ejecuta <b>el de la hija</b>. Eso es <b>polimorfismo</b>:
+          </p>
+          <pre>
+            <code>{'class Saludo { String texto() { return "Hola"; } }\nclass SaludoCordobes extends Saludo {\n    // @Override\n    String texto() { return "¿Qué hacé, loco?"; }\n}\n...\nSaludo s = new SaludoCordobes();\nSystem.out.println(s.texto());   // usa el de SaludoCordobes'}</code>
+          </pre>
+          <p>
+            En Java se marca el método redefinido con la anotación <code>@Override</code> arriba. En este editor las anotaciones (lo que
+            empieza con <code>@</code>) todavía no funcionan, así que la escribimos como comentario: <code>// @Override</code>. El método
+            se redefine igual: lo que importa es que tenga <b>el mismo nombre y los mismos parámetros</b> que el de la madre.
+          </p>
+        </>
+      ),
+      task: (
+        <>
+          <p>
+            Para la peña de la cooperadora hay entradas <code>General</code> ($3000), <code>Socio</code> ($2000) y <code>Menor</code>{' '}
+            ($1500). Ya está la clase <code>Entrada</code> (la general). Creá <code>EntradaSocio</code> y <code>EntradaMenor</code> que
+            hereden de <code>Entrada</code> y redefinan <code>tipo()</code> y <code>precio()</code> (con el comentario <code>// @Override</code> arriba). Después hacé
+            que el main cree la entrada que corresponde a cada letra (G, S o M):
+          </p>
+          <pre>
+            <code>{'Entrada:\n4\nG S M S\nSalida:\nGeneral: $3000\nSocio: $2000\nMenor: $1500\nSocio: $2000\nTotal: $8500'}</code>
+          </pre>
+        </>
+      ),
+      hint: <p>En el main: Entrada e; if (letra.equals("S")) e = new EntradaSocio(); else if … else e = new Entrada();</p>,
+      sampleInput: '4\nG S M S',
+      starter: J(`
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class Entrada {
+    String tipo() {
+        return "General";
+    }
+
+    int precio() {
+        return 3000;
+    }
+}
+
+// EntradaSocio y EntradaMenor
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        ArrayList<Entrada> entradas = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            String letra = sc.next();
+            entradas.add(new Entrada());
+        }
+        int total = 0;
+        for (Entrada e : entradas) {
+            System.out.println(e.tipo() + ": $" + e.precio());
+            total += e.precio();
+        }
+        System.out.println("Total: $" + total);
+    }
+}
+`),
+      solution: J(`
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class Entrada {
+    String tipo() {
+        return "General";
+    }
+
+    int precio() {
+        return 3000;
+    }
+}
+
+class EntradaSocio extends Entrada {
+    // @Override
+    String tipo() {
+        return "Socio";
+    }
+
+    // @Override
+    int precio() {
+        return 2000;
+    }
+}
+
+class EntradaMenor extends Entrada {
+    // @Override
+    String tipo() {
+        return "Menor";
+    }
+
+    // @Override
+    int precio() {
+        return 1500;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        ArrayList<Entrada> entradas = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            String letra = sc.next();
+            if (letra.equals("S")) {
+                entradas.add(new EntradaSocio());
+            } else if (letra.equals("M")) {
+                entradas.add(new EntradaMenor());
+            } else {
+                entradas.add(new Entrada());
+            }
+        }
+        int total = 0;
+        for (Entrada e : entradas) {
+            System.out.println(e.tipo() + ": $" + e.precio());
+            total += e.precio();
+        }
+        System.out.println("Total: $" + total);
+    }
+}
+`),
+      tests: [
+        { text: 'Con G S M S: el ejemplo, total $8500', input: '4\nG S M S', check: (o) => lines(o).join('|') === 'General: $3000|Socio: $2000|Menor: $1500|Socio: $2000|Total: $8500' },
+        { text: 'Con M M: dos menores, total $3000', input: '2\nM M', check: (o) => lines(o).join('|') === 'Menor: $1500|Menor: $1500|Total: $3000' },
+        { text: 'Con G: una general, total $3000', input: '1\nG', check: (o) => lines(o).join('|') === 'General: $3000|Total: $3000' },
+        { text: 'Las dos clases nuevas heredan de Entrada y redefinen tipo() y precio()', check: (_o, c) => count(/extends\s+Entrada\b/, codeOnly(c)) >= 2 && count(/String\s+tipo\s*\(\s*\)/, codeOnly(c)) >= 3 && count(/int\s+precio\s*\(\s*\)/, codeOnly(c)) >= 3 },
+      ],
+    },
+    {
+      id: 'java-abstracta',
+      kind: 'java',
+      title: 'Clases abstractas',
+      intro: (
+        <>
+          <p>
+            Una clase <code>abstract</code> es una idea general que no se puede crear con <code>new</code>: solo sirve como madre. Puede
+            tener métodos <code>abstract</code>, sin cuerpo, que <b>cada hija está obligada</b> a escribir:
+          </p>
+          <pre>
+            <code>{'abstract class Instrumento {\n    abstract String sonido();          // sin cuerpo: lo define cada hija\n    void tocar() { System.out.println(sonido()); }\n}\nclass Bombo extends Instrumento {\n    String sonido() { return "Pum"; }\n}'}</code>
+          </pre>
+        </>
+      ),
+      task: (
+        <>
+          <p>
+            El kiosco acepta tres medios de pago. Ya está la clase abstracta <code>MedioDePago</code> y <code>Efectivo</code> (10% de
+            descuento). Creá <code>Tarjeta</code> (15% de recargo) y <code>Transferencia</code> (mismo precio). El main lee un monto y
+            muestra cuánto se paga con cada uno (2 decimales):
+          </p>
+          <pre>
+            <code>{'Entrada: 1000\nSalida:\nEfectivo: $900.00\nTarjeta: $1150.00\nTransferencia: $1000.00'}</code>
+          </pre>
+        </>
+      ),
+      hint: <p>Cada clase nueva: extends MedioDePago, y escribe nombre() y aplicar(double monto).</p>,
+      sampleInput: '1000',
+      starter: J(`
+import java.util.Scanner;
+
+abstract class MedioDePago {
+    abstract String nombre();
+    abstract double aplicar(double monto);
+}
+
+class Efectivo extends MedioDePago {
+    String nombre() {
+        return "Efectivo";
+    }
+
+    double aplicar(double monto) {
+        return monto * 0.9;
+    }
+}
+
+// Tarjeta y Transferencia
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        double monto = sc.nextDouble();
+        MedioDePago[] medios = { new Efectivo(), new Tarjeta(), new Transferencia() };
+        for (MedioDePago m : medios) {
+            System.out.printf("%s: $%.2f%n", m.nombre(), m.aplicar(monto));
+        }
+    }
+}
+`),
+      solution: J(`
+import java.util.Scanner;
+
+abstract class MedioDePago {
+    abstract String nombre();
+    abstract double aplicar(double monto);
+}
+
+class Efectivo extends MedioDePago {
+    String nombre() {
+        return "Efectivo";
+    }
+
+    double aplicar(double monto) {
+        return monto * 0.9;
+    }
+}
+
+class Tarjeta extends MedioDePago {
+    String nombre() {
+        return "Tarjeta";
+    }
+
+    double aplicar(double monto) {
+        return monto * 1.15;
+    }
+}
+
+class Transferencia extends MedioDePago {
+    String nombre() {
+        return "Transferencia";
+    }
+
+    double aplicar(double monto) {
+        return monto;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        double monto = sc.nextDouble();
+        MedioDePago[] medios = { new Efectivo(), new Tarjeta(), new Transferencia() };
+        for (MedioDePago m : medios) {
+            System.out.printf("%s: $%.2f%n", m.nombre(), m.aplicar(monto));
+        }
+    }
+}
+`),
+      tests: [
+        { text: 'Con 1000: 900.00, 1150.00 y 1000.00', input: '1000', check: (o) => L(o).join('|') === 'Efectivo: $900.00|Tarjeta: $1150.00|Transferencia: $1000.00' },
+        { text: 'Con 2400: 2160.00, 2760.00 y 2400.00', input: '2400', check: (o) => L(o).join('|') === 'Efectivo: $2160.00|Tarjeta: $2760.00|Transferencia: $2400.00' },
+        { text: 'Tarjeta y Transferencia heredan de la clase abstracta', check: (_o, c) => usa(c, /abstract\s+class\s+MedioDePago/) && usa(c, /class\s+Tarjeta\s+extends\s+MedioDePago/) && usa(c, /class\s+Transferencia\s+extends\s+MedioDePago/) },
+      ],
+    },
+    {
+      id: 'java-interfaz',
+      kind: 'java',
+      title: 'Interfaces',
+      intro: (
+        <>
+          <p>
+            Una <code>interface</code> es un <b>contrato</b>: dice qué métodos tiene que tener una clase, sin decir cómo. Una clase la
+            cumple con <code>implements</code> (y puede implementar varias). Puede traer métodos <code>default</code> ya escritos que usan
+            los otros:
+          </p>
+          <pre>
+            <code>{'interface Cobrable {\n    int precio();\n    default String etiqueta() { return "$" + precio(); }\n}\nclass Fotocopia implements Cobrable {\n    public int precio() { return 50; }\n}'}</code>
+          </pre>
+          <p>
+            Ojo: los métodos de una interfaz son <code>public</code>, así que al implementarlos también van con <code>public</code>.
+          </p>
+        </>
+      ),
+      task: (
+        <>
+          <p>
+            El club tiene actividades. Ya está la interfaz <code>Actividad</code> (con <code>nombre()</code>, <code>cuota()</code> y el
+            método default <code>etiqueta()</code>) y la clase <code>Futbol</code> ($8000). Creá <code>Natacion</code> («Natación»,
+            $12000) y <code>Ajedrez</code> («Ajedrez», $4000) que implementen <code>Actividad</code>. El main lee las actividades de un
+            socio (F, N o A) y muestra:
+          </p>
+          <pre>
+            <code>{'Entrada:\n3\nF N A\nSalida:\nFútbol: $8000\nNatación: $12000\nAjedrez: $4000\nCuota total: $24000'}</code>
+          </pre>
+        </>
+      ),
+      hint: <p>class Natacion implements Actividad {'{'} public String nombre() {'{'} … {'}'} public int cuota() {'{'} … {'}'} {'}'}</p>,
+      sampleInput: '3\nF N A',
+      starter: J(`
+import java.util.Scanner;
+
+interface Actividad {
+    String nombre();
+    int cuota();
+
+    default String etiqueta() {
+        return nombre() + ": $" + cuota();
+    }
+}
+
+class Futbol implements Actividad {
+    public String nombre() {
+        return "Fútbol";
+    }
+
+    public int cuota() {
+        return 8000;
+    }
+}
+
+// Natacion y Ajedrez
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        int total = 0;
+        for (int i = 0; i < n; i++) {
+            String c = sc.next();
+            Actividad a;
+            if (c.equals("N")) a = new Natacion();
+            else if (c.equals("A")) a = new Ajedrez();
+            else a = new Futbol();
+            System.out.println(a.etiqueta());
+            total += a.cuota();
+        }
+        System.out.println("Cuota total: $" + total);
+    }
+}
+`),
+      solution: J(`
+import java.util.Scanner;
+
+interface Actividad {
+    String nombre();
+    int cuota();
+
+    default String etiqueta() {
+        return nombre() + ": $" + cuota();
+    }
+}
+
+class Futbol implements Actividad {
+    public String nombre() {
+        return "Fútbol";
+    }
+
+    public int cuota() {
+        return 8000;
+    }
+}
+
+class Natacion implements Actividad {
+    public String nombre() {
+        return "Natación";
+    }
+
+    public int cuota() {
+        return 12000;
+    }
+}
+
+class Ajedrez implements Actividad {
+    public String nombre() {
+        return "Ajedrez";
+    }
+
+    public int cuota() {
+        return 4000;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        int total = 0;
+        for (int i = 0; i < n; i++) {
+            String c = sc.next();
+            Actividad a;
+            if (c.equals("N")) a = new Natacion();
+            else if (c.equals("A")) a = new Ajedrez();
+            else a = new Futbol();
+            System.out.println(a.etiqueta());
+            total += a.cuota();
+        }
+        System.out.println("Cuota total: $" + total);
+    }
+}
+`),
+      tests: [
+        { text: 'Con F N A: el ejemplo, total $24000', input: '3\nF N A', check: (o) => lines(o).join('|') === 'Fútbol: $8000|Natación: $12000|Ajedrez: $4000|Cuota total: $24000' },
+        { text: 'Con A A: "Cuota total: $8000"', input: '2\nA A', check: (o) => lines(o).join('|') === 'Ajedrez: $4000|Ajedrez: $4000|Cuota total: $8000' },
+        { text: 'Con N: "Natación: $12000"', input: '1\nN', check: (o) => lines(o).join('|') === 'Natación: $12000|Cuota total: $12000' },
+        { text: 'Natacion y Ajedrez implementan Actividad', check: (_o, c) => usa(c, /class\s+Natacion\s+implements\s+Actividad/) && usa(c, /class\s+Ajedrez\s+implements\s+Actividad/) },
+      ],
+    },
+    {
+      id: 'java-proy-figuras',
+      kind: 'java',
+      title: 'Mini-proyecto: figuras con herencia',
+      intro: (
+        <>
+          <p>
+            <b>Mini-proyecto.</b> Juntamos todo: una clase abstracta, varias hijas (¡y una nieta!), <code>toString</code> heredado y una
+            lista polimórfica. Un cuadrado <b>es un</b> rectángulo con base y altura iguales, así que puede heredar de él:
+          </p>
+          <pre>
+            <code>{'class Cuadrado extends Rectangulo {\n    Cuadrado(double lado) { super(lado, lado); }\n    // @Override\n    String nombre() { return "Cuadrado"; }\n}'}</code>
+          </pre>
+          <p>
+            <code>String.format</code> funciona como <code>printf</code> pero devuelve el texto en vez de mostrarlo.
+          </p>
+        </>
+      ),
+      task: (
+        <>
+          <p>
+            Hacé <code>abstract class Figura</code> con <code>area()</code>, <code>perimetro()</code> y <code>nombre()</code> abstractos y
+            un <code>toString()</code> que devuelva <code>Nombre: área A, perímetro P</code> (2 decimales). Hijas: <code>Circulo</code>{' '}
+            (radio), <code>Rectangulo</code> (base, altura) y <code>Cuadrado extends Rectangulo</code>. Se lee la cantidad de figuras y
+            cada una como <code>C radio</code>, <code>R base altura</code> o <code>Q lado</code>; guardalas en un{' '}
+            <code>{'ArrayList<Figura>'}</code>, mostralas y al final la de mayor área (si empatan, la primera):
+          </p>
+          <pre>
+            <code>{'Entrada:\n3\nC 2\nR 3 4\nQ 5\nSalida:\nCírculo: área 12.57, perímetro 12.57\nRectángulo: área 12.00, perímetro 14.00\nCuadrado: área 25.00, perímetro 20.00\nMayor área: Cuadrado'}</code>
+          </pre>
+        </>
+      ),
+      hint: <p>Círculo: área Math.PI * r * r y perímetro 2 * Math.PI * r. El toString va una sola vez, en Figura.</p>,
+      sampleInput: '3\nC 2\nR 3 4\nQ 5',
+      starter: J(`
+import java.util.ArrayList;
+import java.util.Scanner;
+
+abstract class Figura {
+    abstract double area();
+    abstract double perimetro();
+    abstract String nombre();
+    // toString
+}
+
+// Circulo, Rectangulo y Cuadrado
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        ArrayList<Figura> figuras = new ArrayList<>();
+        // leé las figuras
+
+    }
+}
+`),
+      solution: J(`
+import java.util.ArrayList;
+import java.util.Scanner;
+
+abstract class Figura {
+    abstract double area();
+    abstract double perimetro();
+    abstract String nombre();
+
+    // @Override
+    public String toString() {
+        return String.format("%s: área %.2f, perímetro %.2f", nombre(), area(), perimetro());
+    }
+}
+
+class Circulo extends Figura {
+    double r;
+    Circulo(double r) { this.r = r; }
+    double area() { return Math.PI * r * r; }
+    double perimetro() { return 2 * Math.PI * r; }
+    String nombre() { return "Círculo"; }
+}
+
+class Rectangulo extends Figura {
+    double base, altura;
+    Rectangulo(double base, double altura) { this.base = base; this.altura = altura; }
+    double area() { return base * altura; }
+    double perimetro() { return 2 * (base + altura); }
+    String nombre() { return "Rectángulo"; }
+}
+
+class Cuadrado extends Rectangulo {
+    Cuadrado(double lado) { super(lado, lado); }
+    // @Override
+    String nombre() { return "Cuadrado"; }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        ArrayList<Figura> figuras = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            String t = sc.next();
+            if (t.equals("C")) figuras.add(new Circulo(sc.nextDouble()));
+            else if (t.equals("R")) figuras.add(new Rectangulo(sc.nextDouble(), sc.nextDouble()));
+            else figuras.add(new Cuadrado(sc.nextDouble()));
+        }
+        Figura mayor = figuras.get(0);
+        for (Figura f : figuras) {
+            System.out.println(f);
+            if (f.area() > mayor.area()) mayor = f;
+        }
+        System.out.println("Mayor área: " + mayor.nombre());
+    }
+}
+`),
+      tests: [
+        {
+          text: 'Con C 2, R 3 4, Q 5: el ejemplo',
+          input: '3\nC 2\nR 3 4\nQ 5',
+          check: (o) => L(o).join('|') === 'Círculo: área 12.57, perímetro 12.57|Rectángulo: área 12.00, perímetro 14.00|Cuadrado: área 25.00, perímetro 20.00|Mayor área: Cuadrado',
+        },
+        {
+          text: 'Con R 1 2 y C 1: gana el círculo',
+          input: '2\nR 1 2\nC 1',
+          check: (o) => L(o).join('|') === 'Rectángulo: área 2.00, perímetro 6.00|Círculo: área 3.14, perímetro 6.28|Mayor área: Círculo',
+        },
+        {
+          text: 'Con Q 2 y R 1 4 (empate): gana el cuadrado, el primero',
+          input: '2\nQ 2\nR 1 4',
+          check: (o) => L(o).join('|') === 'Cuadrado: área 4.00, perímetro 8.00|Rectángulo: área 4.00, perímetro 10.00|Mayor área: Cuadrado',
+        },
+        {
+          text: 'Figura es abstracta, Cuadrado hereda de Rectangulo y se usa ArrayList<Figura>',
+          check: (_o, c) => usa(c, /abstract\s+class\s+Figura/) && usa(c, /class\s+Cuadrado\s+extends\s+Rectangulo/) && usa(c, /ArrayList\s*<\s*Figura\s*>/),
+        },
+      ],
+    },
+  ],
+}
+
+/* ================================================================== recorrido */
+
+export const JAVA_TRACK: Track = {
+  id: 'java',
+  title: 'Java',
+  icon: '☕',
+  desc: 'Programación: variables, decisiones, repeticiones, métodos, arreglos y objetos. El código se ejecuta de verdad en el navegador.',
+  modules: [PRIMEROS, VARIABLES, OPERADORES, ENTRADA, DECISIONES, REPETICIONES, METODOS, ARREGLOS, STRINGS, OBJETOS, HERENCIA],
 }

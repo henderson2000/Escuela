@@ -36,8 +36,8 @@ export const M = {
   hss: std('#d9dbde', 0.95, 0.2),
   work: std('#aeb3b9', 0.85, 0.38),
   turned: std('#dfe3e7', 0.97, 0.14),
-  paint: std('#7ea690', 0.12, 0.55),
-  paintDark: std('#5c8270', 0.12, 0.6),
+  paint: std('#6b9580', 0.15, 0.5),
+  paintDark: std('#4f7462', 0.15, 0.55),
   blue: std('#2d5d8e', 0.2, 0.5),
   red: std('#c62a20', 0.15, 0.4),
   yellow: std('#e6b521', 0.15, 0.45),
@@ -1807,39 +1807,39 @@ export function PlatosModel({ kind, clampD, inverted, jaws4, showKey }: { kind: 
     const barX0 = 2.5
     return (
       <group position={[-3, 0, 0]}>
-        <Part id="plato-trasero" offset={[-10, 0, 0]} labelAt={[-1.1, 8.6, 0]}>
+        <Part id="plato-trasero" offset={[-7, 0, 0]} labelAt={[-1.1, 8.6, 0]}>
           <Chuck3BackPlate />
         </Part>
-        <Part id="cuerpo" offset={[0, 0, 0]} labelAt={[3.3, 9.4, 0]}>
+        <Part id="cuerpo" offset={[6, 0, 0]} labelAt={[3.3, 9.4, 0]}>
           <Chuck3Body />
         </Part>
-        <Part id="espiral" offset={[-5.5, 0, 0]} labelAt={[2.8, -8.4, 0]}>
+        <Part id="espiral" offset={[-1.5, 0, 0]} labelAt={[2.8, -8.4, 0]}>
           <Chuck3Scroll />
         </Part>
         {PIN3.map((a, i) => (
           <group key={a} rotation={[a, 0, 0]}>
-            <Part id="pinones" offset={[0, 8, 0]} noLabel={i !== 1} labelAt={[0.95, 9.4, 0]}>
+            <Part id="pinones" offset={[6, 5, 0]} noLabel={i !== 1} labelAt={[0.95, 9.4, 0]}>
               <Chuck3Pinion />
             </Part>
           </group>
         ))}
         {JAW3.map((a, i) => (
           <group key={a} rotation={[a, 0, 0]}>
-            <Part id="mordazas" offset={[5, 7, 0]} noLabel={i !== 0} labelAt={[8.5, (inverted ? R - 3.3 : R) + 6.4, 0]}>
+            <Part id="mordazas" offset={[10, 4, 0]} noLabel={i !== 0} labelAt={[8.5, (inverted ? R - 3.3 : R) + 6.4, 0]}>
               <Chuck3Jaw angle={0} clampR={R} inverted={inverted} />
             </Part>
           </group>
         ))}
         {showKey && (
           <group rotation={[PIN3[0], 0, 0]}>
-            <Part id="llave" offset={[0, 9, 0]} labelAt={[0.95, 16.4, 4.5]}>
+            <Part id="llave" offset={[6, 7, 0]} labelAt={[0.95, 16.4, 4.5]}>
               <group position={[0.95, 0, 0]}>
                 <ChuckKey base={7.3} />
               </group>
             </Part>
           </group>
         )}
-        <Part id="pieza" offset={[14, 0, 0]} labelAt={[inverted ? 10 : 13, R + 1.2, 0]}>
+        <Part id="pieza" offset={[18, 0, 0]} labelAt={[inverted ? 10 : 13, R + 1.2, 0]}>
           {inverted ? <Bar x0={C3.L + 3.2 * 0.66} x1={C3.L + 3.2 * 0.66 + 2.6} r={R} /> : <Bar x0={barX0} x1={C3.L + 9} r={R} />}
         </Part>
       </group>

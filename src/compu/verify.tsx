@@ -18,7 +18,10 @@ document.body.appendChild(frame)
 
 function webResults(l: WebLesson, code: WebCode): Promise<boolean[]> {
   return new Promise((resolve) => {
-    frame.onload = () =>
+    let finished = false
+    const go = () => {
+      if (finished) return
+      finished = true
       setTimeout(() => {
         const ctx = makeCtx(frame.contentDocument!, code)
         resolve(
@@ -31,6 +34,9 @@ function webResults(l: WebLesson, code: WebCode): Promise<boolean[]> {
           }),
         )
       }, 30)
+    }
+    frame.onload = go
+    setTimeout(go, 2500)
     frame.srcdoc = buildDoc(code)
   })
 }

@@ -77,11 +77,17 @@ export function WebPreview({ code, frameRef, title = 'Vista previa' }: { code: W
 /** Carga el código en un iframe y espera a que termine de cargar. */
 function loadInto(frame: HTMLIFrameElement, code: WebCode): Promise<Document> {
   return new Promise((resolve) => {
+    let finished = false
     const done = () => {
+      if (finished) return
+      finished = true
       frame.removeEventListener('load', done)
+      clearTimeout(timer)
       // un instante para que se apliquen los estilos
       setTimeout(() => resolve(frame.contentDocument as Document), 30)
     }
+    // si una imagen externa no carga (red bloqueada), no se espera para siempre
+    const timer = setTimeout(done, 2500)
     frame.addEventListener('load', done)
     frame.srcdoc = buildDoc(code)
   })

@@ -21,4 +21,10 @@ export const MAX_POINTS: Record<string, number> = {
   'logo-tiempos': 200,
   // Computación
   'compu-desafios': 100,
+  'compu-quiz': 200,
+  // Torno
+  'torno-partes': 200,
+  'torno-montajes': 200,
+  'torno-seguridad': 200,
+  'torno-calculos': 200,
 }

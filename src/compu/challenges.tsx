@@ -1,7 +1,9 @@
 // Desafíos con puntos (juego "Desafíos de código"). Cada uno es como una lección, pero sin pistas largas.
 import { lines, type Lesson } from './types'
 
-export const CHALLENGES: Lesson[] = [
+import { WEB_CHALLENGES } from './challenges-web'
+
+const BASE: Lesson[] = [
   {
     id: 'd-tabla',
     kind: 'java',
@@ -49,3 +51,6 @@ export const CHALLENGES: Lesson[] = [
     ],
   },
 ]
+
+/** todos los desafíos, alternando un poco los de web y Java */
+export const CHALLENGES: Lesson[] = [...BASE, ...WEB_CHALLENGES]

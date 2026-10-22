@@ -1,0 +1,57 @@
+/* Juego "¿Qué hace este código?" */
+.quiz-code {
+  margin: 0 auto;
+  max-width: 100%;
+  min-width: min(100%, 320px);
+  padding: 14px 18px;
+  background: #0a0f17;
+  border: 1px solid var(--line, #273348);
+  border-radius: 10px;
+  color: #e8edf5;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  font-size: 15px;
+  line-height: 1.55;
+  text-align: left;
+  white-space: pre;
+  overflow-x: auto;
+  tab-size: 4;
+}
+
+.quiz-lang {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #0b1018;
+}
+.quiz-lang.html {
+  background: #fb923c;
+}
+.quiz-lang.css {
+  background: #38bdf8;
+}
+.quiz-lang.java {
+  background: #facc15;
+}
+
+.answers .quiz-opt {
+  border: none;
+  border-radius: 0;
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 0.95em;
+  background: none;
+  padding: 0;
+  color: inherit;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 600px) {
+  .quiz-code {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+}
