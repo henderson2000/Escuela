@@ -10,6 +10,11 @@ import { LOGO_GAMES } from './logo/games/registry'
 import { LogoHome } from './logo/pages/LogoHome'
 import { CompuHome } from './compu/pages/CompuHome'
 import { COMPU_GAMES } from './compu/games/registry'
+import { TornoHome } from './torno/pages/TornoHome'
+import { TORNO_CATALOG } from './torno/catalog'
+import { TORNO_TOPICS } from './torno/theory'
+import { TORNO_GAMES } from './torno/games/registry'
+import { PartsGame } from './games/PartsGame'
 
 export interface SubjectEntry extends SubjectContent {
   Home: ComponentType
@@ -67,6 +72,36 @@ SUBJECT_CONTENT['3/computacion'] = {
     { to: '/juegos', label: 'Juegos' },
     { to: '/ranking', label: 'Ranking' },
   ],
+}
+
+SUBJECT_CONTENT['3/torno'] = {
+  Home: TornoHome,
+  catalog: TORNO_CATALOG,
+  topics: TORNO_TOPICS,
+  games: [
+    {
+      id: 'torno-partes',
+      title: '¿Qué parte es?',
+      icon: '🔍',
+      desc: 'El torno y sus accesorios aparecen despiezados en 3D: identificá la pieza marcada. Rápido = más puntos.',
+      max: '200',
+      component: () => <PartsGame game="torno-partes" />,
+    },
+    ...TORNO_GAMES,
+  ],
+  nav: [
+    { to: '', label: 'Inicio del taller', end: true },
+    { to: '/componentes', label: 'Torno 3D' },
+    { to: '/teoria', label: 'Teoría' },
+    { to: '/ejercicios', label: 'Guía' },
+    { to: '/juegos', label: 'Juegos' },
+    { to: '/ranking', label: 'Ranking' },
+  ],
+  labels: {
+    components: 'El torno en 3D',
+    componentsLead: 'La máquina, sus accesorios y las herramientas de corte. Encendé el torno, mové los carros, cambiá el montaje y despiezá cada parte.',
+    componentsBack: 'Torno en 3D',
+  },
 }
 
 export const getSubjectContent = (anio?: string, materia?: string) => SUBJECT_CONTENT[`${anio}/${materia}`]

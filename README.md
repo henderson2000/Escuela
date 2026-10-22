@@ -11,7 +11,7 @@ Al entrar se elige el año (**1ro, 2do o 3ro**). Cada año tiene **4 rotaciones*
 - **2do:** Electrónica, Computación, Electricidad y Soldadura.
 - **3ro:** Electrónica (con todo el contenido), Computación, Electricidad y Torno.
 
-Por ahora tienen contenido **Electrónica** y **Electricidad (LOGO!)** de 3ro; el resto muestra "Próximamente". El contenido de cada taller se registra en [`src/subjects.tsx`](src/subjects.tsx). Los años y talleres se configuran en
+Por ahora tienen contenido los cuatro talleres de 3ro (**Electrónica**, **Computación**, **Electricidad (LOGO!)** y **Torno**); el resto muestra "Próximamente". El contenido de cada taller se registra en [`src/subjects.tsx`](src/subjects.tsx). Los años y talleres se configuran en
 [`src/data/curriculum.ts`](src/data/curriculum.ts).
 
 ## Qué incluye (taller de Electrónica, 3er año)
@@ -33,6 +33,26 @@ Por ahora tienen contenido **Electrónica** y **Electricidad (LOGO!)** de 3ro; e
 | **Simulador** | Editor de bloques FUP (como LOGO!Soft Comfort): entradas I1–I8 (pulsador NA/NC, interruptor, contacto NC con retención), salidas Q1–Q8, AND, OR, NOT, NAND, NOR, XOR, TON, TOF, RS, relé de impulsos, generador de impulsos y contador. Simulación en vivo con velocidad ×1/×10/×60. |
 | **Guía** | Los 32 ejercicios de la guía de ejercitación. 30 tienen corrección automática (el programa se prueba solo), 2 los corrige el docente. |
 | **Juegos** | 🤖 *Programá el LOGO!* (8 niveles × 100) · 🔣 *Compuertas al toque* (200) · ⏱ *Diagramas de tiempo* (200). Cada taller tiene su propio ranking. |
+
+## Qué incluye (taller de Computación, 3er año)
+
+| Sección | Contenido |
+| --- | --- |
+| **Curso** | 3 recorridos con lecciones cortas: **HTML** (28), **CSS** (32) y **Java** (51, básico + objetos). Cada lección tiene explicación, consigna, editor con colores, vista previa en vivo (web) o consola (Java) y una lista de requisitos que se corrige sola. Mini-proyectos al final de cada módulo. El progreso queda guardado por alumno. |
+| **Java en el navegador** | El código Java se compila con javac (OpenJDK) + TeaVM convertidos a WebAssembly y corre en la misma página, sin servidor. La primera vez descarga ~19 MB (después queda en la caché). Necesita un navegador de 2024 en adelante (Chrome/Edge 119+, Firefox 120+). Los datos de `Scanner` se escriben antes en el recuadro «Entrada». Licencias de estos componentes en `public/java/`. |
+| **Taller libre** | Editor libre de páginas web y de programas Java, con descarga de los archivos. |
+| **Juegos** | 🧩 *Desafíos de código* (20 problemas × 100) · ❓ *¿Qué hace este código?* (200). |
+
+Para revisar el curso después de cambiar lecciones: `npm run dev` y abrir `/verify-course.html` (prueba que cada solución pase y cada código inicial no).
+
+## Qué incluye (taller de Torno, 3er año)
+
+| Sección | Contenido |
+| --- | --- |
+| **Torno en 3D** | Torno paralelo completo (encender, velocidades, carros, charriot, contrapunta, montajes al aire / plato y contrapunta / entre puntas / con luneta, lira, tuerca partida), platos y elementos de sujeción, puntos y lunetas, herramientas de corte. |
+| **Teoría** | 11 temas del apunte de torneado, con calculadoras de rpm, conos y roscas. |
+| **Guía** | 49 ejercicios (rpm, conos, roscas, montajes, herramientas, seguridad) con corrección automática. |
+| **Juegos** | 🔍 *¿Qué parte es?* · *¿Cómo lo mecanizo?* · *Seguridad en el taller* · *Calculá rápido* (200 cada uno). |
 
 ## Puesta en marcha (una sola vez)
 

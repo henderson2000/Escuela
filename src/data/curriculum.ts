@@ -48,7 +48,7 @@ export const YEARS: Year[] = [
       { n: 1, subject: 'electronica', ready: true, desc: 'Componentes en 3D, Arduino, teoría, actividades y juegos.' },
       { n: 2, subject: 'computacion', ready: true, desc: 'HTML, CSS y Java con editor, ejecución en el navegador y corrección automática.' },
       { n: 3, subject: 'electricidad', ready: true, desc: 'Automatización con LOGO!: simulador, guía de ejercicios, teoría y juegos.' },
-      { n: 4, subject: 'torno' },
+      { n: 4, subject: 'torno', ready: true, desc: 'Torno paralelo en 3D, accesorios y herramientas, teoría del apunte, guía de cálculos y juegos.' },
     ],
   },
 ]
