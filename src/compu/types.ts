@@ -21,12 +21,38 @@ export interface WebTest {
   test: (c: WebCtx) => boolean
 }
 
-export interface JavaTest {
+/** Prueba de un programa de consola: mira lo que escribió con console.log. */
+export interface JsTest {
   text: string
-  /** lo que se escribe en la entrada (System.in) para esta prueba */
+  /** respuestas para los prompt(), una por línea */
   input?: string
-  /** recibe la salida del programa (System.out) y el código fuente */
+  /** recibe la salida (console.log) y el código fuente */
   check: (out: string, code: string) => boolean
+}
+
+/** Lo que ve una prueba de una lección de JavaScript con HTML. */
+export interface DomCtx extends WebCtx {
+  js: string
+  /** lo que el programa escribió con console.log (cada llamada es un elemento) */
+  logs: string[]
+  /** errores que hubo al ejecutar */
+  errors: string[]
+  /** hace clic en el primer elemento que coincide (false si no existe) */
+  click: (sel: string) => boolean
+  /** escribe un valor en un campo y avisa los eventos input y change (false si no existe) */
+  type: (sel: string, value: string) => boolean
+  /** aprieta una tecla sobre un elemento (keydown + keyup) */
+  press: (sel: string, key: string) => boolean
+}
+
+export interface DomTest {
+  text: string
+  test: (c: DomCtx) => boolean
+}
+
+export interface DomCode {
+  html: string
+  js: string
 }
 
 export interface WebCode {
@@ -53,16 +79,27 @@ export interface WebLesson extends LessonBase {
   tests: WebTest[]
 }
 
-export interface JavaLesson extends LessonBase {
-  kind: 'java'
+/** Programa de JavaScript en consola (console.log, prompt). */
+export interface JsLesson extends LessonBase {
+  kind: 'js'
   starter: string
   solution: string
-  tests: JavaTest[]
-  /** entrada de ejemplo que aparece cargada en el recuadro «Entrada» */
+  tests: JsTest[]
+  /** respuestas de ejemplo que aparecen cargadas en el recuadro «Entrada» */
   sampleInput?: string
 }
 
-export type Lesson = WebLesson | JavaLesson
+/** Página con HTML y JavaScript (botones, campos, textos que cambian). */
+export interface DomLesson extends LessonBase {
+  kind: 'dom'
+  /** qué archivos se pueden editar */
+  edit: ('html' | 'js')[]
+  starter: DomCode
+  solution: DomCode
+  tests: DomTest[]
+}
+
+export type Lesson = WebLesson | JsLesson | DomLesson
 
 export interface CourseModule {
   id: string
@@ -72,7 +109,7 @@ export interface CourseModule {
 }
 
 export interface Track {
-  id: 'html' | 'css' | 'java'
+  id: 'html' | 'js'
   title: string
   icon: string
   desc: string
@@ -97,12 +134,14 @@ export const lines = (s: string) =>
     .map((l) => l.trim())
     .filter(Boolean)
 
-/** quita comentarios y textos del código Java para buscar palabras clave sin falsos positivos */
+/** quita comentarios y textos del código (JavaScript) para buscar palabras clave sin falsos positivos */
 export const codeOnly = (src: string) =>
   src
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/\/\/.*$/gm, '')
     .replace(/"(?:[^"\\\n]|\\.)*"/g, '""')
+    .replace(/'(?:[^'\\\n]|\\.)*'/g, "''")
+    .replace(/`(?:[^`\\]|\\.)*`/g, '``')
 
 /** quita comentarios del CSS / HTML */
 export const cssOnly = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '')

@@ -1,9 +1,8 @@
 import type { Lesson, Track } from '../types'
 import { HTML_TRACK } from './html'
-import { CSS_TRACK } from './css'
-import { JAVA_TRACK } from './java'
+import { JS_TRACK } from './js'
 
-export const TRACKS: Track[] = [HTML_TRACK, CSS_TRACK, JAVA_TRACK]
+export const TRACKS: Track[] = [HTML_TRACK, JS_TRACK]
 
 export const getTrack = (id?: string) => TRACKS.find((t) => t.id === id)
 

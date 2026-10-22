@@ -454,3 +454,49 @@ pre.console.empty {
 .compu-hero-art .v {
   color: #98c379;
 }
+
+/* ---------- JavaScript ---------- */
+.check-frame {
+  position: absolute;
+  left: -3000px;
+  top: 0;
+  width: 900px;
+  height: 600px;
+  border: 0;
+  visibility: hidden;
+}
+.dom-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dom-preview .web-preview iframe {
+  height: 300px;
+}
+.dom-console .console.small {
+  min-height: 70px;
+  max-height: 180px;
+}
+.console .muted {
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  font-size: 0.85rem;
+}
+.prompt-line {
+  color: #94a3b8;
+  font-style: italic;
+}
+.js-errors {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: #fecaca;
+  font-family: system-ui, sans-serif;
+}
+.js-errors li {
+  margin-bottom: 6px;
+}
+.console .errors {
+  margin-top: 8px;
+  color: #fecaca;
+  font-family: system-ui, sans-serif;
+}

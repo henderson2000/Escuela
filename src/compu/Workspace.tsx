@@ -1,15 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { CodeEditor } from './CodeEditor'
-import { describeCrash, javaSupported, parseCompileErrors, runJava, stop as stopJava, useJavaStatus, warmup, type Outcome } from './java/runner'
-import type { JavaLesson, Lesson, WebCode, WebCtx, WebLesson } from './types'
+import { runConsole, stopConsole, type ConsoleResult } from './js/consoleRunner'
+import { buildDomDoc, loadDoc, makeDomCtx, readDom, watchDom, type DomError } from './js/domRunner'
+import type { DomCode, DomLesson, JsLesson, Lesson, WebCode, WebCtx, WebLesson } from './types'
 import './compu.css'
 
-/* ------------------------------------------------------------------ vista previa web */
+/* ------------------------------------------------------------------ vista previa web (sólo HTML) */
 
-/** Arma la página que se muestra: el HTML del alumno con su CSS incorporado. */
+/** Arma la página que se muestra a partir del HTML del alumno. */
 export function buildDoc({ html, css }: WebCode): string {
-  const style = `<style>\n${css}\n</style>`
-  let h = html.replace(/<link[^>]*href=["']?styles?\.css["']?[^>]*>/gi, '')
+  const style = css.trim() ? `<style>\n${css}\n</style>` : ''
+  let h = html
   if (/<\/head>/i.test(h)) h = h.replace(/<\/head>/i, `${style}</head>`)
   else if (/<html[^>]*>/i.test(h)) h = h.replace(/<html[^>]*>/i, (m) => `${m}<head>${style}</head>`)
   else h = `<!doctype html><html><head><meta charset="utf-8">${style}</head><body>${h}</body></html>`
@@ -48,6 +49,22 @@ export function makeCtx(doc: Document, code: WebCode): WebCtx {
   }
 }
 
+function Browser({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="web-preview">
+      <div className="preview-bar">
+        <span className="dots" aria-hidden>
+          <i />
+          <i />
+          <i />
+        </span>
+        <span>{title}</span>
+      </div>
+      {children}
+    </div>
+  )
+}
+
 /** iframe con la página del alumno (sin JavaScript). */
 export function WebPreview({ code, frameRef, title = 'Vista previa' }: { code: WebCode; frameRef?: React.RefObject<HTMLIFrameElement | null>; title?: string }) {
   const own = useRef<HTMLIFrameElement>(null)
@@ -60,91 +77,134 @@ export function WebPreview({ code, frameRef, title = 'Vista previa' }: { code: W
     }
   }, [code])
   return (
-    <div className="web-preview">
-      <div className="preview-bar">
-        <span className="dots" aria-hidden>
-          <i />
-          <i />
-          <i />
-        </span>
-        <span>{title}</span>
-      </div>
+    <Browser title={title}>
       <iframe ref={ref} title={title} sandbox="allow-same-origin" srcDoc={doc} />
-    </div>
+    </Browser>
   )
 }
 
 /** Carga el código en un iframe y espera a que termine de cargar. */
 function loadInto(frame: HTMLIFrameElement, code: WebCode): Promise<Document> {
-  return new Promise((resolve) => {
-    let finished = false
-    const done = () => {
-      if (finished) return
-      finished = true
-      frame.removeEventListener('load', done)
-      clearTimeout(timer)
-      // un instante para que se apliquen los estilos
-      setTimeout(() => resolve(frame.contentDocument as Document), 30)
-    }
-    // si una imagen externa no carga (red bloqueada), no se espera para siempre
-    const timer = setTimeout(done, 2500)
-    frame.addEventListener('load', done)
-    frame.srcdoc = buildDoc(code)
-  })
+  return loadDoc(frame, buildDoc(code)).then(() => frame.contentDocument as Document)
 }
 
-/* ------------------------------------------------------------------ consola Java */
+/* ------------------------------------------------------------------ consola */
 
-export function JavaStatusBar() {
-  const st = useJavaStatus()
-  if (!javaSupported())
-    return (
-      <p className="java-warn">
-        ⚠ Este navegador no puede ejecutar Java. Actualizá Chrome, Edge o Firefox (versiones de 2024 en adelante).
-      </p>
-    )
-  if (st.error) return <p className="java-warn">⚠ {st.error}</p>
-  if (st.progress !== null && st.progress < 1)
-    return (
-      <div className="java-loading">
-        <span>{st.text}</span>
-        <div className="progress">
-          <div style={{ width: `${Math.round(st.progress * 100)}%` }} />
-        </div>
-      </div>
-    )
-  if (st.busy) return <p className="java-busy">⏳ {st.text || 'Trabajando…'}</p>
-  return null
+export function ErrorList({ errors }: { errors: { line: number; message: string; hint: string | null }[] }) {
+  if (!errors.length) return null
+  return (
+    <ul className="js-errors">
+      {errors.map((e, i) => (
+        <li key={i}>
+          {e.line > 0 && <span className="err-at">Línea {e.line}</span>} <code>{e.message}</code>
+          {e.hint && <div className="err-hint">💡 {e.hint}</div>}
+        </li>
+      ))}
+    </ul>
+  )
 }
 
-export function JavaConsole({ outcome, live }: { outcome: Outcome | null; live: string }) {
-  if (!outcome && !live) return <pre className="console empty">La salida del programa aparece acá.</pre>
-  if (outcome && !outcome.compiled && outcome.errors) {
-    const errs = parseCompileErrors(outcome.errors)
+/** Muestra el resultado de un programa de consola. */
+export function ConsoleView({ result, live, running }: { result: ConsoleResult | null; live: string; running: boolean }) {
+  if (running && !live) return <pre className="console empty">⏳ Ejecutando…</pre>
+  if (!result && !live) return <pre className="console empty">Lo que escribas con console.log aparece acá.</pre>
+  if (result?.syntax)
     return (
       <div className="console errors">
-        <strong>✘ El programa tiene errores y no se pudo compilar:</strong>
-        <ul>
-          {errs.map((e, i) => (
-            <li key={i}>
-              {e.line > 0 && <span className="err-at">Línea {e.line}</span>} <code>{e.message}</code>
-              {e.hint && <div className="err-hint">💡 {e.hint}</div>}
-            </li>
-          ))}
-        </ul>
+        <strong>✘ El código tiene un error de escritura y no se pudo ejecutar:</strong>
+        <ErrorList errors={[result.syntax]} />
       </div>
     )
+  const out = result ? result.out : live
+  // intercala las respuestas de prompt en gris
+  const parts: ReactNode[] = []
+  let pos = 0
+  for (const [i, p] of (result?.prompts ?? []).entries()) {
+    if (p.at > pos) parts.push(out.slice(pos, p.at))
+    pos = Math.max(pos, p.at)
+    parts.push(
+      <span key={`p${i}`} className="prompt-line">
+        {`❓ ${p.msg} → ${p.value ?? '(sin respuesta: falta un dato en «Entrada»)'}\n`}
+      </span>,
+    )
   }
-  const run = outcome?.runs[0]
-  const crash = run ? describeCrash(run) : null
-  const errText = run?.err.split('\n').filter((l) => l.trim() && !l.trim().startsWith('at ')).join('\n')
+  parts.push(out.slice(pos))
   return (
     <div className="console">
-      <pre>{run ? run.out : live}</pre>
-      {errText && <pre className="stderr">{errText}</pre>}
-      {crash && <p className="crash">⚠ {crash}</p>}
-      {outcome?.stopped && <p className="crash">⏹ Programa detenido.</p>}
-      {run && !crash && !outcome?.stopped && <p className="exit-ok">— Fin del programa —</p>}
+      <pre>{parts}</pre>
+      {result?.runtime && (
+        <div className="errors">
+          <strong>⚠ El programa se detuvo por un error:</strong>
+          <ErrorList errors={[result.runtime]} />
+        </div>
+      )}
+      {result?.timedOut && <p className="crash">⚠ El programa tardó demasiado y se cortó. ¿Hay un bucle que nunca termina?</p>}
+      {result && !result.runtime && !result.timedOut && <p className="exit-ok">— Fin del programa —</p>}
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ vista previa con JavaScript */
+
+/** Página del alumno con su JavaScript funcionando, y debajo la consola. */
+export function DomPreview({ code, title = 'Vista previa' }: { code: DomCode; title?: string }) {
+  const frame = useRef<HTMLIFrameElement>(null)
+  const [state, setState] = useState<{ logs: string[]; errors: DomError[]; syntax: ReturnType<typeof buildDomDoc>['syntax'] }>({ logs: [], errors: [], syntax: null })
+  const [reload, setReload] = useState(0)
+
+  useEffect(() => {
+    const t = setTimeout(async () => {
+      const f = frame.current
+      if (!f) return
+      const b = buildDomDoc(code)
+      const update = () => {
+        const r = readDom(f, b.jsLine)
+        setState({ logs: r.logs, errors: r.errors, syntax: b.syntax })
+      }
+      setState({ logs: [], errors: [], syntax: b.syntax })
+      await loadDoc(f, b.doc)
+      watchDom(f, update)
+      update()
+    }, 400)
+    return () => {
+      clearTimeout(t)
+    }
+  }, [code, reload])
+
+  return (
+    <div className="dom-preview">
+      <Browser title={title}>
+        <iframe ref={frame} title={title} sandbox="allow-scripts allow-same-origin allow-forms" />
+      </Browser>
+      <div className="dom-console">
+        <div className="row space">
+          <span className="console-title">Consola</span>
+          <button type="button" className="btn small ghost" onClick={() => setReload((r) => r + 1)} title="Vuelve a cargar la página desde cero">
+            ↻ Recargar
+          </button>
+        </div>
+        {state.syntax ? (
+          <div className="console errors">
+            <strong>✘ El JavaScript tiene un error de escritura y no se ejecutó:</strong>
+            <ErrorList errors={[state.syntax]} />
+          </div>
+        ) : (
+          <div className="console small">
+            {state.logs.length === 0 && state.errors.length === 0 ? (
+              <span className="muted">Los console.log y los errores aparecen acá.</span>
+            ) : (
+              <>
+                <pre>{state.logs.join('\n')}</pre>
+                {state.errors.length > 0 && (
+                  <div className="errors">
+                    <ErrorList errors={state.errors} />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -158,7 +218,11 @@ const keyOf = (id: string) => `compu-code-${id}`
 function loadCode<T>(id: string, starter: T): T {
   try {
     const raw = localStorage.getItem(keyOf(id))
-    if (raw) return JSON.parse(raw) as T
+    if (raw) {
+      const v = JSON.parse(raw)
+      // si la lección cambió de tipo, se vuelve a empezar
+      if (typeof v === typeof starter) return v as T
+    }
   } catch {
     /* sin almacenamiento */
   }
@@ -170,6 +234,15 @@ function saveCode(id: string, code: unknown) {
   } catch {
     /* sin almacenamiento */
   }
+}
+
+interface WsProps<L> {
+  lesson: L
+  storageId: string
+  onChecked?: (results: boolean[], ok: boolean) => void
+  side?: ReactNode
+  actions?: ReactNode
+  checkLabel: string
 }
 
 export function LessonWorkspace({
@@ -189,11 +262,10 @@ export function LessonWorkspace({
   actions?: ReactNode
   checkLabel?: string
 }) {
-  return lesson.kind === 'web' ? (
-    <WebWorkspace lesson={lesson} storageId={storageId ?? lesson.id} onChecked={onChecked} side={side} actions={actions} checkLabel={checkLabel} />
-  ) : (
-    <JavaWorkspace lesson={lesson} storageId={storageId ?? lesson.id} onChecked={onChecked} side={side} actions={actions} checkLabel={checkLabel} />
-  )
+  const props = { storageId: storageId ?? lesson.id, onChecked, side, actions, checkLabel }
+  if (lesson.kind === 'web') return <WebWorkspace lesson={lesson} {...props} />
+  if (lesson.kind === 'js') return <JsWorkspace lesson={lesson} {...props} />
+  return <DomWorkspace lesson={lesson} {...props} />
 }
 
 function TestList({ lesson, results, checking }: { lesson: Lesson; results: TestState; checking: boolean }) {
@@ -264,23 +336,18 @@ function SidePanel({
   )
 }
 
-function WebWorkspace({
-  lesson,
-  storageId,
-  onChecked,
-  side,
-  actions,
-  checkLabel,
-}: {
-  lesson: WebLesson
-  storageId: string
-  onChecked?: (r: boolean[], ok: boolean) => void
-  side?: ReactNode
-  actions?: ReactNode
-  checkLabel: string
-}) {
+const runSafe = <C,>(fn: (c: C) => boolean, c: C) => {
+  try {
+    return !!fn(c)
+  } catch {
+    return false
+  }
+}
+
+/* ---------------- HTML */
+
+function WebWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel }: WsProps<WebLesson>) {
   const [code, setCode] = useState<WebCode>(() => loadCode(storageId, lesson.starter))
-  const [tab, setTab] = useState<'html' | 'css'>(lesson.edit[0])
   const [results, setResults] = useState<TestState>(null)
   const [checking, setChecking] = useState(false)
   const frame = useRef<HTMLIFrameElement>(null)
@@ -294,19 +361,11 @@ function WebWorkspace({
     setChecking(true)
     const doc = await loadInto(frame.current, code)
     const ctx = makeCtx(doc, code)
-    const r = lesson.tests.map((t) => {
-      try {
-        return !!t.test(ctx)
-      } catch {
-        return false
-      }
-    })
+    const r = lesson.tests.map((t) => runSafe(t.test, ctx))
     setChecking(false)
     setResults(r)
     onChecked?.(r, r.every(Boolean))
   }, [code, lesson, onChecked])
-
-  const tabs = (['html', 'css'] as const).filter((t) => lesson.edit.includes(t) || code[t].trim())
 
   return (
     <div className="lesson-layout">
@@ -325,9 +384,184 @@ function WebWorkspace({
       />
       <section className="lesson-work">
         <div className="file-tabs">
-          {tabs.map((t) => (
+          <button type="button" className="active">
+            index.html
+          </button>
+        </div>
+        <div className="editor-box">
+          <CodeEditor
+            lang="html"
+            value={code.html}
+            onChange={(v) => {
+              setCode((c) => ({ ...c, html: v }))
+              setResults(null)
+            }}
+            onRun={check}
+          />
+        </div>
+        <WebPreview code={code} frameRef={frame} />
+      </section>
+    </div>
+  )
+}
+
+/* ---------------- JavaScript en consola */
+
+function JsWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel }: WsProps<JsLesson>) {
+  const [code, setCode] = useState<string>(() => loadCode(storageId, lesson.starter))
+  const [input, setInput] = useState(lesson.sampleInput ?? '')
+  const [results, setResults] = useState<TestState>(null)
+  const [checking, setChecking] = useState(false)
+  const [running, setRunning] = useState(false)
+  const [result, setResult] = useState<ConsoleResult | null>(null)
+  const [live, setLive] = useState('')
+
+  useEffect(() => {
+    saveCode(storageId, code)
+  }, [storageId, code])
+
+  const run = async () => {
+    setRunning(true)
+    setLive('')
+    setResult(null)
+    const r = await runConsole(code, input, (t) => setLive((x) => x + t))
+    setResult(r)
+    setRunning(false)
+  }
+
+  const check = async () => {
+    setChecking(true)
+    const inputs = [...new Set(lesson.tests.map((t) => t.input ?? ''))]
+    const outs = new Map<string, ConsoleResult>()
+    for (const inp of inputs) outs.set(inp, await runConsole(code, inp, undefined, 3000))
+    const r = lesson.tests.map((t) => {
+      const o = outs.get(t.input ?? '')!
+      if (o.syntax || o.timedOut) return false
+      return runSafe((c: ConsoleResult) => t.check(c.out, code), o)
+    })
+    // en la consola se ve la primera prueba
+    setResult(outs.get(inputs[0]) ?? null)
+    setLive('')
+    setChecking(false)
+    setResults(r)
+    onChecked?.(r, r.every(Boolean))
+  }
+
+  const errLine = result?.syntax?.line ?? result?.runtime?.line ?? 0
+
+  return (
+    <div className="lesson-layout">
+      <SidePanel
+        lesson={lesson}
+        results={results}
+        checking={checking}
+        side={side}
+        onCheck={check}
+        onReset={() => {
+          setCode(lesson.starter)
+          setResults(null)
+          setResult(null)
+        }}
+        actions={actions}
+        checkLabel={checkLabel}
+      />
+      <section className="lesson-work">
+        <div className="file-tabs">
+          <button type="button" className="active">
+            programa.js
+          </button>
+          <span className="grow" />
+          <button type="button" className="run-btn" onClick={run} disabled={running}>
+            ▶ Ejecutar
+          </button>
+          {running && (
+            <button type="button" className="stop-btn" onClick={() => stopConsole()}>
+              ⏹ Detener
+            </button>
+          )}
+        </div>
+        <div className="editor-box">
+          <CodeEditor
+            lang="js"
+            value={code}
+            onChange={(v) => {
+              setCode(v)
+              setResults(null)
+            }}
+            onRun={check}
+            errorLines={errLine ? [errLine] : []}
+          />
+        </div>
+        <div className="java-io">
+          <label className="java-input">
+            <span>Entrada: las respuestas para cada prompt(), una por línea</span>
+            <textarea value={input} onChange={(e) => setInput(e.target.value)} rows={3} spellCheck={false} placeholder="Ej.: Ana&#10;15" />
+          </label>
+          <div className="java-out">
+            <span className="console-title">Consola</span>
+            <ConsoleView result={result} live={live} running={running} />
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+/* ---------------- JavaScript con HTML */
+
+function DomWorkspace({ lesson, storageId, onChecked, side, actions, checkLabel }: WsProps<DomLesson>) {
+  const [code, setCode] = useState<DomCode>(() => loadCode(storageId, lesson.starter))
+  const [tab, setTab] = useState<'html' | 'js'>(lesson.edit.includes('js') ? 'js' : 'html')
+  const [results, setResults] = useState<TestState>(null)
+  const [checking, setChecking] = useState(false)
+  const checkFrame = useRef<HTMLIFrameElement>(null)
+
+  useEffect(() => {
+    saveCode(storageId, code)
+  }, [storageId, code])
+
+  const check = useCallback(async () => {
+    const f = checkFrame.current
+    if (!f) return
+    setChecking(true)
+    const b = buildDomDoc(code)
+    const r: boolean[] = []
+    for (const t of lesson.tests) {
+      if (b.syntax) {
+        r.push(false)
+        continue
+      }
+      // cada prueba arranca con la página recién cargada
+      await loadDoc(f, b.doc)
+      const doc = f.contentDocument as Document
+      const ctx = makeDomCtx(makeCtx(doc, { html: code.html, css: '' }), code.js, f, b.jsLine)
+      r.push(runSafe(t.test, ctx))
+    }
+    setChecking(false)
+    setResults(r)
+    onChecked?.(r, r.every(Boolean))
+  }, [code, lesson, onChecked])
+
+  return (
+    <div className="lesson-layout">
+      <SidePanel
+        lesson={lesson}
+        results={results}
+        checking={checking}
+        side={side}
+        onCheck={check}
+        onReset={() => {
+          setCode(lesson.starter)
+          setResults(null)
+        }}
+        actions={actions}
+        checkLabel={checkLabel}
+      />
+      <section className="lesson-work">
+        <div className="file-tabs">
+          {(['html', 'js'] as const).map((t) => (
             <button key={t} type="button" className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
-              {t === 'html' ? 'index.html' : 'styles.css'}
+              {t === 'html' ? 'index.html' : 'script.js'}
               {!lesson.edit.includes(t) && <small> (sólo lectura)</small>}
             </button>
           ))}
@@ -345,123 +579,8 @@ function WebWorkspace({
             onRun={check}
           />
         </div>
-        <WebPreview code={code} frameRef={frame} />
-      </section>
-    </div>
-  )
-}
-
-function JavaWorkspace({
-  lesson,
-  storageId,
-  onChecked,
-  side,
-  actions,
-  checkLabel,
-}: {
-  lesson: JavaLesson
-  storageId: string
-  onChecked?: (r: boolean[], ok: boolean) => void
-  side?: ReactNode
-  actions?: ReactNode
-  checkLabel: string
-}) {
-  const [code, setCode] = useState<string>(() => loadCode(storageId, lesson.starter))
-  const [input, setInput] = useState(lesson.sampleInput ?? '')
-  const [results, setResults] = useState<TestState>(null)
-  const [checking, setChecking] = useState(false)
-  const [outcome, setOutcome] = useState<Outcome | null>(null)
-  const [live, setLive] = useState('')
-  const st = useJavaStatus()
-
-  useEffect(() => {
-    saveCode(storageId, code)
-  }, [storageId, code])
-  useEffect(() => {
-    warmup()
-  }, [])
-
-  const errorLines = useMemo(() => (outcome && !outcome.compiled ? parseCompileErrors(outcome.errors).map((e) => e.line) : []), [outcome])
-
-  const run = async () => {
-    setLive('')
-    setOutcome(null)
-    const o = await runJava([{ path: 'Main.java', content: code }], [input], { onStream: (_r, s, t) => s === 'out' && setLive((x) => x + t) })
-    setOutcome(o)
-  }
-
-  const check = async () => {
-    setChecking(true)
-    setLive('')
-    const inputs = [...new Set(lesson.tests.map((t) => t.input ?? ''))]
-    const o = await runJava([{ path: 'Main.java', content: code }], inputs, { timeoutMs: 5000 })
-    let r: boolean[]
-    if (!o.compiled || o.stopped) r = lesson.tests.map(() => false)
-    else
-      r = lesson.tests.map((t) => {
-        const run = o.runs[inputs.indexOf(t.input ?? '')]
-        if (!run || run.timedOut) return false
-        try {
-          return !!t.check(run.out, code)
-        } catch {
-          return false
-        }
-      })
-    // en la consola se muestra la primera ejecución de prueba
-    setOutcome(o)
-    setChecking(false)
-    setResults(r)
-    onChecked?.(r, r.every(Boolean))
-  }
-
-  return (
-    <div className="lesson-layout">
-      <SidePanel
-        lesson={lesson}
-        results={results}
-        checking={checking}
-        side={side}
-        onCheck={check}
-        onReset={() => {
-          setCode(lesson.starter)
-          setResults(null)
-          setOutcome(null)
-        }}
-        actions={actions}
-        checkLabel={checkLabel}
-      />
-      <section className="lesson-work">
-        <div className="file-tabs">
-          <button type="button" className="active">
-            Main.java
-          </button>
-          <span className="grow" />
-          <button type="button" className="run-btn" onClick={run} disabled={st.busy && !checking}>
-            ▶ Ejecutar
-          </button>
-          {st.busy && (
-            <button type="button" className="stop-btn" onClick={() => stopJava()}>
-              ⏹ Detener
-            </button>
-          )}
-        </div>
-        <div className="editor-box">
-          <CodeEditor lang="java" value={code} onChange={(v) => {
-            setCode(v)
-            setResults(null)
-          }} onRun={check} errorLines={errorLines} />
-        </div>
-        <div className="java-io">
-          <label className="java-input">
-            <span>Entrada (lo que escribiría el usuario por teclado, una línea por dato)</span>
-            <textarea value={input} onChange={(e) => setInput(e.target.value)} rows={3} spellCheck={false} placeholder="Ej.: Ana&#10;15" />
-          </label>
-          <div className="java-out">
-            <span className="console-title">Consola</span>
-            <JavaStatusBar />
-            <JavaConsole outcome={outcome} live={live} />
-          </div>
-        </div>
+        <DomPreview code={code} />
+        <iframe ref={checkFrame} title="Pruebas" className="check-frame" sandbox="allow-scripts allow-same-origin allow-forms" aria-hidden tabIndex={-1} />
       </section>
     </div>
   )

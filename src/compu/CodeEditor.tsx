@@ -4,11 +4,10 @@ import { EditorState, Compartment, StateEffect, StateField, RangeSetBuilder } fr
 import { Decoration, keymap, type DecorationSet } from '@codemirror/view'
 import { indentWithTab } from '@codemirror/commands'
 import { html } from '@codemirror/lang-html'
-import { css } from '@codemirror/lang-css'
-import { java } from '@codemirror/lang-java'
+import { javascript } from '@codemirror/lang-javascript'
 import { oneDark } from '@codemirror/theme-one-dark'
 
-export type Lang = 'html' | 'css' | 'java'
+export type Lang = 'html' | 'js'
 
 const setErrors = StateEffect.define<number[]>()
 const errorField = StateField.define<DecorationSet>({
@@ -30,7 +29,7 @@ const errorField = StateField.define<DecorationSet>({
   provide: (f) => EditorView.decorations.from(f),
 })
 
-const langOf = (l: Lang) => (l === 'html' ? html() : l === 'css' ? css() : java())
+const langOf = (l: Lang) => (l === 'html' ? html() : javascript())
 
 const theme = EditorView.theme({
   '&': { fontSize: '14px', height: '100%' },
