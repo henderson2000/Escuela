@@ -2082,11 +2082,14 @@ export function PuntosModel({ kind, tool, barD, spin }: { kind: PuntoKind; tool:
         </group>
       </Part>
       <Part id="pieza" offset={[22, 0, 0]} labelAt={[14, BED.center + R + 1.5, 0]}>
-        <Spin speed={spin ? 4 : 0}>
-          <group position={[0, BED.center, 0]}>
+        <group position={[0, BED.center, 0]}>
+          <Spin speed={spin ? 4 : 0}>
             <Bar x0={-14} x1={16} r={R} />
-          </group>
-        </Spin>
+            <mesh position={[16.01, R * 0.5, 0]} rotation={[0, 0, -Math.PI / 2]} material={M.hole}>
+              <cylinderGeometry args={[R * 0.12, R * 0.12, 0.02, 10]} />
+            </mesh>
+          </Spin>
+        </group>
       </Part>
     </group>
   )
