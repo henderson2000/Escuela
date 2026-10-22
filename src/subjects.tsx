@@ -66,8 +66,7 @@ SUBJECT_CONTENT['3/computacion'] = {
   nav: [
     { to: '', label: 'Inicio del taller', end: true },
     { to: '/curso/html', label: 'HTML' },
-    { to: '/curso/css', label: 'CSS' },
-    { to: '/curso/java', label: 'Java' },
+    { to: '/curso/js', label: 'JavaScript' },
     { to: '/taller-libre', label: 'Taller libre' },
     { to: '/juegos', label: 'Juegos' },
     { to: '/ranking', label: 'Ranking' },

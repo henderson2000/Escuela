@@ -38,10 +38,10 @@ Por ahora tienen contenido los cuatro talleres de 3ro (**Electrónica**, **Compu
 
 | Sección | Contenido |
 | --- | --- |
-| **Curso** | 3 recorridos con lecciones cortas: **HTML** (28), **CSS** (32) y **Java** (51, básico + objetos). Cada lección tiene explicación, consigna, editor con colores, vista previa en vivo (web) o consola (Java) y una lista de requisitos que se corrige sola. Mini-proyectos al final de cada módulo. El progreso queda guardado por alumno. |
-| **Java en el navegador** | El código Java se compila con javac (OpenJDK) + TeaVM convertidos a WebAssembly y corre en la misma página, sin servidor. La primera vez descarga ~19 MB (después queda en la caché). Necesita un navegador de 2024 en adelante (Chrome/Edge 119+, Firefox 120+). Los datos de `Scanner` se escriben antes en el recuadro «Entrada». Licencias de estos componentes en `public/java/`. |
-| **Taller libre** | Editor libre de páginas web y de programas Java, con descarga de los archivos. |
-| **Juegos** | 🧩 *Desafíos de código* (20 problemas × 100) · ❓ *¿Qué hace este código?* (200). |
+| **Curso** | 2 recorridos con lecciones cortas: **HTML** y **JavaScript básico** (consola y páginas con botones, campos y listas). Cada lección tiene explicación, consigna, editor con colores, vista previa en vivo o consola y una lista de requisitos que se corrige sola. Mini-proyectos al final de cada módulo. El progreso queda guardado por alumno. |
+| **JavaScript** | Corre en el navegador al instante. Los errores aparecen con su número de línea y una explicación en castellano; los bucles infinitos se cortan solos. Las respuestas de `prompt()` se escriben en el recuadro «Entrada». |
+| **Taller libre** | Página con HTML + JavaScript y consola de JavaScript, con descarga de los archivos. |
+| **Juegos** | 🧩 *Desafíos de código* (HTML y JavaScript, 100 c/u) · ❓ *¿Qué hace este código?* (200). |
 
 Para revisar el curso después de cambiar lecciones: `npm run dev` y abrir `/verify-course.html` (prueba que cada solución pase y cada código inicial no).
 

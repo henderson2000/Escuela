@@ -849,7 +849,7 @@ export const HTML_TRACK: Track = {
             <>
               <p>
                 Las tablas se pueden dividir en partes: <code>thead</code> (el encabezado) y <code>tbody</code> (el cuerpo con los datos).
-                Así queda más ordenado y después con CSS se puede dar estilo a cada parte.
+                Así queda más ordenado y se entiende qué es cada parte de la tabla.
               </p>
               <pre>
                 <code>{'<table>\n  <thead>\n    <tr><th>Día</th><th>Materia</th></tr>\n  </thead>\n  <tbody>\n    <tr><td>Lunes</td><td>Taller</td></tr>\n  </tbody>\n</table>'}</code>
@@ -1283,7 +1283,7 @@ export const HTML_TRACK: Track = {
             <>
               <p>
                 Cuando ninguna etiqueta semántica sirve, se usa <code>div</code> (una caja, ocupa todo el ancho) o <code>span</code> (un
-                pedacito dentro de un texto). Solos no hacen nada: sirven para darles estilo con CSS.
+                pedacito dentro de un texto). Solos no cambian cómo se ve nada: sirven para agrupar partes y, con un id o una clase, encontrarlas desde JavaScript.
               </p>
               <p>
                 Para identificarlos se usan atributos: <code>class</code> (un grupo, se puede repetir) e <code>id</code> (único en la página).
