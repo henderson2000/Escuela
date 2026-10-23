@@ -87,15 +87,35 @@ export function PiaModel({ situacion, rearme, corte }: PiaParams) {
             <meshPhysicalMaterial color="#ffffff" transparent opacity={0.18} roughness={0.1} />
           </mesh>
         )}
-        <mesh position={[0, -3.7, -0.1]}>
-          <boxGeometry args={[4.2, 0.4, 1.0]} />
-          <meshStandardMaterial color="#e5e5e0" roughness={0.5} />
+        {/* paredes de la media carcasa */}
+        {[-2, 2].map((x) => (
+          <mesh key={x} position={[x, 0, 0]} castShadow>
+            <boxGeometry args={[0.15, 7, 1.4]} />
+            <meshStandardMaterial color="#e9e9e4" roughness={0.5} />
+          </mesh>
+        ))}
+        <mesh position={[0, 3.45, 0]}>
+          <boxGeometry args={[4.15, 0.15, 1.4]} />
+          <meshStandardMaterial color="#e9e9e4" roughness={0.5} />
+        </mesh>
+        <mesh position={[0, -3.45, 0]}>
+          <boxGeometry args={[4.15, 0.15, 1.4]} />
+          <meshStandardMaterial color="#e9e9e4" roughness={0.5} />
+        </mesh>
+        {/* encastre para el riel DIN */}
+        <mesh position={[0, 0, -0.85]}>
+          <boxGeometry args={[4, 1.4, 0.3]} />
+          <meshStandardMaterial color="#d4d4cf" roughness={0.5} />
         </mesh>
       </Part>
       <Part id="palanca" offset={[0, 1.5, 1]} labelAt={[0.9, 4.4, 0.5]}>
-        <group position={[0, 3.3, 0]} rotation={[0, 0, open ? -0.6 : 0.6]}>
-          <mesh position={[0, 0.6, 0]} castShadow>
-            <boxGeometry args={[0.45, 1.2, 0.6]} />
+        <mesh position={[0, 3.55, 0]}>
+          <boxGeometry args={[1.2, 0.12, 0.9]} />
+          <meshStandardMaterial color="#d4d4cf" roughness={0.5} />
+        </mesh>
+        <group position={[0, 3.5, 0]} rotation={[0, 0, open ? -0.6 : 0.6]}>
+          <mesh position={[0, 0.5, 0]} castShadow>
+            <boxGeometry args={[0.4, 1.0, 0.6]} />
             <meshStandardMaterial color="#18181b" roughness={0.4} />
           </mesh>
         </group>
@@ -378,7 +398,7 @@ export function MultimetroModel(p: MultimetroParams) {
           <meshStandardMaterial color="#27272a" roughness={0.5} />
         </mesh>
       </Part>
-      <Part id="display" offset={[0, 1.5, 1]} labelAt={[0, 3.6, 0.8]}>
+      <Part id="display" offset={[0, 0.6, 1.2]} labelAt={[0, 3.6, 0.8]}>
         <mesh position={[0, 2.5, 0.67]}>
           <planeGeometry args={[3.2, 1.4]} />
           <meshStandardMaterial map={disp} roughness={0.3} />

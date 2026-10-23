@@ -1,6 +1,6 @@
-import { useMemo, useRef, type ReactNode } from 'react'
+import { useLayoutEffect, useMemo, useRef, type ReactNode } from 'react'
 import * as THREE from 'three'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { Part } from '../../Part'
 import { useCanvasTexture } from '../../helpers'
 import { useKeepRendering } from '../../keepRendering'
@@ -471,12 +471,7 @@ export function CordonModel(p: CordonParams) {
         </Part>
       )}
       <Part id="salpicaduras" offset={[0, 0.8, 0]} labelAt={[0, 0.3, 1.4]}>
-        {spatter.map((s, i) => (
-          <mesh key={i} position={s}>
-            <sphereGeometry args={[0.035 + (i % 3) * 0.012, 6, 4]} />
-            <meshStandardMaterial color="#4b5563" metalness={0.6} roughness={0.5} />
-          </mesh>
-        ))}
+        <Spatter points={spatter} />
       </Part>
       {d.mordeduras &&
         [-1, 1].map((s) => (
@@ -486,6 +481,31 @@ export function CordonModel(p: CordonParams) {
           </mesh>
         ))}
     </group>
+  )
+}
+
+/** Salpicaduras: todas en una sola malla (una sola llamada de dibujo). */
+function Spatter({ points }: { points: [number, number, number][] }) {
+  const ref = useRef<THREE.InstancedMesh>(null)
+  const invalidate = useThree((st) => st.invalidate)
+  useLayoutEffect(() => {
+    const mesh = ref.current
+    if (!mesh) return
+    const m = new THREE.Matrix4()
+    points.forEach((q, i) => {
+      const r = 1 + (i % 3) * 0.35
+      m.makeScale(r, r, r).setPosition(q[0], q[1], q[2])
+      mesh.setMatrixAt(i, m)
+    })
+    mesh.count = points.length
+    mesh.instanceMatrix.needsUpdate = true
+    invalidate()
+  }, [points, invalidate])
+  return (
+    <instancedMesh ref={ref} args={[undefined, undefined, 80]}>
+      <sphereGeometry args={[0.035, 6, 4]} />
+      <meshStandardMaterial color="#4b5563" metalness={0.6} roughness={0.5} />
+    </instancedMesh>
   )
 }
 
@@ -533,7 +553,17 @@ export function EppModel({ amperaje }: EppParams) {
             <sphereGeometry args={[1.1, 32, 24, 0, Math.PI * 2, 0, Math.PI / 2]} />
             <meshStandardMaterial color="#111827" roughness={0.6} side={THREE.DoubleSide} />
           </mesh>
+          {/* arnés que se ajusta a la cabeza */}
+          <mesh position={[0, -0.25, 0.1]} rotation={[0, 0, 0]}>
+            <torusGeometry args={[0.95, 0.06, 8, 32]} />
+            <meshStandardMaterial color="#374151" roughness={0.6} />
+          </mesh>
         </group>
+        {/* marco del visor */}
+        <mesh position={[-2.8, 2.65, 0.6]}>
+          <boxGeometry args={[1.3, 0.72, 0.08]} />
+          <meshStandardMaterial color="#1f2937" roughness={0.5} />
+        </mesh>
       </Part>
       <Part id="vidrio" offset={[0, 1, 1.5]} labelAt={[-2.8, 2.7, 0.9]}>
         <group position={[-2.8, 2.65, 0.66]}>

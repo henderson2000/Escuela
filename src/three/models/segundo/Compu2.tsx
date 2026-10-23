@@ -169,18 +169,18 @@ export function VonNeumannModel({ paso, a, b }: VonNeumannParams) {
           <meshStandardMaterial color="#14532d" roughness={0.8} />
         </mesh>
       </Part>
-      <Part id="memoria" offset={[0, 0, -2]} labelAt={[0, 2.4, -2.2]}>
-        <group position={[0, 1.6, -2.2]}>
+      <Part id="memoria" offset={[0, 0, -2]} labelAt={[0, 4.2, -2.2]}>
+        <group position={[0, 2.1, -2.2]}>
           <Block size={[4.4, 3.8, 0.8]} color="#7c3aed" title="MEMORIA" lines={mem.map((m, i) => (i < 4 && paso && i === Math.min(3, Math.max(0, paso - (paso >= 4 ? 2 : 1))) ? `▶ ${m}` : m))} />
         </group>
       </Part>
       <group position={[0, 0.9, 2.4]}>
-        <Part id="uc" offset={[-1.5, 0.8, 1]} labelAt={[-1.1, 1.3, 0]}>
+        <Part id="uc" offset={[-1.5, 0.8, 1]} labelAt={[-1.9, 1.2, 0.5]}>
           <group position={[-1.1, 0, 0]}>
             <Block size={[2, 1.6, 1]} color={paso === 3 ? '#2563eb' : '#1e3a8a'} title="U. CONTROL" lines={[paso === 3 ? 'SUMAR' : paso >= 1 && paso <= 2 ? 'LEER' : paso === 5 ? 'MOSTRAR' : '—']} />
           </group>
         </Part>
-        <Part id="alu" offset={[1.5, 0.8, 1]} labelAt={[1.1, 1.3, 0]}>
+        <Part id="alu" offset={[1.5, 0.8, 1]} labelAt={[1.9, -0.7, 0.5]}>
           <group position={[1.1, 0, 0]}>
             <Block size={[2, 1.6, 1]} color={paso === 4 ? '#16a34a' : '#065f46'} title="ALU" lines={[paso >= 4 ? `${a}+${b}=${c}` : paso === 3 ? `${a} + ${b}` : '—']} />
           </group>

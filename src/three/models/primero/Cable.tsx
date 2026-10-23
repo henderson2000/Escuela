@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, type ReactNode } from 'react'
 import * as THREE from 'three'
-import { Part } from '../../Part'
+import { useFrame } from '@react-three/fiber'
+import { Part, useParts } from '../../Part'
 import { useCanvasTexture } from '../../helpers'
 
 // 1 unidad = 1 mm. El cable va a lo largo del eje X: vaina hasta x = 0, aislación hasta x = 14 y cobre pelado hasta x = 21.
@@ -198,20 +199,41 @@ export function CableModel(p: CableParams) {
       {!bare && (
         <Part id="aislacion" offset={[0, 0, 0]} labelAt={[X_AISL - 3, rv + 1.5, 0]}>
           {pos.map(([y, z], i) => (
-            <mesh key={i} position={[(X0 + X_AISL) / 2, y, z]} rotation={[0, 0, Math.PI / 2]} castShadow>
-              <cylinderGeometry args={[enamel ? rc + 0.05 : ri, enamel ? rc + 0.05 : ri, X_AISL - X0, 40]} />
-              {enamel ? <meshStandardMaterial color="#b4551f" metalness={0.6} roughness={0.15} /> : <Insulation color={colors[i]?.color ?? '#888'} aislacion={p.aislacion} />}
-            </mesh>
+            <Spread key={i} y={y} z={z}>
+              <mesh position={[(X0 + X_AISL) / 2, 0, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
+                <cylinderGeometry args={[enamel ? rc + 0.05 : ri, enamel ? rc + 0.05 : ri, X_AISL - X0, 40]} />
+                {enamel ? <meshStandardMaterial color="#b4551f" metalness={0.6} roughness={0.15} /> : <Insulation color={colors[i]?.color ?? '#888'} aislacion={p.aislacion} />}
+              </mesh>
+            </Spread>
           ))}
         </Part>
       )}
-      <Part id="conductor" offset={[14, 0, 0]} labelAt={[X_END - 2, rc + 2, 0]}>
+      <Part id="conductor" offset={[6, 0, 0]} labelAt={[X_END - 2, rc + 2, 0]}>
         {pos.map(([y, z], i) => (
-          <group key={i} position={[0, y, z]}>
+          <Spread key={i} y={y} z={z}>
             <Copper r={rc} hebras={p.hebras} from={bare ? X0 : X_AISL - 1} to={X_END} />
-          </group>
+          </Spread>
         ))}
       </Part>
+    </group>
+  )
+}
+
+/** Conductor dentro del cable: al despiezar se separa de los demás (así se ve cada uno con su color). */
+function Spread({ y, z, children }: { y: number; z: number; children: ReactNode }) {
+  const ref = useRef<THREE.Group>(null)
+  const { explode } = useParts()
+  useFrame((_, dt) => {
+    const g = ref.current
+    if (!g) return
+    const k = 1 + explode * 2.2
+    const f = 1 - Math.exp(-dt * 8)
+    g.position.y += (y * k - g.position.y) * f
+    g.position.z += (z * k - g.position.z) * f
+  })
+  return (
+    <group ref={ref} position={[0, y, z]}>
+      {children}
     </group>
   )
 }

@@ -260,19 +260,19 @@ export function CircuitoModel(p: CircuitoParams) {
         ))}
         <Electrons key={p.modo} segs={segs} />
       </Part>
-      <Part id="pila" offset={[-2.5, 0, 0]} labelAt={[XL, 1.6, 0]}>
+      <Part id="pila" offset={[-1.3, 0, 0]} labelAt={[XL, 1.6, 0]}>
         <Battery u={p.u} />
       </Part>
-      <Part id="interruptor" offset={[0, 1.6, -1.5]} labelAt={[-1, 1.1, ZT]}>
+      <Part id="interruptor" offset={[0, 1.3, -0.6]} labelAt={[-1, 1.1, ZT]}>
         <Switch closed={p.cerrado} />
       </Part>
-      <Part id="lampara1" offset={[0, 2.2, 0]} labelAt={[l1[0], 2, l1[2]]}>
+      <Part id="lampara1" offset={[0, 1.8, 0]} labelAt={[l1[0], 2, l1[2]]}>
         <group position={l1}>
           <Lamp position={[0, 0, 0]} glow={glow1} />
         </group>
       </Part>
       {p.modo !== 'una' && (
-        <Part id="lampara2" offset={[2.2, 2.2, 0]} labelAt={[l2[0], 2, l2[2]]}>
+        <Part id="lampara2" offset={[0.6, 1.8, 0]} labelAt={[l2[0], 2, l2[2]]}>
           <group position={l2}>
             <Lamp position={[0, 0, 0]} glow={glow2} />
           </group>

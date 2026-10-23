@@ -43,7 +43,7 @@ export function HerramientasModel() {
   const anvilHorn = useMemo(() => new THREE.ConeGeometry(1.6, 9, 32).rotateZ(Math.PI / 2), [])
   const punch = useMemo(() => latheGeometry([[0, 0], [0.22, 0.13], [0.3, 2.5], [0.42, 3.4], [0.42, 10], [0.36, 10.6], [0, 10.7]], 24).rotateZ(-Math.PI / 2), [])
   return (
-    <group>
+    <group scale={0.75}>
       {/* banco */}
       <mesh position={[0, -1, 0]} receiveShadow>
         <boxGeometry args={[60, 2, 34]} />
@@ -247,14 +247,14 @@ function hookProfile(closed: number): THREE.Shape {
   const t = 0.08
   const g = 0.6 - 0.45 * closed // altura del gancho
   const s = new THREE.Shape()
-  s.moveTo(-12, 0)
+  s.moveTo(-7, 0)
   s.lineTo(0, 0)
   s.lineTo(0, g + t)
   s.lineTo(-1.2, g + t)
   s.lineTo(-1.2, g)
   s.lineTo(-t, g)
   s.lineTo(-t, t)
-  s.lineTo(-12, t)
+  s.lineTo(-7, t)
   s.closePath()
   return s
 }
@@ -263,23 +263,23 @@ export function EngrafadoModel({ paso }: EngrafadoParams) {
   // paso: 0 ganchos separados · 1 enganchados · 2 aplastados (remachados)
   const near = Math.min(1, paso)
   const closed = Math.max(0, paso - 1)
-  const g1 = useMemo(() => new THREE.ExtrudeGeometry(hookProfile(closed), { depth: 14, bevelEnabled: false }).translate(0, 0, -7), [closed])
+  const g1 = useMemo(() => new THREE.ExtrudeGeometry(hookProfile(closed), { depth: 8, bevelEnabled: false }).translate(0, 0, -4), [closed])
   const gap = 4 * (1 - near)
   return (
     <group position={[0, 2, 0]}>
-      <Part id="chapa1" offset={[-4, 0, 0]} labelAt={[-6, 1.2, 0]}>
+      <Part id="chapa1" offset={[-2.5, 0, 0]} labelAt={[-4, 1.2, 0]}>
         <mesh geometry={g1} position={[-gap / 2 + 0.6, 0, 0]} castShadow receiveShadow>
           <meshStandardMaterial {...GALV} side={THREE.DoubleSide} />
         </mesh>
       </Part>
-      <Part id="chapa2" offset={[4, 0, 0]} labelAt={[6, 1.2, 0]}>
+      <Part id="chapa2" offset={[2.5, 0, 0]} labelAt={[4, 1.2, 0]}>
         {/* la misma chapa girada 180°: el gancho queda enfrentado */}
         <mesh geometry={g1} position={[gap / 2 - 0.6, (0.6 - 0.45 * closed) + 0.08, 0]} rotation={[0, 0, Math.PI]} castShadow receiveShadow>
           <meshStandardMaterial {...GALV} side={THREE.DoubleSide} />
         </mesh>
       </Part>
       {/* referencia: base de apoyo */}
-      <RoundedBox args={[30, 0.6, 18]} radius={0.2} position={[0, -0.4, 0]} receiveShadow>
+      <RoundedBox args={[18, 0.6, 11]} radius={0.2} position={[0, -0.4, 0]} receiveShadow>
         <meshStandardMaterial color="#5b6270" />
       </RoundedBox>
     </group>

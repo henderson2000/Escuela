@@ -87,7 +87,7 @@ export function PcModel({ encendida }: PcParams) {
   return (
     <group position={[0, H / 2, 0]}>
       {/* chapa del gabinete: piso, techo, frente, fondo y lado izquierdo */}
-      <Part id="gabinete" offset={[0, 0, 0]} labelAt={[0, H / 2 + 0.3, D / 2]}>
+      <Part id="gabinete" offset={[0, 0, 0]} labelAt={[0.4, H / 2 + 0.35, -D / 2 + 0.4]}>
         <mesh position={[-W / 2, 0, 0]} castShadow receiveShadow>
           <boxGeometry args={[0.06, H, D]} />
           <meshStandardMaterial {...DARK} />
@@ -139,7 +139,7 @@ export function PcModel({ encendida }: PcParams) {
       </Part>
 
       {/* placa base contra el lado izquierdo */}
-      <Part id="placa" offset={[-0.8, 0, 0]} labelAt={[-W / 2 + 0.2, -0.35, 1.0]}>
+      <Part id="placa" offset={[-0.8, 0, 0]} labelAt={[-W / 2 + 0.2, -0.2, 1.7]}>
         <mesh position={[-W / 2 + 0.1, 0.55, -0.3]} castShadow>
           <boxGeometry args={[0.05, 3.0, 2.5]} />
           <meshStandardMaterial {...PCB} />
@@ -167,14 +167,14 @@ export function PcModel({ encendida }: PcParams) {
         </mesh>
       </Part>
 
-      <Part id="cpu" offset={[0.6, 0.6, 0]} labelAt={[-W / 2 + 0.3, 1.6, -0.3]}>
+      <Part id="cpu" offset={[0.6, 0.6, 0]} labelAt={[-W / 2 + 0.3, 1.25, -1.1]}>
         <mesh position={[-W / 2 + 0.18, 1.25, -0.3]}>
           <boxGeometry args={[0.04, 0.45, 0.45]} />
           <meshStandardMaterial color="#c8ccd2" metalness={0.9} roughness={0.25} />
         </mesh>
       </Part>
 
-      <Part id="cooler" offset={[1.8, 0.9, 0]} labelAt={[-W / 2 + 0.9, 1.9, -0.3]}>
+      <Part id="cooler" offset={[1.8, 0.9, 0]} labelAt={[-W / 2 + 0.9, 2.35, -0.5]}>
         <group position={[-W / 2 + 0.6, 1.25, -0.3]}>
           {Array.from({ length: 9 }, (_, i) => (
             <mesh key={i} position={[0, 0, -0.32 + i * 0.08]}>
@@ -188,7 +188,7 @@ export function PcModel({ encendida }: PcParams) {
         </group>
       </Part>
 
-      <Part id="ram" offset={[1.3, 0, 0.4]} labelAt={[-W / 2 + 0.5, 1.95, 0.45]}>
+      <Part id="ram" offset={[1.3, 0, 0.4]} labelAt={[-W / 2 + 0.5, 1.85, 1.05]}>
         {[0.35, 0.5].map((z) => (
           <group key={z} position={[-W / 2 + 0.3, 1.2, z]}>
             <mesh>
@@ -209,7 +209,7 @@ export function PcModel({ encendida }: PcParams) {
         ))}
       </Part>
 
-      <Part id="gpu" offset={[1.6, -0.4, 0]} labelAt={[0.2, 0.35, 0.8]}>
+      <Part id="gpu" offset={[1.6, -0.4, 0]} labelAt={[0.2, 0.45, 1.2]}>
         <group position={[-W / 2 + 0.85, 0.0, -0.1]}>
           <RoundedBox args={[1.3, 0.38, 2.6]} radius={0.04}>
             <meshStandardMaterial color="#25282f" roughness={0.45} metalness={0.4} />
@@ -249,7 +249,7 @@ export function PcModel({ encendida }: PcParams) {
         </group>
       </Part>
 
-      <Part id="ssd" offset={[1.2, 0, 0]} labelAt={[-W / 2 + 0.3, -0.7, -0.6]}>
+      <Part id="ssd" offset={[1.2, 0, 0]} labelAt={[-W / 2 + 0.3, -0.75, -1.3]}>
         <group position={[-W / 2 + 0.15, -0.6, -0.6]}>
           <mesh>
             <boxGeometry args={[0.03, 0.22, 0.8]} />
