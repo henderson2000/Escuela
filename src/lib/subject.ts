@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, type ReactNode } from 'react'
 import type { ComponentDef } from '../catalog/types'
 import type { Topic } from '../data/theory'
 import type { GameDef } from '../games/registry'
@@ -8,7 +8,7 @@ import type { Activity } from '../catalog/types'
 export interface GuideSection {
   id: string
   title: string
-  intro?: string
+  intro?: ReactNode
   activities: Activity[]
 }
 

@@ -35,7 +35,6 @@ export const SUBJECTS: Record<string, Subject> = {
   soldadura: { id: 'soldadura', name: 'Soldadura', icon: '🔥' },
 }
 
-const rot = (...subjects: string[]): Rotation[] => subjects.map((subject, i) => ({ n: i + 1, subject }))
 
 export const YEARS: Year[] = [
   {
@@ -49,7 +48,17 @@ export const YEARS: Year[] = [
       { n: 4, subject: 'ajuste', ready: true, desc: 'Limado: la lima y sus tipos, la técnica correcta y el martillo de peña paso a paso.' },
     ],
   },
-  { id: '2', short: '2do', name: '2do año', rotations: rot('electronica', 'computacion', 'electricidad', 'soldadura') },
+  {
+    id: '2',
+    short: '2do',
+    name: '2do año',
+    rotations: [
+      { n: 1, subject: 'electronica' },
+      { n: 2, subject: 'computacion', ready: true, desc: 'Von Neumann, redes, imagen digital, algoritmos y pseudocódigo con un intérprete que corrige solo.' },
+      { n: 3, subject: 'electricidad', ready: true, desc: 'Instalaciones domiciliarias: protecciones, esquemas, los circuitos del taller en 3D y cálculo de circuitos.' },
+      { n: 4, subject: 'soldadura', ready: true, desc: 'Soldadura por arco con electrodo revestido: seguridad, equipo, técnica y un simulador del cordón.' },
+    ],
+  },
   {
     id: '3',
     short: '3ro',

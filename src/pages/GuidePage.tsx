@@ -36,7 +36,7 @@ export function GuidePage() {
             </button>
             {open === g.id && (
               <>
-                {g.intro && <p className="hint">{g.intro}</p>}
+                {g.intro && <div className="hint guide-intro">{g.intro}</div>}
                 <ActivityList activities={g.activities} />
               </>
             )}

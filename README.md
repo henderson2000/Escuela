@@ -11,7 +11,7 @@ Al entrar se elige el año (**1ro, 2do o 3ro**). Cada año tiene **4 rotaciones*
 - **2do:** Electrónica, Computación, Electricidad y Soldadura.
 - **3ro:** Electrónica (con todo el contenido), Computación, Electricidad y Torno.
 
-Por ahora tienen contenido los cuatro talleres de 1ro (**Electricidad**, **Computación**, **Hojalatería** y **Ajuste**) y los cuatro de 3ro (**Electrónica**, **Computación**, **Electricidad (LOGO!)** y **Torno**); el resto muestra "Próximamente". El contenido de cada taller se registra en [`src/subjects/`](src/subjects) (un archivo por taller, que se descarga recién cuando se entra). Los años y talleres se configuran en
+Por ahora tienen contenido los cuatro talleres de 1ro (**Electricidad**, **Computación**, **Hojalatería** y **Ajuste**), tres de 2do (**Computación**, **Electricidad** y **Soldadura**) y los cuatro de 3ro (**Electrónica**, **Computación**, **Electricidad (LOGO!)** y **Torno**); el resto muestra "Próximamente". El contenido de cada taller se registra en [`src/subjects/`](src/subjects) (un archivo por taller, que se descarga recién cuando se entra). Los años y talleres se configuran en
 [`src/data/curriculum.ts`](src/data/curriculum.ts).
 
 ## Qué incluye (1er año)
@@ -24,6 +24,14 @@ Por ahora tienen contenido los cuatro talleres de 1ro (**Electricidad**, **Compu
 | **Ajuste** | 3D: la lima (formas, picados y grados), el martillo de peña etapa por etapa con las cotas del plano, instrumentos de medición y trazado y la morsa. Teoría: 8 temas de limado. Guía con el trabajo práctico, el plano y el ciclo de fabricación, y 4 juegos. |
 
 Los niveles de Bloques usan [Blockly](https://developers.google.com/blockly) (incluido en la página; sus imágenes y sonidos están en `public/blockly/`).
+
+## Qué incluye (2do año)
+
+| Taller | Contenido |
+| --- | --- |
+| **Electricidad** (instalaciones domiciliarias) | 3D: el tablero de práctica con diferencial, termomagnético y los cuatro circuitos del taller (simple, serie, paralelo y escalera), con fallas que hacen saltar las protecciones; el termomagnético y el diferencial por dentro; el multímetro. Teoría: 12 temas (Ohm, Kirchhoff, serie/paralelo/mixto, esquemas, simbología, reglas de oro, protecciones, IB ≤ In ≤ IZ). Guía: los 6 circuitos de la guía con RT, IT, corrientes y caídas de tensión. 4 juegos. |
+| **Computación** | 3D: el modelo de Von Neumann ejecutando un programa paso a paso, una red con topologías y paquetes, y los píxeles de cerca. Teoría: 9 temas. **Pseudocódigo**: 14 lecciones con un intérprete propio estilo PSeInt (Escribir, Leer, Si, Segun, Mientras, Para, Repetir) que se corrigen solas, y un taller libre. 4 juegos. |
+| **Soldadura** (arco con electrodo revestido) | 3D: el equipo con el arco encendido, el electrodo, un simulador del cordón (intensidad, longitud de arco, velocidad y ángulo), la protección personal y las uniones y posiciones (1G, 2F…). Teoría: 10 temas con las tablas de filtros DIN y de chapas. Guía: las 28 preguntas de autoevaluación. 4 juegos. |
 
 ## Qué incluye (taller de Electrónica, 3er año)
 
@@ -65,7 +73,7 @@ Para revisar el curso después de cambiar lecciones: `npm run dev` y abrir `/ver
 | **Guía** | 49 ejercicios (rpm, conos, roscas, montajes, herramientas, seguridad) con corrección automática. |
 | **Juegos** | 🔍 *¿Qué parte es?* · *¿Cómo lo mecanizo?* · *Seguridad en el taller* · *Calculá rápido* (200 cada uno). |
 
-## Agregar un taller (por ejemplo, de 2do)
+## Agregar un taller (por ejemplo, Electrónica de 2do)
 
 Cada taller es un paquete aparte que se descarga recién cuando alguien entra, así que sumar talleres no hace más
 lenta la plataforma.
@@ -141,6 +149,7 @@ src/
   compu/        taller de Computación: curso HTML + JavaScript, editor, ejecución de código y juegos
   torno/        taller de Torno: catálogo 3D, teoría, guía y juegos
   primero/      talleres de 1er año (electricidad, computacion con sus bloques, hojalateria, ajuste)
+  segundo/      talleres de 2do año (electricidad, computacion con el intérprete de pseudocódigo, soldadura)
   lib/          puntajes y lamparitas (guardados en la computadora), carga diferida, utilidades
   pages/        páginas comunes (inicio, años, componentes, teoría, actividades, juegos, progreso)
 public/sw.js    guarda la plataforma para usarla sin conexión

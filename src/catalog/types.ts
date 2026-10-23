@@ -52,6 +52,13 @@ export interface ComponentDef {
     | 'Instrumentos de medición y trazado'
     | 'Proyectos del taller'
     | 'Máquinas'
+    | 'Instalación eléctrica'
+    | 'Protecciones'
+    | 'Instrumentos'
+    | 'Equipo de soldadura'
+    | 'Seguridad'
+    | 'Uniones y posiciones'
+    | 'Redes'
   icon: string
   short: string
   parts: PartInfo[] | ((p: Params) => PartInfo[])

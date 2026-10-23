@@ -1,0 +1,115 @@
+.ps-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 8px;
+}
+.ps-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: var(--text);
+  text-decoration: none;
+}
+.ps-item.done {
+  border-color: var(--ok);
+}
+.ps-item .tag {
+  margin-left: auto;
+}
+.ps-ref pre,
+.ps-sol {
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+  background: #0c1220;
+  border-radius: 8px;
+  padding: 10px;
+  overflow-x: auto;
+}
+.ps-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .ps-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.ps-left code {
+  background: #0c1220;
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+.ps-task {
+  border-left: 3px solid var(--accent);
+  padding: 4px 0 4px 10px;
+  margin: 12px 0;
+}
+.ps-editor {
+  height: 340px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.ps-editor .code-editor {
+  height: 100%;
+}
+.ps-editor .cm-editor {
+  height: 100%;
+}
+.ps-editor .err-line {
+  background: rgba(255, 90, 90, 0.18);
+}
+.ps-input {
+  font-family: ui-monospace, Consolas, monospace;
+  width: 100%;
+  resize: vertical;
+}
+.ps-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.ps-console {
+  background: #05080e;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.9rem;
+  min-height: 80px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ps-console.empty {
+  color: var(--muted);
+}
+.ps-console .ps-in {
+  color: var(--muted);
+  border-bottom: 1px dashed var(--line);
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+}
+.ps-console .ps-err {
+  color: var(--bad);
+  margin-top: 6px;
+}
+.ps-check {
+  margin-top: 10px;
+}
+.ps-check.ok {
+  border-color: var(--ok);
+}
+.ps-check.bad {
+  border-color: var(--bad);
+}
+.ps-check ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 0.9rem;
+}

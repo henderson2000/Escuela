@@ -1,0 +1,136 @@
+.row-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.c2-timeline {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.c2-gen {
+  flex: 1 0 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+.c2-gen.on {
+  border-color: var(--accent);
+  background: #10304a;
+}
+.c2-gen-icon {
+  font-size: 1.4rem;
+}
+.c2-gen-card {
+  margin-top: 8px;
+}
+.c2-net-scale {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 6px 0;
+}
+.c2-net-scale span {
+  text-align: center;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.c2-net-scale span.on {
+  border-color: var(--accent);
+  color: var(--text);
+  background: #10304a;
+  font-weight: 700;
+}
+.c2-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.c2-steps .btn {
+  text-align: left;
+  white-space: normal;
+}
+.c2-steps .btn.ok {
+  border-color: var(--ok);
+  color: var(--ok);
+  opacity: 1;
+}
+.c2-steps .btn.bad {
+  border-color: var(--bad);
+}
+.c2-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 12px;
+}
+.c2-compare > div {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.c2-compare pre {
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+  background: #0c1220;
+  border-radius: 8px;
+  padding: 8px;
+}
+.c2-palette {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.c2-palette button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 2px solid var(--line);
+  cursor: pointer;
+}
+.c2-palette button.on {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+}
+.c2-pixels {
+  display: grid;
+  width: min(100%, 320px);
+  aspect-ratio: 1;
+  gap: 1px;
+  background: #334155;
+  border: 1px solid #334155;
+  margin: 8px 0;
+  touch-action: none;
+  user-select: none;
+}
+.c2-pixels button {
+  border: 0;
+  padding: 0;
+  cursor: crosshair;
+  min-width: 0;
+  min-height: 0;
+}
+.c2-code-q {
+  text-align: left;
+  font-family: ui-monospace, Consolas, monospace;
+  background: #05080e;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 0 auto;
+  width: fit-content;
+  max-width: 100%;
+  white-space: pre-wrap;
+  font-size: 0.95rem;
+}

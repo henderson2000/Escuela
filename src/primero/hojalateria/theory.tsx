@@ -46,15 +46,18 @@ function CorteSelector() {
   )
 }
 
+// tabla de chapas de acero laminadas en frío del apunte de Soldadura
 const CALIBRES: [number, number][] = [
-  [30, 0.32],
-  [28, 0.4],
-  [26, 0.46],
-  [24, 0.61],
-  [22, 0.76],
-  [20, 0.91],
-  [18, 1.21],
-  [16, 1.52],
+  [30, 0.3],
+  [28, 0.35],
+  [26, 0.45],
+  [24, 0.56],
+  [22, 0.7],
+  [20, 0.9],
+  [18, 1.25],
+  [16, 1.6],
+  [14, 2],
+  [12, 2.5],
 ]
 
 function Calibre() {
@@ -66,7 +69,7 @@ function Calibre() {
       <svg viewBox="0 0 300 50" className="h1-svg" role="img" aria-label={`Chapa de ${mm} mm`}>
         <rect x={20} y={25 - mm * 8} width={260} height={Math.max(2, mm * 16)} className="sheet" />
       </svg>
-      <Readout label="Espesor aproximado" value={`${String(mm).replace('.', ',')} mm`} />
+      <Readout label="Espesor" value={`${String(mm).replace('.', ',')} mm`} />
       <p className="hint">A mayor número de calibre, MENOR espesor: es inversamente proporcional. Los proyectos del taller usan chapa Nº 30 (muy fina).</p>
     </div>
   )

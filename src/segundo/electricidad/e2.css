@@ -1,0 +1,135 @@
+.e2-svg {
+  width: 100%;
+  max-width: 460px;
+  display: block;
+  margin: 8px auto;
+  background: #0c1220;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.e2-svg .wire,
+.e2-sym .wire {
+  stroke: #e2e8f0;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+}
+.e2-svg .wire.thick {
+  stroke-width: 5;
+}
+.e2-svg .wire.f {
+  stroke: #c08040;
+}
+.e2-svg .wire.n {
+  stroke: #5ab4e5;
+}
+.e2-svg .wire.r {
+  stroke: #94a3b8;
+}
+.e2-svg .wire.pe {
+  stroke: #4ade80;
+  stroke-dasharray: 8 4;
+}
+.e2-svg .node,
+.e2-sym .node {
+  fill: #e2e8f0;
+}
+.e2-svg .lbl,
+.e2-sym .lbl {
+  fill: var(--muted);
+  font-size: 11px;
+  text-anchor: middle;
+}
+.e2-svg .lbl.start {
+  text-anchor: start;
+}
+.e2-svg .lbl.sm,
+.e2-sym .lbl.sm {
+  font-size: 10px;
+}
+.e2-sym {
+  background: #0c1220;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  flex: none;
+}
+.e2-sym .lbl {
+  fill: #e2e8f0;
+  font-size: 12px;
+}
+.e2-symbols {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+.e2-symbols figure {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0;
+}
+.e2-symbols figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.9rem;
+}
+.e2-symbols figcaption span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.e2-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 0.9rem;
+}
+.e2-table th,
+.e2-table td {
+  border: 1px solid var(--line);
+  padding: 4px 6px;
+  text-align: center;
+}
+.e2-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 6px 0;
+}
+.e2-rules .btn {
+  text-align: left;
+  white-space: normal;
+}
+.e2-rules .btn.ok {
+  border-color: var(--ok);
+  color: var(--ok);
+  opacity: 1;
+}
+.e2-rules .btn.bad {
+  border-color: var(--bad);
+}
+.e2-sorter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.e2-sort-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.e2-sort-row.ok {
+  border-color: var(--ok);
+}
+.e2-sort-row.bad {
+  border-color: var(--bad);
+}
+.e2-guide-fig {
+  max-width: 360px;
+}

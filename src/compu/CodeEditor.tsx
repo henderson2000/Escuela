@@ -6,8 +6,9 @@ import { indentWithTab } from '@codemirror/commands'
 import { html } from '@codemirror/lang-html'
 import { javascript } from '@codemirror/lang-javascript'
 import { oneDark } from '@codemirror/theme-one-dark'
+import { StreamLanguage } from '@codemirror/language'
 
-export type Lang = 'html' | 'js'
+export type Lang = 'html' | 'js' | 'pseudo'
 
 const setErrors = StateEffect.define<number[]>()
 const errorField = StateField.define<DecorationSet>({
@@ -29,7 +30,33 @@ const errorField = StateField.define<DecorationSet>({
   provide: (f) => EditorView.decorations.from(f),
 })
 
-const langOf = (l: Lang) => (l === 'html' ? html() : javascript())
+// pseudocódigo en castellano (estilo PSeInt): palabras clave, textos, números y comentarios
+const PSEUDO_KW =
+  /^(algoritmo|finalgoritmo|proceso|finproceso|definir|como|entero|real|caracter|texto|cadena|logico|escribir|leer|si|entonces|sino|finsi|mientras|hacer|finmientras|para|hasta|con|paso|finpara|repetir|que|segun|finsegun|de|otro|modo|sin|saltar|fin)$/i
+const PSEUDO_OP = /^(y|o|no|mod|verdadero|falso)$/i
+const pseudo = StreamLanguage.define({
+  name: 'pseudocodigo',
+  token(stream) {
+    if (stream.eatSpace()) return null
+    if (stream.match('//')) {
+      stream.skipToEnd()
+      return 'comment'
+    }
+    if (stream.match(/^"[^"]*"?/) || stream.match(/^'[^']*'?/)) return 'string'
+    if (stream.match(/^[0-9]+(\.[0-9]+)?/)) return 'number'
+    const w = stream.match(/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ_][A-Za-zÁÉÍÓÚÜÑáéíóúüñ_0-9]*/) as RegExpMatchArray | null
+    if (w) {
+      const plain = w[0].normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      if (PSEUDO_KW.test(plain)) return 'keyword'
+      if (PSEUDO_OP.test(plain)) return 'operator'
+      return 'variableName'
+    }
+    stream.next()
+    return 'operator'
+  },
+})
+
+const langOf = (l: Lang) => (l === 'html' ? html() : l === 'pseudo' ? pseudo : javascript())
 
 const theme = EditorView.theme({
   '&': { fontSize: '14px', height: '100%' },
@@ -84,7 +111,7 @@ export function CodeEditor({
           ]),
           langOf(lang),
           errorField,
-          EditorView.contentAttributes.of({ 'aria-label': lang === 'html' ? 'Editor de código HTML' : 'Editor de código JavaScript' }),
+          EditorView.contentAttributes.of({ 'aria-label': lang === 'html' ? 'Editor de código HTML' : lang === 'pseudo' ? 'Editor de pseudocódigo' : 'Editor de código JavaScript' }),
           oneDark,
           theme,
           ro.current.of([EditorState.readOnly.of(readOnly), EditorView.editable.of(!readOnly)]),

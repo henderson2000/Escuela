@@ -1,0 +1,35 @@
+.s2-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 0.88rem;
+}
+.s2-table caption {
+  text-align: left;
+  font-weight: 600;
+  padding: 4px 0;
+}
+.s2-table th,
+.s2-table td {
+  border: 1px solid var(--line);
+  padding: 4px 6px;
+  text-align: center;
+}
+.s2-two {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 12px;
+  align-items: start;
+}
+.s2-glass {
+  height: 70px;
+  border-radius: 10px;
+  border: 2px solid #111;
+  display: grid;
+  place-items: center;
+  margin: 8px 0;
+  color: #d1fae5;
+  font-weight: 700;
+  font-size: 1.3rem;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+}

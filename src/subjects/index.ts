@@ -79,11 +79,39 @@ SUBJECT_NAV['1/hojalateria'] = [
   { to: '/juegos', label: 'Juegos' },
 ]
 
+// 2do año
+SUBJECT_NAV['2/electricidad'] = [
+  { to: '', label: 'Inicio del taller', end: true },
+  { to: '/componentes', label: 'En 3D' },
+  { to: '/teoria', label: 'Teoría' },
+  { to: '/ejercicios', label: 'Guía' },
+  { to: '/juegos', label: 'Juegos' },
+]
+
+SUBJECT_NAV['2/computacion'] = [
+  { to: '', label: 'Inicio del taller', end: true },
+  { to: '/componentes', label: 'En 3D' },
+  { to: '/teoria', label: 'Teoría' },
+  { to: '/pseudocodigo', label: 'Pseudocódigo' },
+  { to: '/juegos', label: 'Juegos' },
+]
+
+SUBJECT_NAV['2/soldadura'] = [
+  { to: '', label: 'Inicio del taller', end: true },
+  { to: '/componentes', label: 'En 3D' },
+  { to: '/teoria', label: 'Teoría' },
+  { to: '/ejercicios', label: 'Guía' },
+  { to: '/juegos', label: 'Juegos' },
+]
+
 const LOADERS: Record<string, () => Promise<{ default: Omit<SubjectEntry, 'nav'> }>> = {
   '1/electricidad': () => import('./electricidad-1'),
   '1/computacion': () => import('./computacion-1'),
   '1/ajuste': () => import('./ajuste-1'),
   '1/hojalateria': () => import('./hojalateria-1'),
+  '2/electricidad': () => import('./electricidad-2'),
+  '2/computacion': () => import('./computacion-2'),
+  '2/soldadura': () => import('./soldadura-2'),
   '3/electronica': () => import('./electronica'),
   '3/electricidad': () => import('./electricidad'),
   '3/computacion': () => import('./computacion'),
