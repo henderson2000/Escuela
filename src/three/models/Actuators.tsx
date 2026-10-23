@@ -5,6 +5,7 @@ import { Part } from '../Part'
 import { Label } from '../Label'
 import { Screw, Wire, darkPlastic, latheGeometry, metal, tinned, useCanvasTexture } from '../helpers'
 import { RoundedBox } from '@react-three/drei'
+import { useKeepRendering } from '../keepRendering'
 
 /** Engranaje recto extruido (dientes trapezoidales). */
 function useGear(teeth: number, r: number, depth: number, hole = 0.04) {
@@ -243,6 +244,7 @@ export function BuzzerModel({ playing, active }: { playing: boolean; active: boo
   // buzzer de 12 mm: Ø12 × 9,5 mm, patas a 7,6 mm (1 unidad = 10 mm)
   const R = 0.6
   const H = 0.95
+  useKeepRendering(playing)
   const rings = useRef<THREE.Group>(null)
   const disc = useRef<THREE.Mesh>(null)
   useFrame(({ clock }) => {

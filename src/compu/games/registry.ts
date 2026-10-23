@@ -1,6 +1,10 @@
 import type { GameDef } from '../../games/registry'
 import { CHALLENGES } from '../challenges'
-import { ChallengeGame, CHALLENGE_GAME } from './ChallengeGame'
+import { lazyNamed } from '../../lib/lazy'
+
+// el juego usa el editor de código: se descarga recién al abrirlo
+const ChallengeGame = lazyNamed(() => import('./ChallengeGame'), 'ChallengeGame')
+const CHALLENGE_GAME = 'compu-desafios'
 import { QuizCompu, QUIZ_POOL_SIZE } from './QuizCompu'
 
 export const COMPU_GAMES: GameDef[] = [

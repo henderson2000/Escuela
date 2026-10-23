@@ -1,8 +1,9 @@
 import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react'
 import * as THREE from 'three'
-import { Canvas, useThree } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
-import { ContactShadows, OrbitControls } from '@react-three/drei'
+import { AdaptiveDpr, ContactShadows, OrbitControls } from '@react-three/drei'
+import { useKeepRendering } from './keepRendering'
 import { PartsContext, type PartsState, type Vec3 } from './Part'
 import { HtmlLayerContext } from './Label'
 import { ErrorBoundary } from '../components/ErrorBoundary'
@@ -43,6 +44,70 @@ function ContextWatcher({ onLost }: { onLost: () => void }) {
   }, [gl, onLost])
   return null
 }
+
+/**
+ * Después de cada cambio (girar con el mouse, mover un control, despiezar) se sigue dibujando un rato para
+ * que terminen las transiciones suaves; después el visor queda quieto sin gastar nada.
+ */
+function Settle({ until, onReady }: { until: React.RefObject<number>; onReady: (invalidate: () => void) => void }) {
+  const invalidate = useThree((s) => s.invalidate)
+  useEffect(() => onReady(invalidate), [invalidate, onReady])
+  useFrame(() => {
+    if (performance.now() < until.current) invalidate()
+  })
+  return null
+}
+
+/**
+ * Libera de la memoria de video las formas (geometrías) que ya no están en la escena: cuando un modelo
+ * cambia (mover un carro del torno, cambiar un valor) se crean formas nuevas y las viejas quedaban ocupando
+ * memoria. Si alguna se vuelve a usar, three.js la carga de nuevo sola.
+ */
+function GeometryCollector() {
+  const scene = useThree((s) => s.scene)
+  const known = useRef(new Set<THREE.BufferGeometry>())
+  const collect = (into: Set<THREE.BufferGeometry>) =>
+    scene.traverse((o) => {
+      const g = (o as THREE.Mesh).geometry
+      if (g && (g as THREE.BufferGeometry).isBufferGeometry) into.add(g)
+    })
+  // en cada cuadro dibujado se anotan las formas que se usaron (aunque duren muy poco)
+  useFrame(() => collect(known.current))
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      const used = new Set<THREE.BufferGeometry>()
+      collect(used)
+      known.current.forEach((g) => {
+        if (!used.has(g)) g.dispose()
+      })
+      known.current = used
+    }, 4000)
+    return () => window.clearInterval(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene])
+  return null
+}
+
+/** Rotación automática: necesita dibujar todo el tiempo mientras está activa. */
+function KeepAlive({ active }: { active: boolean }) {
+  useKeepRendering(active)
+  return null
+}
+
+/** ¿Se ve el visor en pantalla? (si no, no se dibuja nada) */
+function useOnScreen(ref: React.RefObject<HTMLElement | null>) {
+  const [on, setOn] = useState(true)
+  useEffect(() => {
+    const el = ref.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(([e]) => setOn(e.isIntersecting), { rootMargin: '100px' })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [ref])
+  return on
+}
+
+const reducedMotion = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
 
 let webglSupport: boolean | null = null
 export function hasWebGL(): boolean {
@@ -106,8 +171,28 @@ export function Viewer({
     ...parts,
   }
   const layer = useRef<HTMLDivElement>(null)
+  const box = useRef<HTMLDivElement>(null)
   const [attempt, setAttempt] = useState(0)
   const [lost, setLost] = useState(false)
+  const onScreen = useOnScreen(box)
+  const spin = autoRotate && !reducedMotion
+
+  // dibujar a demanda: cada cambio "despierta" al visor por unos segundos
+  const until = useRef(0)
+  const invalidateRef = useRef<(() => void) | null>(null)
+  const wake = (ms = 2500) => {
+    until.current = Math.max(until.current, performance.now() + ms)
+    invalidateRef.current?.()
+  }
+  const onReady = useRef((inv: () => void) => {
+    invalidateRef.current = inv
+    inv()
+  }).current
+  // cualquier cambio de lo que se muestra (parámetros, despiece, piezas ocultas…) vuelve a dibujar
+  useEffect(() => {
+    until.current = Math.max(until.current, performance.now() + 2500)
+    invalidateRef.current?.()
+  })
 
   if (!hasWebGL()) {
     return (
@@ -118,7 +203,7 @@ export function Viewer({
   }
 
   return (
-    <div className={className}>
+    <div className={className} ref={box} onPointerDown={() => wake()} onPointerMove={(e) => e.buttons && wake()} onWheel={() => wake()}>
       <div ref={layer} className="html-layer" />
       {lost ? (
         <NoWebGL
@@ -142,13 +227,19 @@ export function Viewer({
           )}
         >
           <Canvas
+            frameloop={onScreen ? 'demand' : 'never'}
+            performance={{ min: 0.75 }}
             camera={{ position: camera, fov: 40, near: 0.05, far: 200 }}
-            dpr={[1, 2]}
+            dpr={[1, 1.5]}
             onPointerMissed={onBackgroundClick}
             gl={{ antialias: true, preserveDrawingBuffer: false, powerPreference: 'default' }}
           >
             <color attach="background" args={['#10151f']} />
             <ContextWatcher onLost={() => setLost(true)} />
+            <Settle until={until} onReady={onReady} />
+            <GeometryCollector />
+            <KeepAlive active={spin} />
+            <AdaptiveDpr />
             <LocalEnvironment />
             <hemisphereLight args={['#ffffff', '#334', 0.7]} />
             <directionalLight position={[5, 8, 5]} intensity={1.7} />
@@ -163,9 +254,10 @@ export function Viewer({
             </Suspense>
             <OrbitControls
               makeDefault
+              regress
               target={target}
               enableDamping
-              autoRotate={autoRotate}
+              autoRotate={spin}
               autoRotateSpeed={1.5}
               minDistance={0.5}
               maxDistance={60}

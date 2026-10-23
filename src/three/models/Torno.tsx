@@ -35,6 +35,7 @@ import {
   revolve,
   type BoxSpec,
 } from './TornoAccesorios'
+import { useKeepRendering } from '../keepRendering'
 
 /* ------------------------------------------------------------------ */
 /* Torno paralelo de taller escolar (≈ 1000 mm entre puntas,           */
@@ -1129,6 +1130,7 @@ export function TornoModel(p: TornoParams) {
   const rpm = RPMS[p.rpmIdx] ?? 500
   // velocidad "de pantalla": proporcional a las rpm pero legible (2000 rpm → ≈ 4 vueltas por segundo)
   const w = p.on ? (rpm / 60) * 0.12 * Math.PI * 2 + 0.6 : 0
+  useKeepRendering(p.on)
   const angle = useRef(0)
   const omega = useRef(0)
   useFrame((_, dt) => {

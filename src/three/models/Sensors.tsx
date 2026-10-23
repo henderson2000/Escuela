@@ -4,6 +4,7 @@ import { useFrame } from '@react-three/fiber'
 import { Label } from '../Label'
 import { Part } from '../Part'
 import { Soic, Wire, darkPlastic, gearGeometry, latheGeometry, metal, pcbGeometries, tinned, useCanvasTexture } from '../helpers'
+import { useKeepRendering } from '../keepRendering'
 
 /* ------------------------------------------------------------------ */
 /* Sensor ultrasónico HC-SR04 (1 unidad = 10 mm)                       */
@@ -144,6 +145,7 @@ export function UltrasonicModel({ distanceCm, showWaves }: { distanceCm: number;
   )
 
   const wallZ = 1.6 + distanceCm / 30
+  useKeepRendering(showWaves)
   const out = useRef<THREE.Mesh>(null)
   const back = useRef<THREE.Mesh>(null)
   useFrame(({ clock }) => {

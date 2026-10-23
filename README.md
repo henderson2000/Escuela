@@ -54,11 +54,42 @@ Para revisar el curso después de cambiar lecciones: `npm run dev` y abrir `/ver
 | **Guía** | 49 ejercicios (rpm, conos, roscas, montajes, herramientas, seguridad) con corrección automática. |
 | **Juegos** | 🔍 *¿Qué parte es?* · *¿Cómo lo mecanizo?* · *Seguridad en el taller* · *Calculá rápido* (200 cada uno). |
 
+## Agregar un taller (por ejemplo, de 1ro o 2do)
+
+Cada taller es un paquete aparte que se descarga recién cuando alguien entra, así que sumar talleres no hace más
+lenta la plataforma.
+
+1. Crear `src/subjects/<taller>-<año>.tsx` copiando uno existente (por ejemplo `src/subjects/torno.tsx`): ahí van la
+   página de inicio del taller, su catálogo 3D, los temas de teoría, los juegos y sus páginas propias.
+2. En `src/subjects/index.ts`, agregar su menú en `SUBJECT_NAV` y su carga en `LOADERS`, con la clave `"<año>/<taller>"`
+   (por ejemplo `'1/electricidad': () => import('./electricidad-1')`).
+3. En `src/data/curriculum.ts`, poner `ready: true` y una descripción en esa rotación.
+
+Pautas para que siga andando fluido:
+- Las páginas pesadas (editores, simuladores) se cargan con `lazyNamed(...)` (ver `src/subjects/computacion.tsx`).
+- Los modelos 3D con una animación que sigue sola (algo que gira o parpadea) llaman a `useKeepRendering(activo)`
+  (`src/three/keepRendering.ts`); el resto del tiempo el visor no dibuja y no gasta la computadora.
+- Las imágenes van en `public/img/` y se usan como `img/archivo.jpg` (nunca desde otro sitio). Conviene JPG para fotos
+  y PNG sólo si hace falta transparencia, de menos de ~100 KB cada una.
+
+## Rendimiento
+
+- La primera carga baja unos 280 KB; cada taller, su 3D, el editor de código y el simulador se descargan aparte
+  cuando se usan (y empiezan a bajarse al pasar el mouse por la tarjeta del taller).
+- El visor 3D sólo dibuja cuando algo se mueve, baja la resolución mientras se gira y se detiene si no está en
+  pantalla. Libera solo la memoria de video de las piezas que ya no se usan.
+- Ninguna parte de la página depende de otros sitios (imágenes, letras e íconos son propios).
+
 ## Publicar la página (GitHub Pages, gratis)
 
 1. En GitHub, en este repositorio: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 2. Cada vez que se sube un cambio, la página se vuelve a publicar sola en `https://henderson2000.github.io/Escuela/`
    (también se puede lanzar a mano en **Actions → Publicar en GitHub Pages → Run workflow**).
+3. **Dominio propio**: en **Settings → Pages → Custom domain** se escribe el dominio (por ejemplo
+   `talleres.ejemplo.edu.ar`) y en el proveedor del dominio se agrega un registro `CNAME` que apunte a
+   `henderson2000.github.io`. No hay que cambiar nada del código: la página funciona en cualquier dirección o carpeta.
+   En Netlify o Cloudflare Pages también funciona tal cual (se publica la carpeta `dist/`; `public/_headers` ya trae
+   las reglas de caché).
 
 ## Uso en el aula
 
@@ -101,6 +132,7 @@ src/
   lib/          puntajes y lamparitas (guardados en la computadora), carga diferida, utilidades
   pages/        páginas comunes (inicio, años, componentes, teoría, actividades, juegos, progreso)
 public/sw.js    guarda la plataforma para usarla sin conexión
+public/img/     imágenes de las lecciones (se usan como img/archivo.jpg)
 ```
 
 Para agregar un componente nuevo: crear su modelo en `src/three/models/`, su ficha en `src/catalog/` y sumarlo a

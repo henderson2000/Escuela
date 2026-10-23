@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 import { Part } from '../Part'
 import { MalePin, darkPlastic, metal, useCanvasTexture } from '../helpers'
+import { useKeepRendering } from '../keepRendering'
 
 // Medidas reales del Arduino UNO R3: 68,6 × 53,3 mm (1 unidad = 10 mm)
 export const UNO_W = 6.86
@@ -374,6 +375,7 @@ export function ArduinoModel({ powered, blink }: ArduinoProps) {
     [],
   )
 
+  useKeepRendering(powered && blink, 4)
   const lRef = useRef<THREE.MeshStandardMaterial>(null)
   useFrame(({ clock }) => {
     if (!lRef.current) return

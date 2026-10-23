@@ -1,9 +1,12 @@
 import type { SubjectEntry } from '.'
 import { CompuHome } from '../compu/pages/CompuHome'
 import { COMPU_GAMES } from '../compu/games/registry'
-import { TrackPage } from '../compu/pages/TrackPage'
-import { LessonPage } from '../compu/pages/LessonPage'
-import { PlaygroundPage } from '../compu/pages/PlaygroundPage'
+import { lazyNamed } from '../lib/lazy'
+
+// el editor de código (CodeMirror) y el motor de JavaScript se descargan recién al abrir una lección
+const TrackPage = lazyNamed(() => import('../compu/pages/TrackPage'), 'TrackPage')
+const LessonPage = lazyNamed(() => import('../compu/pages/LessonPage'), 'LessonPage')
+const PlaygroundPage = lazyNamed(() => import('../compu/pages/PlaygroundPage'), 'PlaygroundPage')
 import { TRACKS, lessonActivityId, lessonsOf } from '../compu/course'
 
 const entry: Omit<SubjectEntry, 'nav'> = {

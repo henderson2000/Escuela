@@ -3,11 +3,14 @@ import { LOGO_CATALOG } from '../logo/catalog'
 import { LOGO_TOPICS } from '../logo/theory'
 import { LOGO_GAMES } from '../logo/games/registry'
 import { LogoHome } from '../logo/pages/LogoHome'
-import { SimulatorPage } from '../logo/pages/SimulatorPage'
-import { GuidePage } from '../logo/pages/GuidePage'
-import { ExercisePage } from '../logo/pages/ExercisePage'
 import { EXERCISES } from '../logo/exercises'
-import { exerciseActivityId } from '../logo/pages/GuidePage'
+import { lazyNamed } from '../lib/lazy'
+
+// el editor de bloques se descarga recién al abrir el simulador o un ejercicio
+const SimulatorPage = lazyNamed(() => import('../logo/pages/SimulatorPage'), 'SimulatorPage')
+const GuidePage = lazyNamed(() => import('../logo/pages/GuidePage'), 'GuidePage')
+const ExercisePage = lazyNamed(() => import('../logo/pages/ExercisePage'), 'ExercisePage')
+const exerciseActivityId = (id: string) => `logo-${id}`
 
 const entry: Omit<SubjectEntry, 'nav'> = {
   Home: LogoHome,

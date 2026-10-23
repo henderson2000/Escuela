@@ -174,7 +174,7 @@ export const WEB_CHALLENGES: WebLesson[] = [
             un <code>h2</code> que diga <b>Kit de soldadura</b>;
           </li>
           <li>
-            una imagen <code>img</code> con <code>src=&quot;kit.jpg&quot;</code> y un <code>alt</code> que describa la imagen (al menos 10
+            una imagen <code>img</code> con <code>src=&quot;img/kit.jpg&quot;</code> y un <code>alt</code> que describa la imagen (al menos 10
             letras);
           </li>
           <li>
@@ -193,12 +193,12 @@ export const WEB_CHALLENGES: WebLesson[] = [
     edit: ['html'],
     starter: { html: '<article>\n  <h2>Kit de soldadura</h2>\n\n</article>\n', css: '' },
     solution: {
-      html: '<article>\n  <h2>Kit de soldadura</h2>\n  <img src="kit.jpg" alt="Soldador con soporte y rollo de estaño">\n  <p>Precio: $15000</p>\n  <ul>\n    <li>Soldador de 40 W</li>\n    <li>Soporte con esponja</li>\n    <li>Rollo de estaño</li>\n    <li>Desoldador</li>\n  </ul>\n  <a href="https://cooperadora.example/kit" target="_blank">Comprar</a>\n</article>\n',
+      html: '<article>\n  <h2>Kit de soldadura</h2>\n  <img src="img/kit.jpg" alt="Soldador con soporte y rollo de estaño">\n  <p>Precio: $15000</p>\n  <ul>\n    <li>Soldador de 40 W</li>\n    <li>Soporte con esponja</li>\n    <li>Rollo de estaño</li>\n    <li>Desoldador</li>\n  </ul>\n  <a href="https://cooperadora.example/kit" target="_blank">Comprar</a>\n</article>\n',
       css: '',
     },
     tests: [
       { text: 'article con el h2 "Kit de soldadura"', test: (c) => txt(c.$('article h2')) === 'kit de soldadura' },
-      { text: 'img con src="kit.jpg" dentro del article', test: (c) => c.$('article img')?.getAttribute('src') === 'kit.jpg' },
+      { text: 'img con src="img/kit.jpg" dentro del article', test: (c) => c.$('article img')?.getAttribute('src') === 'img/kit.jpg' },
       { text: 'La imagen tiene un alt de al menos 10 letras', test: (c) => (c.$('article img')?.getAttribute('alt') ?? '').replace(/[^a-záéíóúñü]/gi, '').length >= 10 },
       { text: 'Un p con "$15000"', test: (c) => c.$$('article p').some((p) => (p.textContent ?? '').replace(/\s/g, '').includes('$15000')) },
       { text: 'ul con al menos 4 características', test: (c) => kids(c.$('article ul'), 'li').filter((l) => txt(l)).length >= 4 },

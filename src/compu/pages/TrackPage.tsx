@@ -2,8 +2,12 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import { useSub } from '../../lib/nav'
 import { useStore } from '../../lib/scores'
 import { getTrack, lessonActivityId, lessonsOf } from '../course'
+import { useEffect } from 'react'
+import { prefetchWhenIdle } from '../../lib/lazy'
 
 export function TrackPage() {
+  // mientras se elige la lección, se descarga de fondo el editor
+  useEffect(() => prefetchWhenIdle(() => import('./LessonPage')), [])
   const { track: tid } = useParams()
   const sub = useSub()
   const s = useStore()

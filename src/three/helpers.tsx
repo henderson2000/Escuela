@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import type { Vec3 } from './Part'
 
@@ -58,18 +58,21 @@ export function useCanvasTexture(
   draw: (ctx: CanvasRenderingContext2D, w: number, h: number) => void,
   deps: unknown[],
 ) {
-  return useMemo(() => {
+  const tex = useMemo(() => {
     const canvas = document.createElement('canvas')
     canvas.width = width
     canvas.height = height
     const ctx = canvas.getContext('2d')!
     draw(ctx, width, height)
-    const tex = new THREE.CanvasTexture(canvas)
-    tex.colorSpace = THREE.SRGBColorSpace
-    tex.anisotropy = 8
-    return tex
+    const t = new THREE.CanvasTexture(canvas)
+    t.colorSpace = THREE.SRGBColorSpace
+    t.anisotropy = 8
+    return t
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
+  // al cambiar (o al salir) se libera la imagen anterior de la memoria de video
+  useEffect(() => () => tex.dispose(), [tex])
+  return tex
 }
 
 export const metal = { color: '#cfd2d6', metalness: 0.95, roughness: 0.25 }

@@ -37,3 +37,11 @@ export function loadModule<T>(load: () => Promise<T>): Promise<T> {
 export function lazyNamed<M, K extends keyof M>(load: () => Promise<M>, name: K) {
   return lazy(() => loadModule(load).then((m) => ({ default: m[name] as unknown as ComponentType })))
 }
+
+/** Descarga algo de fondo cuando el navegador está libre (para que el próximo clic abra al instante). */
+export function prefetchWhenIdle(load: () => Promise<unknown>) {
+  const run = () => void load().catch(() => undefined)
+  const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }
+  if (w.requestIdleCallback) w.requestIdleCallback(run, { timeout: 4000 })
+  else window.setTimeout(run, 1500)
+}

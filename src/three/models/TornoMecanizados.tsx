@@ -39,6 +39,7 @@ import {
   boxesGeometry,
   revolve,
 } from './TornoAccesorios'
+import { useKeepRendering } from '../keepRendering'
 
 /* ------------------------------------------------------------------ */
 /* Mecanizados en el torno (animados).                                 */
@@ -734,6 +735,8 @@ interface StageProps {
 
 function Stage({ target, version, flechas, update, chip, arrows, spin, note, children }: StageProps) {
   const ctx = useMemo<StageCtx>(() => ({ prog: { current: target }, angle: { current: 0 }, subs: new Set(), tracks: new Map() }), [])
+  // la pieza gira siempre mientras se muestra la operación
+  useKeepRendering(true)
   const omega = useRef(0)
   const lastVersion = useRef<string | null>(null)
   const arrowsRef = useRef<THREE.Group>(null)

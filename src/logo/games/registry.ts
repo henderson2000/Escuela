@@ -1,6 +1,10 @@
 import type { GameDef } from '../../games/registry'
 import { LOGO_LEVELS } from '../levels'
-import { ProgramGame, PROGRAM_GAME } from './ProgramGame'
+import { lazyNamed } from '../../lib/lazy'
+
+// el juego usa el editor de bloques: se descarga recién al abrirlo
+const ProgramGame = lazyNamed(() => import('./ProgramGame'), 'ProgramGame')
+const PROGRAM_GAME = 'logo-programa'
 import { GatesGame } from './GatesGame'
 import { TimersGame } from './TimersGame'
 

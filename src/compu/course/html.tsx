@@ -628,7 +628,8 @@ export const HTML_TRACK: Track = {
               </p>
               <ul>
                 <li>
-                  <code>src</code>: la dirección de la imagen.
+                  <code>src</code>: la dirección de la imagen. Puede ser un archivo de tu sitio (como <code>img/rio.jpg</code>, la
+                  imagen <code>rio.jpg</code> dentro de la carpeta <code>img</code>) o una dirección completa de internet.
                 </li>
                 <li>
                   <code>alt</code>: una descripción. La leen los lectores de pantalla y se muestra si la imagen no carga. ¡Siempre
@@ -639,13 +640,13 @@ export const HTML_TRACK: Track = {
                 </li>
               </ul>
               <pre>
-                <code>{'<img src="https://picsum.photos/id/1018/400/250" alt="Montañas con nubes" width="200">'}</code>
+                <code>{'<img src="img/montanas.jpg" alt="Montañas con nubes" width="200">'}</code>
               </pre>
             </>
           ),
           task: (
             <p>
-              Agregá una imagen con <code>src=&quot;https://picsum.photos/id/1015/600/400&quot;</code>, un <code>alt</code> que describa la
+              Agregá una imagen con <code>src=&quot;img/rio.jpg&quot;</code>, un <code>alt</code> que describa la
               foto (es un río entre montañas) y <code>width=&quot;300&quot;</code>.
             </p>
           ),
@@ -657,12 +658,12 @@ export const HTML_TRACK: Track = {
           edit: ['html'],
           starter: { html: '<h2>Paseo por las sierras</h2>\n\n<p>El domingo fuimos al río.</p>\n', css: '' },
           solution: {
-            html: '<h2>Paseo por las sierras</h2>\n<img src="https://picsum.photos/id/1015/600/400" alt="Un río entre montañas" width="300">\n<p>El domingo fuimos al río.</p>\n',
+            html: '<h2>Paseo por las sierras</h2>\n<img src="img/rio.jpg" alt="Un río entre montañas" width="300">\n<p>El domingo fuimos al río.</p>\n',
             css: '',
           },
           tests: [
             { text: 'Hay una imagen <img>', test: (c) => !!c.$('img') },
-            { text: 'El src es https://picsum.photos/id/1015/600/400', test: (c) => c.$('img')?.getAttribute('src') === 'https://picsum.photos/id/1015/600/400' },
+            { text: 'El src es img/rio.jpg', test: (c) => c.$('img')?.getAttribute('src') === 'img/rio.jpg' },
             { text: 'Tiene un alt que describe la imagen (al menos 5 letras)', test: (c) => (c.$('img')?.getAttribute('alt') ?? '').trim().length >= 5 },
             { text: 'Tiene width="300"', test: (c) => c.$('img')?.getAttribute('width') === '300' },
           ],
@@ -685,20 +686,20 @@ export const HTML_TRACK: Track = {
           task: (
             <p>
               Meté la imagen dentro de un <code>figure</code>, agregale un <code>figcaption</code> que diga <b>Dique San Roque</b> y hacé
-              que la imagen sea un link a <code>https://picsum.photos/id/1036/1200/800</code> (la foto grande).
+              que la imagen sea un link a <code>img/lago-grande.jpg</code> (la foto grande).
             </p>
           ),
           hint: <p>El orden de adentro hacia afuera es: img dentro de a, y el a y el figcaption dentro de figure.</p>,
           edit: ['html'],
-          starter: { html: '<h2>Lugares de Córdoba</h2>\n<img src="https://picsum.photos/id/1036/300/200" alt="Un lago con montañas">\n', css: '' },
+          starter: { html: '<h2>Lugares de Córdoba</h2>\n<img src="img/lago.jpg" alt="Un lago con montañas">\n', css: '' },
           solution: {
-            html: '<h2>Lugares de Córdoba</h2>\n<figure>\n  <a href="https://picsum.photos/id/1036/1200/800">\n    <img src="https://picsum.photos/id/1036/300/200" alt="Un lago con montañas">\n  </a>\n  <figcaption>Dique San Roque</figcaption>\n</figure>\n',
+            html: '<h2>Lugares de Córdoba</h2>\n<figure>\n  <a href="img/lago-grande.jpg">\n    <img src="img/lago.jpg" alt="Un lago con montañas">\n  </a>\n  <figcaption>Dique San Roque</figcaption>\n</figure>\n',
             css: '',
           },
           tests: [
             { text: 'La imagen está dentro de un <figure>', test: (c) => !!c.$('figure img') },
             { text: 'Hay un <figcaption> que dice "Dique San Roque"', test: (c) => txt(c.$('figure figcaption')) === 'dique san roque' },
-            { text: 'La imagen está dentro de un link a la foto grande', test: (c) => c.$('a img')?.closest('a')?.getAttribute('href') === 'https://picsum.photos/id/1036/1200/800' },
+            { text: 'La imagen está dentro de un link a la foto grande', test: (c) => c.$('a img')?.closest('a')?.getAttribute('href') === 'img/lago-grande.jpg' },
             { text: 'La imagen conserva su alt', test: (c) => (c.$('img')?.getAttribute('alt') ?? '').length > 0 },
           ],
         },
@@ -713,8 +714,7 @@ export const HTML_TRACK: Track = {
                 estadio…). Usá imágenes, links y listas.
               </p>
               <p>
-                Imágenes que podés usar: <code>https://picsum.photos/id/1011/400/250</code>, <code>…/id/1043/400/250</code>,{' '}
-                <code>…/id/1050/400/250</code>.
+                Imágenes que podés usar: <code>img/parque.jpg</code>, <code>img/sierras.jpg</code> y <code>img/quebrada.jpg</code>.
               </p>
             </>
           ),
@@ -740,7 +740,7 @@ export const HTML_TRACK: Track = {
           edit: ['html'],
           starter: { html: '<h1>Mi lugar favorito</h1>\n\n', css: '' },
           solution: {
-            html: '<h1>Parque Sarmiento</h1>\n<p>Es el parque más grande de la ciudad.</p>\n<figure>\n  <img src="https://picsum.photos/id/1043/400/250" alt="Árboles de un parque">\n  <figcaption>El lago del parque</figcaption>\n</figure>\n<h2>Qué se puede hacer</h2>\n<ul>\n  <li>Andar en bici</li>\n  <li>Tomar mate</li>\n  <li>Ir al zoológico</li>\n</ul>\n<p>Más información en <a href="https://es.wikipedia.org/wiki/Parque_Sarmiento_(C%C3%B3rdoba)" target="_blank">Wikipedia</a>.</p>\n',
+            html: '<h1>Parque Sarmiento</h1>\n<p>Es el parque más grande de la ciudad.</p>\n<figure>\n  <img src="img/parque.jpg" alt="Árboles de un parque">\n  <figcaption>El lago del parque</figcaption>\n</figure>\n<h2>Qué se puede hacer</h2>\n<ul>\n  <li>Andar en bici</li>\n  <li>Tomar mate</li>\n  <li>Ir al zoológico</li>\n</ul>\n<p>Más información en <a href="https://es.wikipedia.org/wiki/Parque_Sarmiento_(C%C3%B3rdoba)" target="_blank">Wikipedia</a>.</p>\n',
             css: '',
           },
           tests: [
@@ -1364,7 +1364,7 @@ export const HTML_TRACK: Track = {
             css: '',
           },
           solution: {
-            html: '<!DOCTYPE html>\n<html lang="es">\n  <head>\n    <meta charset="utf-8">\n    <title>3ro B</title>\n  </head>\n  <body>\n    <header>\n      <h1>3ro B · ITS Villada</h1>\n      <nav>\n        <a href="#horario">Horario</a>\n        <a href="#proyectos">Proyectos</a>\n        <a href="#contacto">Contacto</a>\n      </nav>\n    </header>\n    <main>\n      <section id="horario">\n        <h2>Horario</h2>\n        <ul>\n          <li>Lunes: Taller</li>\n          <li>Martes: Matemática</li>\n        </ul>\n      </section>\n      <section id="proyectos">\n        <h2>Proyectos</h2>\n        <img src="https://picsum.photos/id/0/300/200" alt="Una notebook sobre la mesa">\n        <p>Este año hicimos una estación meteorológica.</p>\n      </section>\n    </main>\n    <footer id="contacto">\n      <p>3ro B · Córdoba · 2026</p>\n    </footer>\n  </body>\n</html>\n',
+            html: '<!DOCTYPE html>\n<html lang="es">\n  <head>\n    <meta charset="utf-8">\n    <title>3ro B</title>\n  </head>\n  <body>\n    <header>\n      <h1>3ro B · ITS Villada</h1>\n      <nav>\n        <a href="#horario">Horario</a>\n        <a href="#proyectos">Proyectos</a>\n        <a href="#contacto">Contacto</a>\n      </nav>\n    </header>\n    <main>\n      <section id="horario">\n        <h2>Horario</h2>\n        <ul>\n          <li>Lunes: Taller</li>\n          <li>Martes: Matemática</li>\n        </ul>\n      </section>\n      <section id="proyectos">\n        <h2>Proyectos</h2>\n        <img src="img/notebook.jpg" alt="Una notebook sobre la mesa">\n        <p>Este año hicimos una estación meteorológica.</p>\n      </section>\n    </main>\n    <footer id="contacto">\n      <p>3ro B · Córdoba · 2026</p>\n    </footer>\n  </body>\n</html>\n',
             css: '',
           },
           tests: [

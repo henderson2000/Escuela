@@ -1788,7 +1788,7 @@ export const JS_TRACK: Track = {
           intro: (
             <>
               <p>Desde JavaScript también se cambian los <b>atributos</b> de los elementos:</p>
-              <Ej c={'imagen.src = "escudo.png";      // otra imagen\nimagen.alt = "Escudo del club";\nboton.disabled = true;          // botón desactivado (no se puede tocar)\nparrafo.hidden = false;         // mostrar algo que estaba oculto\ncasilla.checked                 // true si la casilla está tildada'} />
+              <Ej c={'imagen.src = "img/escudo.png";      // otra imagen\nimagen.alt = "Escudo del club";\nboton.disabled = true;          // botón desactivado (no se puede tocar)\nparrafo.hidden = false;         // mostrar algo que estaba oculto\ncasilla.checked                 // true si la casilla está tildada'} />
               <p>
                 El evento <code>"change"</code> avisa cuando tildan o destildan una casilla.
               </p>
@@ -1802,8 +1802,8 @@ export const JS_TRACK: Track = {
             <>
               <ul>
                 <li>
-                  Al tocar <code>#voley</code>, la imagen <code>#foto</code> pasa a <code>src="pelota-voley.png"</code>; al tocar{' '}
-                  <code>#futbol</code>, vuelve a <code>src="pelota-futbol.png"</code>.
+                  Al tocar <code>#voley</code>, la imagen <code>#foto</code> pasa a <code>src="img/pelota-voley.png"</code>; al tocar{' '}
+                  <code>#futbol</code>, vuelve a <code>src="img/pelota-futbol.png"</code>.
                 </li>
                 <li>
                   El botón <code>#enviar</code> empieza desactivado y se activa solo cuando la casilla <code>#acepto</code> está
@@ -1818,18 +1818,18 @@ export const JS_TRACK: Track = {
           hint: <p>En el change de la casilla: enviar.disabled = !acepto.checked; Y en el click de enviar: gracias.hidden = false;</p>,
           edit: ['js'],
           starter: {
-            html: '<h1>Inscripción al torneo</h1>\n<img id="foto" src="pelota-futbol.png" alt="Deporte elegido">\n<p>\n  <button id="futbol">Fútbol</button>\n  <button id="voley">Vóley</button>\n</p>\n<label><input type="checkbox" id="acepto"> Acepto el reglamento</label>\n<button id="enviar" disabled>Inscribirme</button>\n<p id="gracias" hidden>¡Listo, ya estás inscripto/a!</p>\n',
+            html: '<h1>Inscripción al torneo</h1>\n<img id="foto" src="img/pelota-futbol.png" alt="Deporte elegido">\n<p>\n  <button id="futbol">Fútbol</button>\n  <button id="voley">Vóley</button>\n</p>\n<label><input type="checkbox" id="acepto"> Acepto el reglamento</label>\n<button id="enviar" disabled>Inscribirme</button>\n<p id="gracias" hidden>¡Listo, ya estás inscripto/a!</p>\n',
             js: 'const foto = document.getElementById("foto");\nconst acepto = document.getElementById("acepto");\nconst enviar = document.getElementById("enviar");\nconst gracias = document.getElementById("gracias");\n\n',
           },
           solution: {
-            html: '<h1>Inscripción al torneo</h1>\n<img id="foto" src="pelota-futbol.png" alt="Deporte elegido">\n<p>\n  <button id="futbol">Fútbol</button>\n  <button id="voley">Vóley</button>\n</p>\n<label><input type="checkbox" id="acepto"> Acepto el reglamento</label>\n<button id="enviar" disabled>Inscribirme</button>\n<p id="gracias" hidden>¡Listo, ya estás inscripto/a!</p>\n',
-            js: 'const foto = document.getElementById("foto");\nconst acepto = document.getElementById("acepto");\nconst enviar = document.getElementById("enviar");\nconst gracias = document.getElementById("gracias");\n\ndocument.getElementById("voley").addEventListener("click", function () {\n  foto.src = "pelota-voley.png";\n});\ndocument.getElementById("futbol").addEventListener("click", function () {\n  foto.src = "pelota-futbol.png";\n});\n\nacepto.addEventListener("change", function () {\n  enviar.disabled = !acepto.checked;\n});\n\nenviar.addEventListener("click", function () {\n  gracias.hidden = false;\n});\n',
+            html: '<h1>Inscripción al torneo</h1>\n<img id="foto" src="img/pelota-futbol.png" alt="Deporte elegido">\n<p>\n  <button id="futbol">Fútbol</button>\n  <button id="voley">Vóley</button>\n</p>\n<label><input type="checkbox" id="acepto"> Acepto el reglamento</label>\n<button id="enviar" disabled>Inscribirme</button>\n<p id="gracias" hidden>¡Listo, ya estás inscripto/a!</p>\n',
+            js: 'const foto = document.getElementById("foto");\nconst acepto = document.getElementById("acepto");\nconst enviar = document.getElementById("enviar");\nconst gracias = document.getElementById("gracias");\n\ndocument.getElementById("voley").addEventListener("click", function () {\n  foto.src = "img/pelota-voley.png";\n});\ndocument.getElementById("futbol").addEventListener("click", function () {\n  foto.src = "img/pelota-futbol.png";\n});\n\nacepto.addEventListener("change", function () {\n  enviar.disabled = !acepto.checked;\n});\n\nenviar.addEventListener("click", function () {\n  gracias.hidden = false;\n});\n',
           },
           tests: [
-            { text: 'Al tocar Vóley, la imagen es pelota-voley.png', test: (c) => c.click('#voley') && c.$('#foto')?.getAttribute('src') === 'pelota-voley.png' },
+            { text: 'Al tocar Vóley, la imagen es img/pelota-voley.png', test: (c) => c.click('#voley') && c.$('#foto')?.getAttribute('src') === 'img/pelota-voley.png' },
             {
-              text: 'Al tocar Vóley y después Fútbol, vuelve a pelota-futbol.png',
-              test: (c) => c.click('#voley') && c.click('#futbol') && c.$('#foto')?.getAttribute('src') === 'pelota-futbol.png',
+              text: 'Al tocar Vóley y después Fútbol, vuelve a img/pelota-futbol.png',
+              test: (c) => c.click('#voley') && c.click('#futbol') && c.$('#foto')?.getAttribute('src') === 'img/pelota-futbol.png',
             },
             { text: 'Al tildar la casilla, #enviar se activa', test: (c) => c.click('#acepto') && !(c.$('#enviar') as HTMLButtonElement).disabled },
             { text: 'Al destildarla, #enviar se desactiva otra vez', test: (c) => c.click('#acepto') && c.click('#acepto') && (c.$('#enviar') as HTMLButtonElement).disabled },

@@ -3,7 +3,9 @@ import { TornoHome } from '../torno/pages/TornoHome'
 import { TORNO_CATALOG } from '../torno/catalog'
 import { TORNO_TOPICS } from '../torno/theory'
 import { TORNO_GAMES } from '../torno/games/registry'
-import { TornoGuidePage } from '../torno/pages/TornoGuidePage'
+import { lazyNamed } from '../lib/lazy'
+
+const TornoGuidePage = lazyNamed(() => import('../torno/pages/TornoGuidePage'), 'TornoGuidePage')
 import { PartsGame } from '../games/PartsGame'
 import { TORNO_GUIDE } from '../torno/guide'
 

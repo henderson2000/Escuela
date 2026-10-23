@@ -6,6 +6,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { ConvexGeometry } from 'three/examples/jsm/geometries/ConvexGeometry.js'
 import { Part, type Vec3 } from '../Part'
 import { gearGeometry, useCanvasTexture } from '../helpers'
+import { useKeepRendering } from '../keepRendering'
 
 /* ------------------------------------------------------------------ */
 /* Accesorios y herramientas del torno paralelo.                       */
@@ -277,6 +278,7 @@ export function Smooth({ p = [0, 0, 0], r = [0, 0, 0], rate = 6, children }: { p
 
 /** Grupo que gira alrededor de x a "speed" rad/s (con arranque y frenado suaves). */
 export function Spin({ speed, children }: { speed: number; children: ReactNode }) {
+  useKeepRendering(speed !== 0)
   const ref = useRef<THREE.Group>(null)
   const w = useRef(0)
   useFrame((_, dt) => {

@@ -5,6 +5,7 @@ import { Label } from '../Label'
 import { Part, useParts } from '../Part'
 import { Wire, gearGeometry, latheGeometry, metal, tinned, useCanvasTexture } from '../helpers'
 import { filletPolyline, stripGeometry } from './Sensors'
+import { useKeepRendering } from '../keepRendering'
 
 /* ------------------------------------------------------------------ */
 /* Motor de corriente continua tamaño "130" (3–6 V), 1 unidad = 10 mm   */
@@ -153,6 +154,7 @@ export function MotorModel({ rpm, dir, voltage }: { rpm: number; dir: 1 | -1; vo
   const rotor = useRef<THREE.Group>(null)
   const comm = useRef<THREE.Group>(null)
   const shaft = useRef<THREE.Group>(null)
+  useKeepRendering(rpm !== 0)
   const ang = useRef(0)
   const speed = useRef(0)
   useFrame((_, dt) => {

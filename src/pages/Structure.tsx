@@ -16,6 +16,10 @@ const ActivitiesPage = lazyNamed(() => import('./ActivitiesPage'), 'ActivitiesPa
 const GamesPage = lazyNamed(() => import('./GamesPage'), 'GamesPage')
 const GameRoute = lazyNamed(() => import('./GameRoute'), 'GameRoute')
 
+function prefetchSubject(anio: string, materia: string) {
+  if (hasSubjectContent(anio, materia)) loadSubject(subjectKey(anio, materia)).catch(() => undefined)
+}
+
 /** Cartel mientras se descarga una parte de la página. */
 export function PageLoading() {
   return (
@@ -98,7 +102,15 @@ export function YearPage() {
             </>
           )
           return s ? (
-            <Link key={r.n} to={`/${year.id}/${s.id}`} className={`rotation-card ${r.ready ? '' : 'soon'}`}>
+            <Link
+              key={r.n}
+              to={`/${year.id}/${s.id}`}
+              className={`rotation-card ${r.ready ? '' : 'soon'}`}
+              // el taller empieza a descargarse apenas se apunta a la tarjeta
+              onPointerEnter={() => prefetchSubject(year.id, s.id)}
+              onFocus={() => prefetchSubject(year.id, s.id)}
+              onTouchStart={() => prefetchSubject(year.id, s.id)}
+            >
               {content}
             </Link>
           ) : (
