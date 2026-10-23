@@ -495,48 +495,11 @@
 .ex-card {
   position: relative;
 }
-.ex-n {
-  display: inline-grid;
-  place-items: center;
-  min-width: 34px;
-  height: 34px;
-  padding: 0 6px;
-  border-radius: 10px;
-  background: #1e3a5f;
-  color: #cfe8ff;
-  font-weight: 800;
-}
-.ex-n.big {
-  min-width: 44px;
-  height: 44px;
-  font-size: 1.3rem;
-  vertical-align: middle;
-}
 .ex-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-top: auto;
-}
-.tag {
-  display: inline-block;
-  font-style: normal;
-  font-size: 0.72rem;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  color: var(--muted);
-  white-space: nowrap;
-}
-.tag.auto {
-  color: var(--accent);
-  border-color: #1f5f80;
-}
-.tag.ok {
-  color: var(--ok);
-  border-color: #1f6b45;
-  font-size: 0.8rem;
-  vertical-align: middle;
 }
 
 .ex-head {
@@ -614,9 +577,6 @@
 }
 .check-result.bad strong {
   color: var(--bad);
-}
-.ex-nav {
-  margin-top: 18px;
 }
 .truth-fill {
   margin-top: 14px;

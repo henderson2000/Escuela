@@ -1,14 +1,7 @@
 // Guía de ejercicios de Torno (3er año, Electromecánica).
 // Basada en el apunte «Principios de torneado» (Prof. Jorge O. Oliva). Los valores de Vc son orientativos (complemento).
 
-import type { Activity } from '../catalog/types'
-
-export interface GuideSection {
-  id: string
-  title: string
-  intro: string
-  activities: Activity[]
-}
+import type { GuideSection } from '../lib/subject'
 
 export const TORNO_GUIDE: GuideSection[] = [
   {

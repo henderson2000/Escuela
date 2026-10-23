@@ -1,0 +1,115 @@
+.a1-surface,
+.a1-size,
+.a1-teeth,
+.a1-posture,
+.a1-dir {
+  width: 100%;
+  max-width: 460px;
+  display: block;
+  margin: 10px auto;
+  border-radius: 10px;
+  background: #0c1220;
+  border: 1px solid var(--line);
+}
+.a1-surface .surf {
+  fill: #9aa3ad;
+  stroke: #e2e8f0;
+  stroke-width: 1;
+}
+.a1-surface .surf.pulido {
+  fill: #cbd5e1;
+}
+.a1-size .piece {
+  fill: #64748b;
+}
+.a1-size .file {
+  fill: #36c2ff;
+}
+.a1-size .file.bad {
+  fill: #f87171;
+}
+.a1-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+}
+.a1-sec {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #111827;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.a1-sec svg {
+  width: 70px;
+  height: 56px;
+}
+.a1-sec polygon {
+  fill: #94a3b8;
+}
+.a1-sec.on {
+  border-color: var(--accent);
+}
+.a1-sec.on polygon {
+  fill: #f97316;
+}
+.a1-teeth .bg {
+  fill: #9097a1;
+}
+.a1-teeth .t1 {
+  stroke: #3d424a;
+  stroke-width: 2;
+}
+.a1-teeth .t2 {
+  stroke: #555b64;
+  stroke-width: 1.6;
+}
+.a1-teeth .t3 {
+  stroke: #3d424a;
+  stroke-width: 3;
+}
+.a1-teeth .t4 {
+  fill: #3d424a;
+}
+.a1-posture .bench {
+  fill: #7c5a3a;
+}
+.a1-posture .vise {
+  fill: #2f5f8a;
+}
+.a1-posture .foot {
+  fill: #475569;
+}
+.a1-posture .foot.front {
+  fill: #36c2ff;
+}
+.a1-posture .dash {
+  stroke: #64748b;
+  stroke-dasharray: 4 4;
+}
+.a1-posture .lbl {
+  fill: var(--muted);
+  font-size: 11px;
+  text-anchor: middle;
+}
+.a1-dir .face {
+  fill: #b9bec6;
+}
+.a1-dir .s1 {
+  stroke: #6b7280;
+  stroke-width: 1;
+}
+.a1-dir .s2 {
+  stroke: #374151;
+  stroke-width: 1;
+}
+.a1-dir .file {
+  fill: #36c2ff;
+  opacity: 0.85;
+}

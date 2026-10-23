@@ -10,6 +10,25 @@ export const MAX_POINTS: Record<string, number> = {
   plano: 100,
   partes: 200,
   colores: 1500,
+  // 1er año · Electricidad
+  'e1-partes': 200,
+  'e1-cables': 200,
+  'e1-materiales': 200,
+  'e1-calculos': 200,
+  // 1er año · Computación
+  'c1-partes': 200,
+  'c1-binario': 200,
+  'c1-hardware': 200,
+  'c1-pensar': 200,
+  // 1er año · Ajuste
+  'a1-partes': 200,
+  'a1-lima': 200,
+  'a1-ciclo': 200,
+  'a1-tecnica': 200,
+  'h1-partes': 200,
+  'h1-herramientas': 200,
+  'h1-ciclo': 200,
+  'h1-planos': 200,
   // Electricidad (LOGO!)
   'logo-programa': 100,
   'logo-compuertas': 200,

@@ -2189,3 +2189,76 @@ table.lt-ref svg {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* dibujo grande de una pregunta de juego (un emoji o un ícono) */
+.quiz-emoji {
+  display: block;
+  text-align: center;
+  font-size: 2.8rem;
+  line-height: 1.15;
+  padding: 4px 0;
+}
+
+/* número de ejercicio, etiquetas y navegación entre ejercicios (comunes a los talleres) */
+.ex-n {
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: #1e3a5f;
+  color: #cfe8ff;
+  font-weight: 800;
+}
+.ex-n.big {
+  min-width: 44px;
+  height: 44px;
+  font-size: 1.3rem;
+  vertical-align: middle;
+}
+.tag {
+  display: inline-block;
+  font-style: normal;
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.tag.auto {
+  color: var(--accent);
+  border-color: #1f5f80;
+}
+.tag.ok {
+  color: var(--ok);
+  border-color: #1f6b45;
+  font-size: 0.8rem;
+  vertical-align: middle;
+}
+.ex-nav {
+  margin-top: 18px;
+}
+
+/* cotas y números de cara en los modelos 3D */
+.dim-tag {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: #1f1a05;
+  border: 1px solid #facc15;
+  color: #fde68a;
+  font: 700 12px/1.3 ui-monospace, monospace;
+  white-space: nowrap;
+}
+.face-tag {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: #fff;
+  color: #111;
+  font: 800 13px/1 system-ui;
+  box-shadow: 0 1px 4px #0008;
+}

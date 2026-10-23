@@ -38,7 +38,17 @@ export const SUBJECTS: Record<string, Subject> = {
 const rot = (...subjects: string[]): Rotation[] => subjects.map((subject, i) => ({ n: i + 1, subject }))
 
 export const YEARS: Year[] = [
-  { id: '1', short: '1ro', name: '1er año', rotations: rot('electricidad', 'computacion', 'hojalateria', 'ajuste') },
+  {
+    id: '1',
+    short: '1ro',
+    name: '1er año',
+    rotations: [
+      { n: 1, subject: 'electricidad', ready: true, desc: 'Instalaciones eléctricas básicas: átomo, materiales, cables, ley de Ohm y circuitos en 3D.' },
+      { n: 2, subject: 'computacion', ready: true, desc: 'La computadora por dentro, sistema binario, redes y programación con bloques.' },
+      { n: 3, subject: 'hojalateria', ready: true, desc: 'Chapas, herramientas y los proyectos del taller (caja, tapa y budinera) plegándose en 3D.' },
+      { n: 4, subject: 'ajuste', ready: true, desc: 'Limado: la lima y sus tipos, la técnica correcta y el martillo de peña paso a paso.' },
+    ],
+  },
   { id: '2', short: '2do', name: '2do año', rotations: rot('electronica', 'computacion', 'electricidad', 'soldadura') },
   {
     id: '3',

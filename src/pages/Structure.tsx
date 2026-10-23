@@ -15,6 +15,7 @@ const TopicPage = lazyNamed(() => import('./TheoryPage'), 'TopicPage')
 const ActivitiesPage = lazyNamed(() => import('./ActivitiesPage'), 'ActivitiesPage')
 const GamesPage = lazyNamed(() => import('./GamesPage'), 'GamesPage')
 const GameRoute = lazyNamed(() => import('./GameRoute'), 'GameRoute')
+const GuidePage = lazyNamed(() => import('./GuidePage'), 'GuidePage')
 
 function prefetchSubject(anio: string, materia: string) {
   if (hasSubjectContent(anio, materia)) loadSubject(subjectKey(anio, materia)).catch(() => undefined)
@@ -185,6 +186,7 @@ function SubjectRoutes({ subjectKey: key, base }: { subjectKey: string; base: st
                 <Route path="actividades" element={<ActivitiesPage />} />
               </>
             )}
+            {content.guide && content.guide.length > 0 && <Route path="ejercicios" element={<GuidePage />} />}
             <Route path="juegos" element={<GamesPage />} />
             <Route path="juegos/:id" element={<GameRoute />} />
             {content.routes?.map(({ path, Page }) => <Route key={path} path={path} element={<Page />} />)}

@@ -11,8 +11,19 @@ Al entrar se elige el año (**1ro, 2do o 3ro**). Cada año tiene **4 rotaciones*
 - **2do:** Electrónica, Computación, Electricidad y Soldadura.
 - **3ro:** Electrónica (con todo el contenido), Computación, Electricidad y Torno.
 
-Por ahora tienen contenido los cuatro talleres de 3ro (**Electrónica**, **Computación**, **Electricidad (LOGO!)** y **Torno**); el resto muestra "Próximamente". El contenido de cada taller se registra en [`src/subjects/`](src/subjects) (un archivo por taller, que se descarga recién cuando se entra). Los años y talleres se configuran en
+Por ahora tienen contenido los cuatro talleres de 1ro (**Electricidad**, **Computación**, **Hojalatería** y **Ajuste**) y los cuatro de 3ro (**Electrónica**, **Computación**, **Electricidad (LOGO!)** y **Torno**); el resto muestra "Próximamente". El contenido de cada taller se registra en [`src/subjects/`](src/subjects) (un archivo por taller, que se descarga recién cuando se entra). Los años y talleres se configuran en
 [`src/data/curriculum.ts`](src/data/curriculum.ts).
+
+## Qué incluye (1er año)
+
+| Taller | Contenido |
+| --- | --- |
+| **Electricidad** | 3D: átomo (protones, neutrones y electrones por capas), cables (conductor, aislante, colores) y un circuito con pila, lámparas y llave (serie/paralelo, con la corriente animada). Teoría: 8 temas (materia y átomo, conductores y aislantes, colores de cables, magnitudes, Ley de Ohm, CC/CA, serie y paralelo) con simuladores. Guía de 35 ejercicios y 4 juegos. |
+| **Computación** | 3D: la computadora por dentro, disco rígido / SSD y periféricos. Teoría: 7 temas (qué es una computadora, hardware y software, binario, internet, algoritmos, pensamiento computacional). **Bloques**: 12 niveles propios con Blockly (un robot que junta tornillos y limpia aceite; secuencias, repetir, condicionales y procedimientos) que se corrigen solos. 4 juegos. |
+| **Hojalatería** | 3D: la caja cartuchera, su tapa y la budinera plegándose operación por operación con las medidas de los planos, herramientas, plegadora y engrafado. Teoría: 7 temas (chapas y calibre, hojalata y galvanizado, trazado con el desarrollo interactivo de cada plano, corte, golpe, plegado y uniones, soldadura por punto). Guía de planos y ciclos y 4 juegos. |
+| **Ajuste** | 3D: la lima (formas, picados y grados), el martillo de peña etapa por etapa con las cotas del plano, instrumentos de medición y trazado y la morsa. Teoría: 8 temas de limado. Guía con el trabajo práctico, el plano y el ciclo de fabricación, y 4 juegos. |
+
+Los niveles de Bloques usan [Blockly](https://developers.google.com/blockly) (incluido en la página; sus imágenes y sonidos están en `public/blockly/`).
 
 ## Qué incluye (taller de Electrónica, 3er año)
 
@@ -54,7 +65,7 @@ Para revisar el curso después de cambiar lecciones: `npm run dev` y abrir `/ver
 | **Guía** | 49 ejercicios (rpm, conos, roscas, montajes, herramientas, seguridad) con corrección automática. |
 | **Juegos** | 🔍 *¿Qué parte es?* · *¿Cómo lo mecanizo?* · *Seguridad en el taller* · *Calculá rápido* (200 cada uno). |
 
-## Agregar un taller (por ejemplo, de 1ro o 2do)
+## Agregar un taller (por ejemplo, de 2do)
 
 Cada taller es un paquete aparte que se descarga recién cuando alguien entra, así que sumar talleres no hace más
 lenta la plataforma.
@@ -129,9 +140,11 @@ src/
   logo/         taller de Electricidad (LOGO!): simulador, guía, teoría, juegos y modelos
   compu/        taller de Computación: curso HTML + JavaScript, editor, ejecución de código y juegos
   torno/        taller de Torno: catálogo 3D, teoría, guía y juegos
+  primero/      talleres de 1er año (electricidad, computacion con sus bloques, hojalateria, ajuste)
   lib/          puntajes y lamparitas (guardados en la computadora), carga diferida, utilidades
   pages/        páginas comunes (inicio, años, componentes, teoría, actividades, juegos, progreso)
 public/sw.js    guarda la plataforma para usarla sin conexión
+public/blockly/ imágenes y sonidos del editor de bloques
 public/img/     imágenes de las lecciones (se usan como img/archivo.jpg)
 ```
 

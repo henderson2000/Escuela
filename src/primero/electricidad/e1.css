@@ -1,0 +1,153 @@
+.e1-atom-svg {
+  width: 100%;
+  max-width: 260px;
+  display: block;
+  margin: 8px auto;
+}
+.e1-atom-svg .orbit {
+  fill: none;
+  stroke: #475569;
+  stroke-width: 1.2;
+}
+.e1-atom-svg .orbit.val {
+  stroke: #facc15;
+  stroke-dasharray: 3 3;
+}
+.e1-atom-svg .el {
+  fill: #3b82f6;
+}
+.e1-atom-svg .el.val {
+  fill: #facc15;
+}
+.e1-atom-svg .nuc {
+  fill: #e5484d;
+}
+.e1-atom-svg .nuc-t {
+  fill: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+.e1-atom-svg .shell-name {
+  fill: var(--muted);
+  font-size: 10px;
+}
+.e1-shell-table {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.e1-shell-table span {
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.e1-shell-table span.val {
+  border-color: #facc15;
+  color: #fde68a;
+}
+.e1-sorter {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0;
+}
+.e1-sort-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+.e1-sort-row.ok {
+  border-color: var(--ok);
+}
+.e1-sort-row.bad {
+  border-color: var(--bad, #ef4444);
+}
+.e1-cables {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.e1-cable-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.e1-wire {
+  width: 90px;
+  height: 14px;
+  border-radius: 7px;
+  border: 1px solid #0006;
+  flex: none;
+}
+.e1-wire.vy {
+  background: repeating-linear-gradient(115deg, #2f9e44 0 12px, #f5d000 12px 22px);
+}
+.e1-field,
+.e1-wave {
+  width: 100%;
+  max-width: 460px;
+  display: block;
+  margin: 8px auto;
+  background: #0c1220;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+.e1-field .fl {
+  stroke: #64748b;
+  stroke-width: 1.2;
+}
+.e1-field .fl-head {
+  fill: #94a3b8;
+}
+.e1-field .q-pos {
+  fill: #e5484d;
+}
+.e1-field .q-neg {
+  fill: #3b82f6;
+}
+.e1-field .q-t {
+  fill: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+.e1-field .force {
+  stroke: #facc15;
+  stroke-width: 3;
+}
+.e1-wave .axis {
+  stroke: #475569;
+}
+.e1-wave .lbl {
+  fill: var(--muted);
+  font-size: 12px;
+}
+.e1-wave .wave {
+  fill: none;
+  stroke-width: 3;
+}
+.e1-wave .wave.ca {
+  stroke: #36c2ff;
+}
+.e1-wave .wave.cc {
+  stroke: #d62828;
+}
+.e1-wire.big {
+  display: block;
+  width: 220px;
+  height: 30px;
+  border-radius: 15px;
+  margin: 8px auto;
+  box-shadow: inset 0 -6px 10px #0005, inset 0 4px 6px #fff3;
+}
+.e1-field .force-head {
+  fill: #facc15;
+}

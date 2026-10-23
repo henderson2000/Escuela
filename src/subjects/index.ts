@@ -46,7 +46,44 @@ export const SUBJECT_NAV: Record<string, NavItem[]> = {
   ],
 }
 
+// 1er año
+SUBJECT_NAV['1/electricidad'] = [
+  { to: '', label: 'Inicio del taller', end: true },
+  { to: '/componentes', label: 'En 3D' },
+  { to: '/teoria', label: 'Teoría' },
+  { to: '/ejercicios', label: 'Guía' },
+  { to: '/juegos', label: 'Juegos' },
+]
+
+SUBJECT_NAV['1/computacion'] = [
+  { to: '', label: 'Inicio del taller', end: true },
+  { to: '/componentes', label: 'En 3D' },
+  { to: '/teoria', label: 'Teoría' },
+  { to: '/bloques', label: 'Bloques' },
+  { to: '/juegos', label: 'Juegos' },
+]
+
+SUBJECT_NAV['1/ajuste'] = [
+  { to: '', label: 'Inicio del taller', end: true },
+  { to: '/componentes', label: 'En 3D' },
+  { to: '/teoria', label: 'Teoría' },
+  { to: '/ejercicios', label: 'Guía' },
+  { to: '/juegos', label: 'Juegos' },
+]
+
+SUBJECT_NAV['1/hojalateria'] = [
+  { to: '', label: 'Inicio del taller', end: true },
+  { to: '/componentes', label: 'En 3D' },
+  { to: '/teoria', label: 'Teoría' },
+  { to: '/ejercicios', label: 'Guía' },
+  { to: '/juegos', label: 'Juegos' },
+]
+
 const LOADERS: Record<string, () => Promise<{ default: Omit<SubjectEntry, 'nav'> }>> = {
+  '1/electricidad': () => import('./electricidad-1'),
+  '1/computacion': () => import('./computacion-1'),
+  '1/ajuste': () => import('./ajuste-1'),
+  '1/hojalateria': () => import('./hojalateria-1'),
   '3/electronica': () => import('./electronica'),
   '3/electricidad': () => import('./electricidad'),
   '3/computacion': () => import('./computacion'),

@@ -45,6 +45,9 @@ function SubjectProgress({ k, entry, s }: { k: string; entry: SubjectEntry; s: S
         <small className="muted">{getYear(anio)?.name}</small>
       </h2>
       {entry.progress?.map((g) => <Bar key={g.label} label={g.label} n={count(g.ids)} total={g.ids.length} />)}
+      {entry.guide && entry.guide.length > 0 && (
+        <Bar label="Guía de ejercicios" n={count(entry.guide.flatMap((g) => g.activities.map((a) => a.id)))} total={entry.guide.reduce((t, g) => t + g.activities.length, 0)} />
+      )}
       {acts.length > 0 && <Bar label="Actividades" n={count(acts.map((a) => a.id))} total={acts.length} />}
       {entry.games.length > 0 && (
         <table className="pg-games">

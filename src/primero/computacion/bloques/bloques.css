@@ -1,0 +1,122 @@
+.bl-head h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.bl-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 400px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .bl-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.bl-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bl-goal {
+  margin: 0;
+  font-weight: 600;
+}
+.bl-actions {
+  align-items: center;
+}
+.bl-speed {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.bl-speed input {
+  width: 90px;
+  accent-color: var(--accent);
+}
+.bl-count {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.bl-count.over b {
+  color: #f87171;
+}
+.bl-editor {
+  height: min(640px, 72vh);
+  min-height: 420px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.bl-editor-wrap .hint {
+  margin-top: 6px;
+}
+/* mundo */
+.bw-world {
+  width: 100%;
+  max-height: 420px;
+  display: block;
+  background: #0c1220;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+.bw-cell {
+  fill: #1a2333;
+  stroke: #0c1220;
+  stroke-width: 2;
+}
+.bw-cell.alt {
+  fill: #1e293b;
+}
+.bw-emoji {
+  font-size: 28px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+.bw-emoji.small {
+  font-size: 22px;
+}
+.bw-oil {
+  fill: #2b2118;
+  stroke: #5a4632;
+}
+.bw-robot {
+  transition: transform 0.12s linear;
+}
+.bw-robot.crash .bw-emoji {
+  filter: drop-shadow(0 0 6px #ef4444);
+}
+.bw-arrow {
+  fill: #facc15;
+  transform: translate(10px, 0);
+}
+.bw-bubble {
+  fill: #fff;
+  stroke: #0c1220;
+}
+.bw-say {
+  font-size: 14px;
+  font-weight: 800;
+  fill: #0c1220;
+}
+.bl-thumb {
+  width: 100%;
+  pointer-events: none;
+}
+.bl-thumb .bw-world {
+  max-height: 120px;
+}
+.bl-levels .comp-card {
+  gap: 6px;
+}
+/* resaltado del bloque que se está ejecutando */
+.bl-editor .blocklyHighlighted > .blocklyPath,
+.bl-editor .blocklySelected > .blocklyPath {
+  stroke: #facc15 !important;
+  stroke-width: 3px !important;
+}
