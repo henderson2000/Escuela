@@ -1125,6 +1125,80 @@ function Pieza({ x0, x1, r, toolX, tipR, centerL, centerR }: { x0: number; x1: n
 
 /* ================================================================== conjunto */
 
+/* ------------------------------------------------------------------ seguridad y comodidad del puesto */
+
+/** Lámpara de trabajo de brazo articulado, atornillada atrás del cabezal, iluminando la zona de corte. */
+function LamparaTrabajo({ on }: { on: boolean }) {
+  const base: [number, number, number] = [-58, HS.top, -14]
+  const codo: [number, number, number] = [-56, HS.top + 22, -12]
+  const cabeza: [number, number, number] = [-36, HS.top + 14, 2]
+  return (
+    <group>
+      <mesh position={[base[0], base[1] + 0.8, base[2]]} material={M.black}>
+        <cylinderGeometry args={[2.4, 2.8, 1.6, 24]} />
+      </mesh>
+      {/* brazo en dos tramos con articulación */}
+      <Wire points={[[base[0], base[1] + 1.5, base[2]], codo]} radius={0.55} color="#2b2d31" metalness={0.6} roughness={0.4} smooth={0} />
+      <Wire points={[codo, cabeza]} radius={0.5} color="#2b2d31" metalness={0.6} roughness={0.4} smooth={0} />
+      <mesh position={codo} material={M.black}>
+        <sphereGeometry args={[1.1, 16, 12]} />
+      </mesh>
+      {/* pantalla cónica que apunta hacia la pieza */}
+      <group position={cabeza} rotation={[0.35, 0, -0.55]}>
+        <mesh position={[0, -2, 0]} material={M.burnished}>
+          <cylinderGeometry args={[1.4, 4.2, 5, 28, 1, true]} />
+        </mesh>
+        <mesh position={[0, 0.5, 0]} material={M.burnished}>
+          <sphereGeometry args={[1.5, 16, 10]} />
+        </mesh>
+        <mesh position={[0, -3.4, 0]}>
+          <sphereGeometry args={[1.5, 16, 12]} />
+          <meshStandardMaterial color="#fff6dc" emissive="#ffe8b0" emissiveIntensity={on ? 3 : 0.2} />
+        </mesh>
+        {on && <pointLight position={[0, -6, 0]} color="#ffe9c4" intensity={250} distance={70} decay={2} />}
+      </group>
+    </group>
+  )
+}
+
+/** Carteles de seguridad pegados en la puerta del pie derecho. */
+function CartelesSeguridad() {
+  const tex = useCanvasTexture(
+    512,
+    400,
+    (ctx, w, h) => {
+      ctx.fillStyle = '#f4f2ea'
+      ctx.fillRect(0, 0, w, h)
+      // triángulo de advertencia
+      ctx.fillStyle = '#f2c40f'
+      ctx.strokeStyle = '#111'
+      ctx.lineWidth = 12
+      ctx.beginPath()
+      ctx.moveTo(w / 2, 24)
+      ctx.lineTo(w / 2 + 130, 250)
+      ctx.lineTo(w / 2 - 130, 250)
+      ctx.closePath()
+      ctx.fill()
+      ctx.stroke()
+      ctx.fillStyle = '#111'
+      ctx.font = 'bold 150px Arial'
+      ctx.textAlign = 'center'
+      ctx.fillText('!', w / 2, 225)
+      ctx.font = 'bold 44px Arial'
+      ctx.fillText('ATENCIÓN', w / 2, 310)
+      ctx.font = 'bold 30px Arial'
+      ctx.fillText('Partes en movimiento · Usá anteojos', w / 2, 360)
+    },
+    [],
+  )
+  return (
+    <mesh position={[71, -44, 19.35]}>
+      <planeGeometry args={[14, 11]} />
+      <meshStandardMaterial map={tex} roughness={0.5} />
+    </mesh>
+  )
+}
+
 export function TornoModel(p: TornoParams) {
   const L = tornoLayout(p)
   const rpm = RPMS[p.rpmIdx] ?? 500
@@ -1152,6 +1226,10 @@ export function TornoModel(p: TornoParams) {
         <Pedestal x0={PED_L.x0} x1={PED_L.x1} open />
         <Pedestal x0={PED_R.x0} x1={PED_R.x1} open={false} />
         <Bandeja />
+        <CartelesSeguridad />
+      </Part>
+      <Part id="lampara" offset={[0, 24, -10]} labelAt={[-56, HS.top + 26, -12]}>
+        <LamparaTrabajo on={p.on} />
       </Part>
       <Part id="motor" offset={[0, -14, 30]} labelAt={[-76, -44, 0]}>
         <Motor />

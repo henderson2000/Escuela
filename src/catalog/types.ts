@@ -70,4 +70,8 @@ export interface ComponentDef {
   Controls: (props: { params: Params; set: (patch: Params) => void }) => ReactNode
   theory: ReactNode
   activities: Activity[]
+  /** entorno 3D propio en el laboratorio (si no, el del taller): p. ej. los accesorios van sobre un banco */
+  environment?: EnvName
 }
+
+import type { EnvName } from '../lib/subject'

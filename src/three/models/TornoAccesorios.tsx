@@ -23,8 +23,88 @@ const D = Math.PI / 180
 const std = (color: string, metalness: number, roughness: number, extra: THREE.MeshStandardMaterialParameters = {}) =>
   new THREE.MeshStandardMaterial({ color, metalness, roughness, ...extra })
 
+/* ----- texturas de superficie generadas una sola vez (sin descargar imágenes) */
+
+/** Mapa de normales a partir de una función de altura (para relieves finos: pintura martillada, fundición). */
+function normalTex(size: number, height: (x: number, y: number) => number, strength: number, repeat: number) {
+  if (typeof document === 'undefined') return null
+  const h = new Float32Array(size * size)
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) h[y * size + x] = height(x, y)
+  const c = document.createElement('canvas')
+  c.width = c.height = size
+  const ctx = c.getContext('2d')!
+  const img = ctx.createImageData(size, size)
+  const at = (x: number, y: number) => h[((y + size) % size) * size + ((x + size) % size)]
+  for (let y = 0; y < size; y++)
+    for (let x = 0; x < size; x++) {
+      const dx = (at(x + 1, y) - at(x - 1, y)) * strength
+      const dy = (at(x, y + 1) - at(x, y - 1)) * strength
+      const n = new THREE.Vector3(-dx, -dy, 1).normalize()
+      const i = (y * size + x) * 4
+      img.data[i] = (n.x * 0.5 + 0.5) * 255
+      img.data[i + 1] = (n.y * 0.5 + 0.5) * 255
+      img.data[i + 2] = (n.z * 0.5 + 0.5) * 255
+      img.data[i + 3] = 255
+    }
+  ctx.putImageData(img, 0, 0)
+  const t = new THREE.CanvasTexture(c)
+  t.wrapS = t.wrapT = THREE.RepeatWrapping
+  t.repeat.set(repeat, repeat)
+  return t
+}
+
+/** Ruido suave periódico (suma de senos con fases fijas: siempre igual, sin costuras). */
+function smoothNoise(seed: number, freq: number) {
+  const k = Array.from({ length: 6 }, (_, i) => ({
+    fx: Math.round(freq * (1 + ((seed * 7 + i * 13) % 5) * 0.3)),
+    fy: Math.round(freq * (1 + ((seed * 3 + i * 11) % 7) * 0.25)),
+    p: (seed * 1.7 + i * 2.3) % (Math.PI * 2),
+  }))
+  return (x: number, y: number, size: number) =>
+    k.reduce((s, q) => s + Math.sin(((x * q.fx) / size) * Math.PI * 2 + q.p) * Math.cos(((y * q.fy) / size) * Math.PI * 2 - q.p), 0) / k.length
+}
+
+/** Rayado fino del rectificado (líneas a lo largo de la pieza), como mapa de rugosidad. */
+function brushedTex(size: number, repeat: number) {
+  if (typeof document === 'undefined') return null
+  const c = document.createElement('canvas')
+  c.width = c.height = size
+  const ctx = c.getContext('2d')!
+  ctx.fillStyle = 'rgb(70,70,70)'
+  ctx.fillRect(0, 0, size, size)
+  for (let y = 0; y < size; y++) {
+    const v = 50 + Math.random() * 60
+    ctx.fillStyle = `rgba(${v},${v},${v},0.6)`
+    ctx.fillRect(0, y, size, 1)
+  }
+  const t = new THREE.CanvasTexture(c)
+  t.wrapS = t.wrapT = THREE.RepeatWrapping
+  t.repeat.set(repeat, repeat)
+  return t
+}
+
+const n1 = smoothNoise(3, 9)
+const n2 = smoothNoise(8, 23)
+// pintura martillada / "piel de naranja" de las máquinas herramienta
+const HAMMER = normalTex(256, (x, y) => n1(x, y, 256) * 0.7 + n2(x, y, 256) * 0.3, 2.2, 3)
+// fundición gris: granulado más fino y desparejo
+const n3 = smoothNoise(5, 41)
+const CASTN = normalTex(256, (x, y) => n3(x, y, 256) + (Math.sin(x * 1.7) * Math.cos(y * 2.3)) * 0.15, 3.5, 4)
+const BRUSH = brushedTex(256, 2)
+
+const paint = (color: string, roughness: number) =>
+  new THREE.MeshPhysicalMaterial({
+    color,
+    metalness: 0.12,
+    roughness,
+    clearcoat: 0.35,
+    clearcoatRoughness: 0.35,
+    normalMap: HAMMER ?? undefined,
+    normalScale: new THREE.Vector2(0.6, 0.6),
+  })
+
 export const M = {
-  steel: std('#c6cacf', 0.92, 0.26),
+  steel: std('#c6cacf', 0.92, 0.26, { roughnessMap: BRUSH ?? undefined }),
   satin: std('#a7abb1', 0.88, 0.4),
   chuck: std('#b9bdc2', 0.9, 0.33),
   burnished: std('#3d4046', 0.8, 0.42),
@@ -36,14 +116,14 @@ export const M = {
   tin: std('#cfa73f', 0.95, 0.28),
   hss: std('#d9dbde', 0.95, 0.2),
   work: std('#aeb3b9', 0.85, 0.38),
-  turned: std('#dfe3e7', 0.97, 0.14),
-  paint: std('#6b9580', 0.15, 0.5),
-  paintDark: std('#4f7462', 0.15, 0.55),
+  turned: std('#dfe3e7', 0.97, 0.14, { roughnessMap: BRUSH ?? undefined }),
+  paint: paint('#6b9580', 0.48),
+  paintDark: paint('#4f7462', 0.55),
   blue: std('#2d5d8e', 0.2, 0.5),
   red: std('#c62a20', 0.15, 0.4),
   yellow: std('#e6b521', 0.15, 0.45),
   rubber: std('#26282b', 0.05, 0.85),
-  cast: std('#6e7277', 0.5, 0.6),
+  cast: std('#6e7277', 0.5, 0.6, { normalMap: CASTN ?? undefined, normalScale: new THREE.Vector2(0.6, 0.6) }),
 }
 
 /* ================================================================== utilidades geométricas */

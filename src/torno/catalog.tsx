@@ -85,6 +85,7 @@ const tornoParts = (p: Params): PartInfo[] => {
     { id: 'pieza', name: 'Pieza (barra a tornear)', desc: m === 'luneta' ? 'Barra larga y delgada de Ø 25 mm: sin la luneta se pandearía al girar o al empujarla la herramienta.' : 'Barra redonda de acero de Ø 40 mm. El tramo más brillante es el que ya pasó la herramienta (cilindrado).' },
     ...(m === 'luneta' ? [{ id: 'luneta', name: 'Luneta fija', desc: 'Cuerpo de fundición con tres patines de bronce regulables por tornillos. Se fija a la bancada con una zapata inferior y un bulón con tuerca. Los patines deben sostener la pieza sin impedirle girar.' }] : []),
     { id: 'proteccion', name: 'Protección del plato', desc: 'Pantalla transparente abisagrada que cubre el plato mientras gira: retiene virutas y refrigerante y evita el contacto con las mordazas.' },
+    { id: 'lampara', name: 'Lámpara de trabajo', desc: 'Lámpara de brazo articulado que ilumina la zona de corte. Con buena luz se ven mejor las medidas, el estado del filo y las virutas.' },
     { id: 'mando', name: 'Tablero de mando y parada de emergencia', desc: 'Pulsadores de marcha y parada, luz piloto, llave de la bomba de refrigerante y el hongo rojo de parada de emergencia, que corta todo de inmediato. Antes de limpiar, lubricar o desmontar se debe parar el torno y accionar la parada de emergencia.' },
     { id: 'motor', name: 'Motor eléctrico', desc: 'Está en la parte inferior izquierda del torno (en el pie). Transmite su rotación al cabezal mediante poleas y correas.' },
     { id: 'poleas', name: 'Poleas y correas', desc: 'Sistema polea-correa que lleva el giro del motor al eje de entrada del cabezal, paralelo al husillo. La correa puede ser dentada para transmitir los giros sin patinar. Para quitarlas se usa siempre el pasacorreas o una varilla.' },
@@ -269,6 +270,7 @@ const platosParts = (p: Params): PartInfo[] => {
 
 export const platos: ComponentDef = {
   id: 'platos',
+  environment: 'banco',
   name: 'Platos y elementos de sujeción',
   category: 'Accesorios',
   icon: '🔩',
@@ -397,6 +399,7 @@ const puntosParts = (p: Params): PartInfo[] => {
 
 export const puntosLunetas: ComponentDef = {
   id: 'puntos-lunetas',
+  environment: 'banco',
   name: 'Puntos, mandril y lunetas',
   category: 'Accesorios',
   icon: '🎯',
@@ -542,6 +545,7 @@ const herrParts = (p: Params): PartInfo[] => {
 
 export const herramientas: ComponentDef = {
   id: 'herramientas',
+  environment: 'banco',
   name: 'Herramientas de corte',
   category: 'Herramientas de corte',
   icon: '🔪',
