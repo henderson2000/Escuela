@@ -52,8 +52,8 @@ const equipo: ComponentDef = {
   icon: '⚡',
   short: 'Máquina, cables, pinza porta electrodo, pinza de masa y la pieza en la mesa. Regulá la intensidad y encendé el arco.',
   parts: EQUIPO_PARTS,
-  camera: [3, 6, 11],
-  target: [0, 0.6, 0],
+  camera: [6, 3.5, 14],
+  target: [-0.5, -1.3, 0.6],
   shadowY: -3.9,
   defaultParams: { amperaje: 90, encendido: true, soldando: true } satisfies EquipoParams,
   render: (p) => <EquipoModel {...(p as EquipoParams)} />,
@@ -106,6 +106,7 @@ const electrodo: ComponentDef = {
   shadowY: -0.4,
   defaultParams: { diametro: 2.5, corte: true } satisfies ElectrodoParams,
   render: (p) => <ElectrodoModel {...(p as ElectrodoParams)} />,
+  environment: 'banco',
   Controls: ElectrodoControls as ComponentDef['Controls'],
   theory: (
     <>

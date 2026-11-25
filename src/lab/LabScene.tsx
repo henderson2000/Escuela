@@ -246,7 +246,7 @@ export function LabScene({ children, modelKey, parts, camera, overlay, onBackgro
             </HtmlLayerContext.Provider>
             <ContactShadows position={[0, 0.003, 0]} opacity={0.5} scale={size * 7} blur={2.2} far={size * 1.2} resolution={1024} />
           </Suspense>
-          <OrbitControls makeDefault enableDamping dampingFactor={0.12} minDistance={size * 0.12} maxDistance={size * 12} maxPolarAngle={Math.PI / 2 - 0.03} />
+          <OrbitControls makeDefault enableDamping dampingFactor={0.12} minDistance={size * 0.04} maxDistance={size * 12} maxPolarAngle={Math.PI / 2 - 0.03} />
           <CameraRig request={{ ...camera, n: camera.n * 1000 + first }} box={box} registry={registry} />
         </Canvas>
       </ErrorBoundary>
