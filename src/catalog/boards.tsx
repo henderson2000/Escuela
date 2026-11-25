@@ -1,6 +1,7 @@
 import type { ComponentDef } from './types'
 import { BreadboardModel } from '../three/models/Breadboard'
 import { ArduinoModel } from '../three/models/Arduino'
+import { NANO_PARTS, NanoModel } from '../three/models/Nano'
 import { Field, Segmented, Toggle } from '../components/ui'
 
 export const breadboard: ComponentDef = {
@@ -74,7 +75,7 @@ export const arduino: ComponentDef = {
   category: 'Placas',
   icon: '∞',
   short: 'Placa con microcontrolador programable: lee sensores y controla actuadores.',
-  camera: [0, 7.5, 7.5],
+  camera: [1.5, 8.5, 9.5],
   shadowY: -1.6,
   defaultParams: { powered: true, blink: true },
   render: (p) => <ArduinoModel powered={p.powered} blink={p.blink} />,
@@ -142,5 +143,46 @@ void loop() {
     { id: 'ard-5', type: 'mc', q: '¿Cuál es el “cerebro” del Arduino UNO?', options: ['El cristal', 'El regulador', 'El ATmega328P', 'El conector USB'], answer: 2, explain: 'El ATmega328P es el microcontrolador que ejecuta el programa.' },
     { id: 'ard-6', type: 'mc', q: '¿A qué pin está conectado el LED “L” de la placa?', options: ['Pin 0', 'Pin 13', 'A0', '5V'], answer: 1, explain: 'El LED L está conectado al pin 13.' },
     { id: 'ard-7', type: 'num', q: '¿A cuántos MHz funciona el reloj del Arduino UNO?', answer: 16, tolerance: 0, unit: 'MHz', explain: '16 MHz: 16 millones de ciclos por segundo.' },
+  ],
+}
+
+export const nano: ComponentDef = {
+  id: 'nano',
+  name: 'Arduino Nano',
+  category: 'Placas',
+  icon: '▭',
+  short: 'El mismo cerebro que el UNO en una placa chiquita que se enchufa directo en la protoboard.',
+  camera: [2.5, 4.5, 5.5],
+  shadowY: 0,
+  defaultParams: { powered: true, blink: true },
+  render: (p) => <NanoModel powered={p.powered} blink={p.blink} />,
+  Controls: ({ params, set }) => (
+    <>
+      <Toggle label="Conectado al USB (LED POW)" value={params.powered} onChange={(powered) => set({ powered })} />
+      <Toggle label="Programa Blink (LED L en D13)" value={params.blink} onChange={(blink) => set({ blink })} />
+      <p className="hint">El programa es el mismo que en el UNO: el pin 13 se llama D13 en la placa.</p>
+    </>
+  ),
+  parts: NANO_PARTS,
+  theory: (
+    <>
+      <p>
+        El <strong>Arduino Nano</strong> tiene el mismo microcontrolador que el UNO (ATmega328P a 16 MHz), así que los programas son los mismos.
+        La diferencia es el tamaño: mide <strong>43 × 18 mm</strong> y sus pines van <strong>hacia abajo</strong> para clavarlo en la protoboard,
+        con una fila a cada lado del canal central.
+      </p>
+      <ul>
+        <li>Tiene <strong>8 entradas analógicas</strong> (A0 a A7); A6 y A7 sólo leen, no sirven como digitales.</li>
+        <li>Se alimenta por el USB o por <strong>VIN</strong> (7 a 12 V). El pin <strong>5V</strong> también puede recibir 5 V regulados.</li>
+        <li>No tiene jack: para proyectos sin compu se usa VIN o el pin 5V.</li>
+      </ul>
+      <p className="tip">Muchos Nano “compatibles” usan el chip CH340 para el USB: si la compu no lo reconoce, hay que instalar su driver.</p>
+    </>
+  ),
+  activities: [
+    { id: 'nano-1', type: 'mc', q: '¿Qué microcontrolador usa el Arduino Nano?', options: ['ATmega328P, el mismo que el UNO', 'ESP32', 'ATmega2560', 'Uno distinto en cada placa'], answer: 0, explain: 'Por eso los programas del UNO funcionan igual.' },
+    { id: 'nano-2', type: 'num', q: '¿Cuántas entradas analógicas tiene el Nano?', answer: 8, tolerance: 0, unit: '', explain: 'A0 a A7. El UNO tiene 6.' },
+    { id: 'nano-3', type: 'mc', q: '¿Por qué se coloca el Nano sobre el canal central de la protoboard?', options: ['Para que cada fila de pines quede en tiras distintas y no se cortocircuiten', 'Porque es más lindo', 'Para que no se caliente', 'Para que entre el USB'], answer: 0, explain: 'Igual que un integrado: cada pin queda en su propia columna.' },
+    { id: 'nano-4', type: 'mc', q: '¿Qué tienen de especial A6 y A7?', options: ['Sólo funcionan como entradas analógicas', 'Son de 3,3 V', 'Tienen PWM', 'Son pines de alimentación'], answer: 0, explain: 'No se pueden usar como pines digitales.' },
   ],
 }

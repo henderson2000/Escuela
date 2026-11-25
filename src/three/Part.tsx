@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { Label } from './Label'
 import type { Group } from 'three'
@@ -20,6 +20,8 @@ export interface PartsState {
   quizTarget?: string | null
   /** nombres legibles de las partes */
   names: Record<string, string>
+  /** cada parte avisa dónde está su grupo 3D (para que la cámara pueda ir hasta ella) */
+  register?: (id: string, group: Group | null) => void
 }
 
 export const PartsContext = createContext<PartsState>({
@@ -48,6 +50,12 @@ interface PartProps {
 export function Part({ id, offset = [0, 0, 0], position = [0, 0, 0], labelAt = [0, 0, 0], noLabel, children }: PartProps) {
   const ctx = useParts()
   const ref = useRef<Group>(null)
+  const register = ctx.register
+  useEffect(() => {
+    if (!register) return
+    register(id, ref.current)
+    return () => register(id, null)
+  }, [register, id])
 
   useFrame((_, dt) => {
     const g = ref.current

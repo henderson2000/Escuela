@@ -37,7 +37,8 @@ Los niveles de Bloques usan [Blockly](https://developers.google.com/blockly) (in
 
 | Sección | Contenido |
 | --- | --- |
-| **Componentes 3D** | Resistencia (4/5 bandas, se edita el valor y cambian los colores), LED, capacitor, **transistor NPN**, protoboard (tocás un orificio y se iluminan los conectados), **Arduino UNO** (modelado con medidas reales), potenciómetro, pulsador, LDR, sensor ultrasónico HC-SR04, DHT11, **servomotor SG90** y **buzzer** (suena de verdad). Cada uno con: mostrar/ocultar partes, nombres, despiece animado y descripción de cada pieza. |
+| **Laboratorio** | Mesa de trabajo en 3D (plancha de corte con cuadrícula de 1 cm, sombras reales) con todos los componentes en una biblioteca con buscador. Vistas Iso / Arriba / Frente / Costado / Encuadrar, partes numeradas (al tocar una, la cámara vuela hasta ella), **pines por grupo** del Arduino UNO y Nano (al pasar el mouse explica cada pin), pestaña *Usar* con los controles del componente y *Ficha* técnica de las placas. Código en [`src/lab/`](src/lab). |
+| **Componentes 3D** | Resistencia (4/5 bandas, se edita el valor y cambian los colores), LED, capacitor, **transistor NPN**, protoboard (tocás un orificio y se iluminan los conectados), **Arduino UNO R3** (a escala con el plano oficial: pistas, zócalo, grabados y soldaduras de abajo), **Arduino Nano**, potenciómetro, pulsador, LDR, sensor ultrasónico HC-SR04, DHT11, **servomotor SG90** y **buzzer** (suena de verdad). Cada uno con: mostrar/ocultar partes, nombres, despiece animado y descripción de cada pieza. |
 | **Teoría** | Tensión/corriente/resistencia, Ley de Ohm, potencia, serie y paralelo, divisor de tensión, PWM y símbolos, con calculadoras interactivas. |
 | **Actividades** | Más de 90 ejercicios con corrección automática y progreso guardado en cada computadora. Las opciones se muestran mezcladas (siempre en el mismo orden para cada pregunta). |
 | **Juegos** | 🔌 *Conexiones en la protoboard* (circuitos reales en 3D con el Arduino, 6 niveles) · 📐 *Completá el plano* (6 niveles) · 🎨 *Código de colores contrarreloj* · 🔍 *¿Qué parte es?* |
@@ -99,16 +100,16 @@ Pautas para que siga andando fluido:
   pantalla. Libera solo la memoria de video de las piezas que ya no se usan.
 - Ninguna parte de la página depende de otros sitios (imágenes, letras e íconos son propios).
 
-## Publicar la página (GitHub Pages, gratis)
+## Publicar la página (Vercel)
 
-1. En GitHub, en este repositorio: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-2. Cada vez que se sube un cambio, la página se vuelve a publicar sola en `https://henderson2000.github.io/Escuela/`
-   (también se puede lanzar a mano en **Actions → Publicar en GitHub Pages → Run workflow**).
-3. **Dominio propio**: en **Settings → Pages → Custom domain** se escribe el dominio (por ejemplo
-   `talleres.ejemplo.edu.ar`) y en el proveedor del dominio se agrega un registro `CNAME` que apunte a
-   `henderson2000.github.io`. No hay que cambiar nada del código: la página funciona en cualquier dirección o carpeta.
-   En Netlify o Cloudflare Pages también funciona tal cual (se publica la carpeta `dist/`; `public/_headers` ya trae
-   las reglas de caché).
+La página está publicada en **https://escuela-talleres.vercel.app** (proyecto `escuela-talleres` en Vercel, conectado
+a este repositorio). Cada vez que se sube un cambio a la rama principal, Vercel la vuelve a publicar sola
+(detecta Vite: compila con `npm run build` y publica `dist/`).
+
+- **Dominio propio**: en Vercel, **Settings → Domains** del proyecto, y en el proveedor del dominio el registro que
+  indique Vercel. No hay que cambiar nada del código: la página funciona en cualquier dirección o carpeta.
+- GitHub Pages está apagado y el workflow `.github/workflows/deploy.yml` desactivado (se puede volver a activar en
+  **Actions**). En Netlify o Cloudflare Pages también funciona tal cual (`public/_headers` trae las reglas de caché).
 
 ## Uso en el aula
 

@@ -9,7 +9,7 @@ import { HtmlLayerContext } from './Label'
 import { ErrorBoundary } from '../components/ErrorBoundary'
 
 /** Entorno de iluminación generado localmente (sin descargar HDRIs): hace que los metales se vean reales. */
-function LocalEnvironment() {
+export function LocalEnvironment() {
   const { gl, scene } = useThree()
   useEffect(() => {
     let env: THREE.Texture | null = null

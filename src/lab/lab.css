@@ -1,0 +1,340 @@
+/* Laboratorio: biblioteca | mesa 3D | panel */
+.labx {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) 320px;
+  gap: 12px;
+  height: calc(100vh - 150px);
+  min-height: 560px;
+  margin-top: 8px;
+}
+
+.labx-lib,
+.labx-panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ---------- biblioteca */
+.labx-search {
+  margin: 10px;
+  width: calc(100% - 20px);
+}
+.labx-lib-list {
+  overflow-y: auto;
+  padding: 0 8px 10px;
+}
+.labx-lib-list h4 {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 12px 6px 6px;
+}
+.labx-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--text);
+  padding: 8px;
+  cursor: pointer;
+  font: inherit;
+}
+.labx-item:hover {
+  background: var(--card2);
+}
+.labx-item.active {
+  background: #10324a;
+  border-color: var(--accent);
+}
+.labx-item b {
+  display: block;
+  font-size: 0.9rem;
+}
+.labx-item small {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+.labx-item-icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #0c1422;
+  border: 1px solid var(--line);
+  font-size: 1.05rem;
+}
+
+/* ---------- mesa */
+.labx-stage {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #1a2230;
+  min-height: 0;
+}
+.labx-canvas {
+  position: absolute;
+  inset: 0;
+}
+.labx-toolbar {
+  position: absolute;
+  z-index: 5;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  pointer-events: none;
+}
+.labx-views,
+.labx-tools {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(10, 16, 26, 0.72);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  pointer-events: auto;
+}
+.labx-help {
+  position: absolute;
+  z-index: 4;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  color: rgba(232, 237, 245, 0.75);
+  background: rgba(10, 16, 26, 0.55);
+  padding: 3px 10px;
+  border-radius: 99px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.labx-part-card,
+.labx-pin-card {
+  position: absolute;
+  z-index: 5;
+  left: 12px;
+  bottom: 40px;
+  max-width: min(380px, calc(100% - 24px));
+  background: rgba(10, 16, 26, 0.86);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+}
+.labx-pin-card {
+  left: auto;
+  right: 12px;
+}
+.labx-part-card p,
+.labx-pin-card p {
+  margin: 4px 0 0;
+  color: #cfd8e6;
+}
+.labx-close {
+  float: right;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.labx-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.labx-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 12px;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: #cfd8e6;
+}
+
+/* ---------- panel */
+.labx-panel {
+  padding: 12px;
+  overflow-y: auto;
+}
+.labx-head {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.labx-head h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+.labx-head p {
+  margin: 2px 0 6px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.labx-head-icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #0c1422;
+  border: 1px solid var(--line);
+  font-size: 1.3rem;
+}
+.labx-parts {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  display: grid;
+  gap: 4px;
+}
+.labx-parts li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+.labx-parts li.active {
+  background: #10324a;
+  border-color: var(--accent);
+}
+.labx-parts li button {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: var(--text);
+  font: inherit;
+  padding: 7px 6px;
+  cursor: pointer;
+}
+.labx-parts li:hover {
+  background: var(--card2);
+}
+.labx-parts li b {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.labx-parts li small {
+  display: block;
+  margin-top: 3px;
+  color: #cfd8e6;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+.labx-parts input {
+  margin: 10px 8px 0 0;
+}
+.labx-num {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #0c1422;
+  border: 1px solid var(--line);
+  color: var(--accent);
+}
+.labx-parts li.active .labx-num {
+  background: var(--accent);
+  color: #04121f;
+}
+.labx-controls {
+  margin-top: 10px;
+}
+.labx-specs table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  margin-top: 8px;
+}
+.labx-specs th,
+.labx-specs td {
+  text-align: left;
+  padding: 5px 4px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.labx-specs th {
+  color: var(--muted);
+  font-weight: 500;
+  width: 45%;
+}
+.labx-specs ul {
+  padding-left: 18px;
+  font-size: 0.84rem;
+  margin: 4px 0;
+}
+.labx-careful li::marker {
+  color: var(--accent2);
+}
+.labx-more {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.labx-stage:fullscreen {
+  border-radius: 0;
+}
+
+@media (max-width: 1100px) {
+  .labx {
+    grid-template-columns: 210px minmax(0, 1fr);
+    height: auto;
+  }
+  .labx-stage {
+    height: 70vh;
+  }
+  .labx-panel {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 720px) {
+  .labx {
+    grid-template-columns: 1fr;
+  }
+  .labx-lib {
+    max-height: 260px;
+  }
+  .labx-stage {
+    height: 62vh;
+  }
+  .labx-help {
+    display: none;
+  }
+}
