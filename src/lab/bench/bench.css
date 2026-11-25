@@ -81,6 +81,152 @@
 .bench-panel {
   gap: 8px;
 }
+.bench-missions-link {
+  margin-bottom: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+/* ---------- misiones */
+.mission {
+  background: linear-gradient(180deg, #13263a, var(--card2));
+  border: 1px solid #22496b;
+  border-radius: 12px;
+  padding: 10px 12px;
+  flex: none;
+}
+.mission-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.mission-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.mission-head small {
+  color: var(--muted);
+}
+.mission-icon {
+  font-size: 1.6rem;
+}
+.mission-badge {
+  color: var(--ok);
+}
+.mission-goal {
+  margin: 6px 0;
+  font-size: 0.88rem;
+}
+.mission-steps {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+.mission-steps button {
+  width: 100%;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 2px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #0c1422;
+  color: var(--muted);
+  cursor: pointer;
+}
+.mission-steps button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.mission-steps li.active button {
+  border-color: var(--accent);
+  color: var(--text);
+  background: #10324a;
+}
+.mission-steps li.done button {
+  border-color: #1f6f46;
+  color: var(--ok);
+}
+.mission-body {
+  font-size: 0.86rem;
+}
+.mission-body p {
+  margin: 4px 0;
+}
+.mission-body ul {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 8px;
+  display: grid;
+  gap: 2px;
+}
+.mission-body li.ok {
+  color: var(--ok);
+}
+.mission-msg {
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin: 6px 0;
+}
+.mission-msg.ok {
+  background: #0f3324;
+  border: 1px solid #1f6f46;
+}
+.mission-msg.bad {
+  background: #3b1218;
+  border: 1px solid #7f1d1d;
+}
+.mission-won {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+/* lista de misiones */
+.missions-page {
+  max-width: 980px;
+  margin: 0 auto;
+}
+.missions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 12px;
+}
+.mission-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.mission-card:hover {
+  border-color: var(--accent);
+}
+.mission-card.done {
+  border-color: #1f6f46;
+}
+.mission-card header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.mission-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.mission-card .steps {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
 .bench-code-head {
   display: flex;
   align-items: center;

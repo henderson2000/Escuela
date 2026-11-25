@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
-import { Link } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
+import { buildNetlist } from '../../lib/circuit'
+import { BULBS, isDone, markActivity, useStore } from '../../lib/scores'
+import { MISSIONS, missionActivityId, type Mission, type Sample } from './missions'
 import { LabScene, type CameraRequest, type ViewName } from '../LabScene'
 import { BreadboardBody } from '../../three/models/Breadboard'
 import { ArduinoModel, arduinoPinPositions } from '../../three/models/Arduino'
@@ -74,9 +77,9 @@ interface Check {
   text: string
 }
 
-function load(): { placed: Placed[]; code: string } {
+function load(key: string, mission?: Mission): { placed: Placed[]; code: string } {
   try {
-    const raw = localStorage.getItem(STORE)
+    const raw = localStorage.getItem(key)
     if (raw) {
       const v = JSON.parse(raw)
       if (Array.isArray(v.placed) && typeof v.code === 'string') return v
@@ -84,16 +87,31 @@ function load(): { placed: Placed[]; code: string } {
   } catch {
     /* sin almacenamiento */
   }
+  if (mission) return { placed: [], code: mission.startCode }
   const ex = EXAMPLES[0]
   return { placed: ex.circuit.map((c) => ({ ...c, id: uid() })), code: ex.code }
 }
 
 export function BenchPage() {
+  return <Bench />
+}
+
+/** Mesa de trabajo en modo misión (ruta laboratorio/misiones/:id). */
+export function MissionBenchPage() {
+  const { id } = useParams()
+  const sub = useSub()
+  const m = MISSIONS.find((x) => x.id === id)
+  if (!m) return <Navigate to={sub('/laboratorio/misiones')} replace />
+  return <Bench key={m.id} mission={m} />
+}
+
+function Bench({ mission }: { mission?: Mission }) {
   const sub = useSub()
   const holes = useMemo(() => buildHoles(COLS), [])
   const holeById = useMemo(() => new Map(holes.map((h) => [h.id, h])), [holes])
   const pinPos = useMemo(() => arduinoPinPositions(), [])
-  const initial = useMemo(load, [])
+  const storeKey = mission ? `${STORE}-${mission.id}` : STORE
+  const initial = useMemo(() => load(storeKey, mission), [storeKey, mission])
 
   const [placed, setPlaced] = useState<Placed[]>(initial.placed)
   const [code, setCode] = useState(initial.code)
@@ -114,13 +132,13 @@ export function BenchPage() {
   useEffect(() => {
     const t = window.setTimeout(() => {
       try {
-        localStorage.setItem(STORE, JSON.stringify({ placed, code }))
+        localStorage.setItem(storeKey, JSON.stringify({ placed, code }))
       } catch {
         /* sin almacenamiento */
       }
     }, 400)
     return () => window.clearTimeout(t)
-  }, [placed, code])
+  }, [placed, code, storeKey])
 
   const termPos = (t: string): THREE.Vector3 => {
     if (t.startsWith('ard:')) {
@@ -187,6 +205,7 @@ export function BenchPage() {
     runner.current = null
     pinsRef.current = {}
     setRunning(false)
+    setTesting(false)
     dirty()
   }
   useEffect(() => () => runner.current?.stop(), [])
@@ -236,6 +255,92 @@ export function BenchPage() {
       setRunning(false)
     }
   }
+
+  /* ---------------------------------------------------------------- misión */
+
+  const store = useStore()
+  const missionDone = mission ? isDone(store, missionActivityId(mission.id)) : false
+  const [step, setStep] = useState(0)
+  const [stepMsg, setStepMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [testing, setTesting] = useState(false)
+  const [won, setWon] = useState(false)
+  const [testSecs, setTestSecs] = useState(0)
+  const samples = useRef<Sample[]>([])
+  const missionCtx = () => ({ placed: live.current.placed, nl: buildNetlist(live.current.placed, terminalNode), sim: currentSim() })
+
+  const reqState = mission ? mission.codeReqs.map(([t, f]) => [t, f(code)] as const) : []
+
+  const checkStep = (i: number) => {
+    if (!mission) return
+    let err: string | null = null
+    if (i === 0) {
+      const missing = mission.parts.filter((p) => placed.filter((x) => x.kind === p.kind && (!p.color || x.color === p.color)).length < p.n)
+      if (missing.length) err = `Falta colocar: ${missing.map((p) => p.label).join(', ')}.`
+    } else if (i === 1) err = mission.checkWire(missionCtx())
+    else if (i === 2) {
+      const r = compileArduino(code)
+      if (!r.ok) {
+        setCompileErr(r.error)
+        err = `El programa tiene un error en la línea ${r.error.line}: ${r.error.message}`
+      } else {
+        setCompileErr(null)
+        const bad = reqState.filter(([, ok]) => !ok)
+        if (bad.length) err = `Al programa le falta: ${bad[0][0]}`
+      }
+    }
+    if (err) setStepMsg({ ok: false, text: err })
+    else {
+      setStepMsg({ ok: true, text: ['¡Están todos los componentes!', '¡El circuito está bien conectado!', '¡El programa compila y tiene todo lo pedido!'][i] })
+      setStep(i + 1)
+    }
+  }
+
+  const startTest = () => {
+    if (!mission) return
+    const wire = mission.checkWire(missionCtx())
+    if (wire) {
+      setStepMsg({ ok: false, text: `Antes de probar: ${wire}` })
+      return
+    }
+    samples.current = []
+    setWon(false)
+    setTestSecs(0)
+    setStepMsg(null)
+    // run() frena lo anterior (y apaga "testing") antes de su primera espera: se activa después
+    void run()
+    setTesting(true)
+  }
+
+  useEffect(() => {
+    if (!mission || !testing || !running) return
+    const t0 = performance.now()
+    const id = window.setInterval(() => {
+      const s = currentSim()
+      const t = (performance.now() - t0) / 1000
+      samples.current.push({
+        t,
+        leds: Object.fromEntries(Object.values(s.leds).map((l) => [l.id, l.brightness])),
+        pressed: live.current.pressed.size > 0,
+        pots: { ...live.current.pots },
+        serial: serialRef.current,
+      })
+      setTestSecs(Math.floor(t))
+      const r = mission.test(samples.current, missionCtx())
+      if (r.ok) {
+        setWon(true)
+        setTesting(false)
+        setStepMsg({ ok: true, text: r.msg })
+        markActivity(missionActivityId(mission.id), true, BULBS.proyecto, `Misión: ${mission.title}`)
+      } else if (t > mission.maxSeconds) {
+        setTesting(false)
+        setStepMsg({ ok: false, text: r.msg })
+      } else if (t > 3) setStepMsg({ ok: false, text: r.msg })
+    }, 100)
+    return () => window.clearInterval(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mission, testing, running])
+
+  const nextMission = mission ? MISSIONS[MISSIONS.indexOf(mission) + 1] : undefined
 
   /* ---------------------------------------------------------------- armar */
 
@@ -374,7 +479,17 @@ export function BenchPage() {
     <div className="bench">
       {/* ---------------- herramientas */}
       <aside className="labx-lib bench-tools">
+        {mission ? (
+          <div className="bench-examples">
+            <Link className="btn small" to={sub('/laboratorio/misiones')}>
+              ← Todas las misiones
+            </Link>
+          </div>
+        ) : (
         <div className="bench-examples">
+          <Link className="btn small primary bench-missions-link" to={sub('/laboratorio/misiones')}>
+            🎯 Misiones guiadas
+          </Link>
           <label>
             Ejemplos
             <select className="input" value="" onChange={(e) => loadExample(e.target.value)}>
@@ -389,6 +504,7 @@ export function BenchPage() {
             </select>
           </label>
         </div>
+        )}
         <div className="labx-lib-list">
           <button type="button" className={`bench-tool ${tool === 'usar' ? 'active' : ''}`} onClick={() => (setTool('usar'), setPending([]))}>
             <span className="bench-sw">👆</span> Usar (apretar pulsadores)
@@ -537,6 +653,97 @@ export function BenchPage() {
 
       {/* ---------------- código, monitor serie y revisión */}
       <aside className="labx-panel bench-panel">
+        {mission && (
+          <section className="mission">
+            <div className="mission-head">
+              <span className="mission-icon">{mission.icon}</span>
+              <div>
+                <small>
+                  Misión · {mission.level}
+                  {missionDone && <b className="mission-badge"> ✔ Cumplida</b>}
+                </small>
+                <h3>{mission.title}</h3>
+              </div>
+            </div>
+            <p className="mission-goal">{mission.goal}</p>
+            <ol className="mission-steps">
+              {['Armar', 'Cablear', 'Programar', 'Probar'].map((s, i) => (
+                <li key={s} className={i < step || (i === 3 && won) ? 'done' : i === step ? 'active' : ''}>
+                  <button
+                    type="button"
+                    disabled={i > step}
+                    onClick={() => {
+                      setStep(i)
+                      setStepMsg(null)
+                    }}
+                  >
+                    <span>{i < step || (i === 3 && won) ? '✔' : i + 1}</span> {s}
+                  </button>
+                </li>
+              ))}
+            </ol>
+            <div className="mission-body">
+              {step === 0 && (
+                <>
+                  <p>Elegí las herramientas de la izquierda y colocá en la protoboard:</p>
+                  <ul>
+                    {mission.parts.map((p) => {
+                      const n = placed.filter((x) => x.kind === p.kind && (!p.color || x.color === p.color)).length
+                      return (
+                        <li key={p.label} className={n >= p.n ? 'ok' : ''}>
+                          {n >= p.n ? '✔' : '○'} {p.label}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                  <p className="hint">Las conexiones las hacés en el paso siguiente: por ahora alcanza con que estén puestos.</p>
+                </>
+              )}
+              {step === 1 && <p>{mission.wireHint}</p>}
+              {step === 2 && (
+                <>
+                  <p>Escribí el programa en el editor. Tiene que:</p>
+                  <ul>
+                    {reqState.map(([t, ok]) => (
+                      <li key={t} className={ok ? 'ok' : ''}>
+                        {ok ? '✔' : '○'} {t}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {step === 3 && (
+                <>
+                  <p>{mission.testHint}</p>
+                  {testing && running && <p className="hint">Observando la simulación… {testSecs} s</p>}
+                </>
+              )}
+              {stepMsg && <div className={`mission-msg ${stepMsg.ok ? 'ok' : 'bad'}`}>{stepMsg.text}</div>}
+              {won ? (
+                <div className="mission-won">
+                  <b>🎉 ¡Misión cumplida!</b>
+                  {nextMission ? (
+                    <Link className="btn small primary" to={sub(`/laboratorio/misiones/${nextMission.id}`)}>
+                      Siguiente: {nextMission.title} →
+                    </Link>
+                  ) : (
+                    <Link className="btn small primary" to={sub('/laboratorio/misiones')}>
+                      Ver todas las misiones
+                    </Link>
+                  )}
+                </div>
+              ) : step < 3 ? (
+                <button type="button" className="btn small primary" onClick={() => checkStep(step)}>
+                  Comprobar
+                </button>
+              ) : (
+                <button type="button" className="btn small primary" onClick={startTest}>
+                  {testing ? '↻ Volver a probar' : '▶ Ejecutar y probar'}
+                </button>
+              )}
+            </div>
+          </section>
+        )}
         <div className="bench-code-head">
           <h3>Programa</h3>
           <span className={`bench-state ${running ? 'on' : ''}`}>{running ? '● Ejecutando' : 'Detenido'}</span>
