@@ -7,6 +7,8 @@ import { lazyNamed } from '../lib/lazy'
 
 // el laboratorio (mesa de trabajo 3D) se descarga recién al abrirlo
 const LabPage = lazyNamed(() => import('../lab/LabPage'), 'LabPage')
+// la mesa de trabajo trae el editor de código y el simulador
+const BenchPage = lazyNamed(() => import('../lab/bench/BenchPage'), 'BenchPage')
 
 const entry: Omit<SubjectEntry, 'nav'> = {
   Home: ElectronicsHome,
@@ -15,6 +17,7 @@ const entry: Omit<SubjectEntry, 'nav'> = {
   games: GAMES,
   routes: [
     { path: 'laboratorio', Page: LabPage },
+    { path: 'laboratorio/mesa', Page: BenchPage },
     { path: 'laboratorio/:id', Page: LabPage },
   ],
 }

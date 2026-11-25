@@ -17,7 +17,8 @@ type NavItem = SubjectContent['nav'][number]
 export const SUBJECT_NAV: Record<string, NavItem[]> = {
   '3/electronica': [
     { to: '', label: 'Inicio del taller', end: true },
-    { to: '/laboratorio', label: 'Laboratorio' },
+    { to: '/laboratorio', label: 'Laboratorio', end: true },
+    { to: '/laboratorio/mesa', label: 'Mesa de trabajo' },
     { to: '/componentes', label: 'Componentes 3D' },
     { to: '/teoria', label: 'Teoría' },
     { to: '/actividades', label: 'Actividades' },

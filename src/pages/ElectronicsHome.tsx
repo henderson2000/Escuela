@@ -4,6 +4,7 @@ import { ArduinoModel } from '../three/models/Arduino'
 import { useSub } from '../lib/nav'
 
 const SECTIONS = [
+  { to: '/laboratorio/mesa', icon: '🛠', title: 'Mesa de trabajo', text: 'Armá circuitos con el Arduino en la protoboard, programalo en C como en el IDE y simulalo: LEDs, pulsadores, potenciómetros y monitor serie.' },
   { to: '/laboratorio', icon: '🔬', title: 'Laboratorio', text: 'Todos los componentes sobre la mesa de trabajo en 3D: tocá cada parte, mirá los pines del Arduino y usalos.' },
   { to: '/componentes', icon: '🧊', title: 'Componentes 3D', text: 'Resistencias, LEDs, capacitores, protoboard, Arduino y sensores. Giralos, modificalos y despiezalos.' },
   { to: '/teoria', icon: '📘', title: 'Teoría', text: 'Ley de Ohm, serie y paralelo, divisor de tensión, PWM… con calculadoras interactivas.' },

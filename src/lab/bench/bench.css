@@ -1,0 +1,198 @@
+.bench {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 400px;
+  gap: 12px;
+  height: calc(100vh - 150px);
+  min-height: 600px;
+  margin-top: 8px;
+}
+.bench-examples {
+  padding: 10px 10px 0;
+}
+.bench-examples label {
+  display: grid;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.bench-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+.bench-tool {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  font: inherit;
+  font-size: 0.84rem;
+  cursor: pointer;
+}
+.bench-tool:hover:not(:disabled) {
+  background: var(--card2);
+}
+.bench-tool.active {
+  background: #10324a;
+  border-color: var(--accent);
+}
+.bench-tool:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.bench-sw {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.bench-msg {
+  position: absolute;
+  z-index: 5;
+  left: 12px;
+  bottom: 40px;
+  max-width: min(420px, calc(100% - 24px));
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  background: rgba(10, 16, 26, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.bench-msg.bad {
+  border-color: var(--bad);
+}
+.bench-stop {
+  background: #7f1d1d;
+  border-color: #ef4444;
+  color: #fff;
+}
+
+.bench-panel {
+  gap: 8px;
+}
+.bench-code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.bench-code-head h3 {
+  margin: 0;
+}
+.bench-state {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.bench-state.on {
+  color: var(--ok);
+}
+.bench-editor {
+  height: 300px;
+  min-height: 200px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  flex: none;
+  resize: vertical;
+}
+.bench-err {
+  background: #3b1218;
+  border: 1px solid #7f1d1d;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.84rem;
+}
+.bench-section h4 {
+  margin: 4px 0;
+  font-size: 0.85rem;
+}
+.bench-serial {
+  margin: 0;
+  height: 120px;
+  overflow-y: auto;
+  background: #070b12;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  color: #b9f6ca;
+}
+.bench-checks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 0.82rem;
+}
+.bench-checks li {
+  padding: 6px 8px 6px 26px;
+  border-radius: 8px;
+  background: var(--card2);
+  position: relative;
+  line-height: 1.35;
+}
+.bench-checks li::before {
+  position: absolute;
+  left: 8px;
+  top: 6px;
+}
+.bench-checks li.ok::before {
+  content: '●';
+  color: var(--ok);
+}
+.bench-checks li.warn::before {
+  content: '▲';
+  color: var(--accent2);
+}
+.bench-checks li.bad::before {
+  content: '✖';
+  color: var(--bad);
+}
+.bench-checks li.bad {
+  background: #3b1218;
+}
+.bench-checks li.info::before {
+  content: 'i';
+  color: var(--accent);
+  font-weight: 700;
+}
+.bench-pot {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.84rem;
+}
+
+@media (max-width: 1250px) {
+  .bench {
+    grid-template-columns: 200px minmax(0, 1fr);
+    height: auto;
+  }
+  .bench-stage {
+    height: 68vh;
+  }
+  .bench-panel {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 720px) {
+  .bench {
+    grid-template-columns: 1fr;
+  }
+  .bench-tools {
+    max-height: 280px;
+  }
+}

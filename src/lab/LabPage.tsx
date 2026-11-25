@@ -255,9 +255,14 @@ function Lab({ def }: { def: ComponentDef }) {
           </div>
         )}
 
-        <Link className="btn small labx-more" to={sub(`/componentes/${def.id}`)}>
-          Teoría y actividades de {def.name} →
-        </Link>
+        <div className="labx-more row wrap">
+          <Link className="btn small primary" to={sub('/laboratorio/mesa')}>
+            🛠 Usarlo en la mesa de trabajo
+          </Link>
+          <Link className="btn small" to={sub(`/componentes/${def.id}`)}>
+            Teoría y actividades →
+          </Link>
+        </div>
       </aside>
     </div>
   )

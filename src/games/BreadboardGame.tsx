@@ -14,10 +14,10 @@ import { GameShell } from './GameShell'
 import { useRankedGame } from './useRankedGame'
 import { AttemptGate, LevelTabs, ModeBadge } from './AttemptGate'
 
-const COLS = 30
+export const COLS = 30
 const TOP = boardSize(COLS).height / 2
-const ARD_POS: [number, number, number] = [0.6, -0.22, -5.75]
-const HEADER_TOP = PCB_T / 2 + 0.86 - 0.3 // el modelo del Arduino está corrido 0.3 hacia abajo
+export const ARD_POS: [number, number, number] = [0.6, -0.22, -5.75]
+export const HEADER_TOP = PCB_T / 2 + 0.86 - 0.3 // el modelo del Arduino está corrido 0.3 hacia abajo
 
 const PIN_LABEL: Record<string, string> = {
   GND2: 'GND',
@@ -26,11 +26,11 @@ const PIN_LABEL: Record<string, string> = {
 }
 
 /** Pines del Arduino que se pueden usar en el juego */
-const USABLE_PINS = ['13', '12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', 'GND2', '5V', '3.3V', 'GND', 'GND3', 'VIN', 'A0', 'A1', 'A2', 'A3', 'A4', 'A5']
+export const USABLE_PINS = ['13', '12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', 'GND2', '5V', '3.3V', 'GND', 'GND3', 'VIN', 'A0', 'A1', 'A2', 'A3', 'A4', 'A5']
 
 const pinName = (p: string) => PIN_LABEL[p] ?? p
 
-function describePin(p: string) {
+export function describePin(p: string) {
   const n = pinName(p)
   if (/^\d+$/.test(n)) return `Arduino · pin digital ${n}`
   if (n.startsWith('A')) return `Arduino · entrada analógica ${n}`
@@ -383,18 +383,28 @@ function BreadboardLevel({ level, onPlayingChange, onNext }: { level: BBLevel; o
   )
 }
 
-function PlacedItem({
+export function PlacedItem({
   item,
   termPos,
   lit,
   onClick,
+  glow,
+  pressed,
+  onPress,
 }: {
   item: Placed
   termPos: (t: string) => THREE.Vector3
   lit: boolean
   onClick?: () => void
+  /** brillo del LED de 0 a 1 (simulación); si no se pasa, se usa `lit` */
+  glow?: number
+  /** pulsador apretado */
+  pressed?: boolean
+  /** apretar / soltar el pulsador con el mouse */
+  onPress?: (down: boolean) => void
 }) {
   const ps = item.legs.map(termPos)
+  const g = glow ?? (lit ? 1 : 0)
   const handlers = onClick
     ? {
         onClick: (e: ThreeEvent<MouseEvent>) => {
@@ -468,13 +478,13 @@ function PlacedItem({
         <group position={[mid.x, mid.y + 0.55, mid.z]}>
           <mesh position={[0, 0.17, 0]}>
             <cylinderGeometry args={[0.13, 0.13, 0.34, 24]} />
-            <meshStandardMaterial color={color} transparent opacity={0.75} emissive={color} emissiveIntensity={lit ? 2.5 : 0.1} />
+            <meshStandardMaterial color={color} transparent opacity={0.75} emissive={color} emissiveIntensity={0.1 + g * 2.4} />
           </mesh>
           <mesh position={[0, 0.34, 0]}>
             <sphereGeometry args={[0.13, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
-            <meshStandardMaterial color={color} transparent opacity={0.75} emissive={color} emissiveIntensity={lit ? 2.5 : 0.1} />
+            <meshStandardMaterial color={color} transparent opacity={0.75} emissive={color} emissiveIntensity={0.1 + g * 2.4} />
           </mesh>
-          {lit && <pointLight color={color} intensity={4} distance={3} />}
+          {g > 0.03 && <pointLight color={color} intensity={4 * g} distance={3} />}
         </group>
         <Label position={[ps[0].x, ps[0].y + 0.15, ps[0].z]} center style={{ pointerEvents: 'none' }}>
           <div className="pin-tag">+</div>
@@ -484,15 +494,27 @@ function PlacedItem({
   }
 
   if (item.kind === 'pulsador') {
+    const press = onPress
+      ? {
+          onPointerDown: (e: ThreeEvent<PointerEvent>) => {
+            e.stopPropagation()
+            onPress(true)
+          },
+          onPointerUp: () => onPress(false),
+          onPointerLeave: () => pressed && onPress(false),
+          onPointerOver: () => (document.body.style.cursor = 'pointer'),
+          onPointerOut: () => (document.body.style.cursor = ''),
+        }
+      : {}
     return (
-      <group {...handlers}>
+      <group {...handlers} {...press}>
         {legsTo(0.15)}
         <group position={[mid.x, mid.y + 0.25, mid.z]} rotation={[0, ang, 0]}>
           <mesh>
             <boxGeometry args={[0.45, 0.2, 0.45]} />
             <meshStandardMaterial color="#1b1b1d" />
           </mesh>
-          <mesh position={[0, 0.16, 0]}>
+          <mesh position={[0, pressed ? 0.1 : 0.16, 0]}>
             <cylinderGeometry args={[0.12, 0.12, 0.14, 20]} />
             <meshStandardMaterial color="#c01818" />
           </mesh>
