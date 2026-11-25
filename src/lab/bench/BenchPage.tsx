@@ -11,11 +11,12 @@ import { ArduinoModel, arduinoPinPositions } from '../../three/models/Arduino'
 import { Label } from '../../three/Label'
 import { ARD_POS, COLS, HEADER_TOP, PlacedItem, USABLE_PINS, describePin } from '../../games/BreadboardGame'
 import { boardSize, buildHoles, describeHole } from '../../lib/breadboard'
-import { LEG_NAMES, type CompKind, type Placed } from '../../lib/circuit'
+import { LEG_NAMES, ROW_MODULES, type CompKind, type Placed } from '../../lib/circuit'
+import { BenchItem } from './BenchItems'
 import { CodeEditor } from '../../compu/CodeEditor'
 import { compileArduino, type CompileError } from '../arduino/compile'
 import { ArduinoRunner, type BoardIO } from '../arduino/runtime'
-import { simulate, type PinModeName, type PinState, type SimResult } from '../sim/solve'
+import { ldrResistance, simulate, type PinModeName, type PinState, type SimResult } from '../sim/solve'
 import { EXAMPLES, WIRE_COLORS } from './examples'
 import { useSub } from '../../lib/nav'
 import '../lab.css'
@@ -49,7 +50,21 @@ const TOOLS: Tool[] = [
   { kind: 'led', label: 'Azul', color: BLUE, group: 'LEDs' },
   { kind: 'pulsador', label: 'Pulsador', group: 'Entradas' },
   { kind: 'potenciometro', label: 'Potenciómetro 10 kΩ', value: 10000, group: 'Entradas' },
+  { kind: 'ldr', label: 'LDR (sensor de luz)', group: 'Sensores y actuadores' },
+  { kind: 'ultrasonico', label: 'Ultrasónico HC-SR04', group: 'Sensores y actuadores' },
+  { kind: 'buzzer', label: 'Buzzer', group: 'Sensores y actuadores' },
+  { kind: 'servo', label: 'Servo SG90', group: 'Sensores y actuadores' },
 ]
+
+const SWATCH: Partial<Record<CompKind, string>> = {
+  resistencia: '#d9c29a',
+  potenciometro: '#26407a',
+  ldr: '#c45a2a',
+  ultrasonico: '#1c5bb8',
+  buzzer: '#141416',
+  servo: '#2f6fe0',
+}
+const EXTRA = new Set<CompKind>(['ldr', 'buzzer', 'servo', 'ultrasonico'])
 
 const LED_NAME: Record<string, string> = { '#ff2a2a': 'rojo', '#2aff5a': 'verde', '#ffd21a': 'amarillo', [BLUE]: 'azul' }
 const fmt = (n: number, d = 1) => (Number.isFinite(n) ? n.toFixed(d).replace('.', ',') : '—')
@@ -127,6 +142,11 @@ function Bench({ mission }: { mission?: Mission }) {
   const [runErr, setRunErr] = useState<string | null>(null)
   const [serial, setSerial] = useState('')
   const [, setFrame] = useState(0)
+  const [light, setLight] = useState(60)
+  const [distance, setDistance] = useState(30)
+  const [muted, setMuted] = useState(false)
+  const tonesRef = useRef<Record<string, number>>({})
+  const servoRef = useRef<Record<string, number>>({})
 
   // guardar en esta computadora
   useEffect(() => {
@@ -173,8 +193,8 @@ function Bench({ mission }: { mission?: Mission }) {
     })
   }
   // lo que el programa necesita leer en el momento (no puede esperar a que se dibuje la pantalla)
-  const live = useRef({ placed, pressed, pots })
-  live.current = { placed, pressed, pots }
+  const live = useRef({ placed, pressed, pots, light, distance })
+  live.current = { placed, pressed, pots, light, distance }
   const simCache = useRef<SimResult | null>(null)
   const dirty = () => {
     simCache.current = null
@@ -182,7 +202,7 @@ function Bench({ mission }: { mission?: Mission }) {
   }
   useEffect(() => {
     simCache.current = null
-  }, [placed, pressed, pots])
+  }, [placed, pressed, pots, light])
   const currentSim = () => {
     if (!simCache.current) simCache.current = simulate({ ...live.current, terminalNode, pins: { ...pinsRef.current } })
     return simCache.current
@@ -196,14 +216,16 @@ function Bench({ mission }: { mission?: Mission }) {
   const hypo = useMemo(() => {
     const ps: Record<string, PinState> = {}
     for (const [n, m] of Object.entries(declared)) ps[n] = { mode: m, value: m === 'OUTPUT' ? 1 : 0 }
-    return simulate({ placed, terminalNode, pins: ps, pressed: new Set(), pots })
-  }, [placed, declared, pots, terminalNode])
+    return simulate({ placed, terminalNode, pins: ps, pressed: new Set(), pots, light })
+  }, [placed, declared, pots, terminalNode, light])
 
   const runner = useRef<ArduinoRunner | null>(null)
   const stop = () => {
     runner.current?.stop()
     runner.current = null
     pinsRef.current = {}
+    tonesRef.current = {}
+    servoRef.current = {}
     setRunning(false)
     setTesting(false)
     dirty()
@@ -226,7 +248,37 @@ function Bench({ mission }: { mission?: Mission }) {
     },
     readDigital: (n) => (currentSim().voltage('ard:' + pinName(n)) > 2.5 ? 1 : 0),
     readAnalog: (n) => Math.round(Math.min(1, Math.max(0, currentSim().voltage('ard:' + pinName(n)) / 5)) * 1023),
-    tone: () => undefined,
+    tone: (n, f) => {
+      const name = pinName(n)
+      // tone() deja el pin oscilando: para el circuito es como un PWM al 50 %
+      if (f && f > 0) {
+        tonesRef.current[name] = f
+        pinsRef.current[name] = { mode: 'OUTPUT', value: 0.5 }
+      } else {
+        delete tonesRef.current[name]
+        pinsRef.current[name] = { mode: 'OUTPUT', value: 0 }
+      }
+      dirty()
+    },
+    servo: (n, a) => {
+      const name = pinName(n)
+      if (a === null) delete servoRef.current[name]
+      else servoRef.current[name] = a
+      refresh()
+    },
+    pulseIn: (n) => {
+      const s = currentSim()
+      const net = s.netOf('ard:' + pinName(n))
+      const { placed: ps, distance: d } = live.current
+      for (const p of ps) {
+        if (p.kind !== 'ultrasonico') continue
+        const m = s.modules[p.id]
+        // el eco llega si el módulo tiene 5 V, su Echo va a este pin y su Trig a algún pin del Arduino
+        const trigOk = Object.keys(pinsRef.current).some((pn) => pinsRef.current[pn].mode === 'OUTPUT' && s.netOf('ard:' + pn) === m?.nets[1])
+        if (m?.powered && m.nets[2] === net && trigOk) return d > 400 ? 0 : Math.round(d * 58.3)
+      }
+      return 0
+    },
     serial: (t) => {
       serialRef.current = (serialRef.current + t).slice(-8000)
       refresh()
@@ -369,6 +421,26 @@ function Bench({ mission }: { mission?: Mission }) {
       setMsg({ type: 'bad', text: 'Los componentes van en la protoboard. Para llegar al Arduino usá cables.' })
       return
     }
+    const rowN = ROW_MODULES[tool.kind]
+    if (rowN) {
+      const h = holeById.get(t)
+      if (!h || /^[TB]/.test(h.row)) {
+        setMsg({ type: 'bad', text: 'Los módulos se enchufan en la zona central (filas a a j), no en los rieles.' })
+        return
+      }
+      const legs = Array.from({ length: rowN }, (_, i) => `${h.row}${h.col + i}`)
+      if (legs.some((l) => !holeById.has(l))) {
+        setMsg({ type: 'bad', text: `No entra: necesita ${rowN} orificios seguidos hacia la derecha.` })
+        return
+      }
+      if (legs.some((l) => occupied.has(l))) {
+        setMsg({ type: 'bad', text: 'Alguno de esos orificios ya está ocupado.' })
+        return
+      }
+      setPlaced((ps) => [...ps, { id: uid(), kind: tool.kind, legs }])
+      setMsg({ type: 'info', text: `Pines de izquierda a derecha: ${LEG_NAMES[tool.kind].join(' · ')}. Conectalos con cables desde sus columnas.` })
+      return
+    }
     if (tool.kind !== 'cable' && pending.length > 0 && termPos(pending[pending.length - 1]).distanceTo(termPos(t)) > 1.6) {
       setMsg({ type: 'bad', text: 'Las patas no llegan tan lejos. Poné la siguiente más cerca.' })
       return
@@ -439,6 +511,25 @@ function Bench({ mission }: { mission?: Mission }) {
     }
     for (const [pin, i] of Object.entries(s.pinCurrent))
       if (Math.abs(i) > 0.04) out.push({ type: 'bad', text: `El pin ${pin} tendría que entregar ${fmt(Math.abs(i) * 1000, 0)} mA: un pin aguanta como máximo 40 mA (20 mA recomendado). ¿Está conectado directo a GND o a 5V?` })
+    const pinOnNet = (net: string) => USABLE_PINS.find((pn) => /^(\d+|A\d)$/.test(pn) && s.netOf('ard:' + pn) === net)
+    const fmtR = (r: number) => (r >= 1e6 ? `${fmt(r / 1e6, 1)} MΩ` : r >= 1000 ? `${fmt(r / 1000, 1)} kΩ` : `${Math.round(r)} Ω`)
+    for (const p of placed) {
+      const m = s.modules[p.id]
+      if (p.kind === 'ldr') out.push({ type: 'info', text: `LDR: con la luz al ${light} % su resistencia es ≈ ${fmtR(ldrResistance(light))} (a más luz, menos resistencia).` })
+      if (p.kind === 'servo' && m) {
+        if (!m.powered) out.push({ type: 'warn', text: 'Servo: necesita 5V en el cable rojo (pata del medio) y GND en el marrón.' })
+        const sig = pinOnNet(m.nets[2])
+        out.push(sig ? { type: 'ok', text: `Servo: la señal (naranja) va al pin ${sig}. En el programa: miServo.attach(${sig});` } : { type: 'info', text: 'Servo: la señal (cable naranja) tiene que ir a un pin digital, por ejemplo el 9.' })
+      }
+      if (p.kind === 'ultrasonico' && m) {
+        if (!m.powered) out.push({ type: 'warn', text: 'Ultrasónico: le falta alimentación (VCC a 5V y GND a GND).' })
+        const trig = pinOnNet(m.nets[1])
+        const echo = pinOnNet(m.nets[2])
+        if (!trig || !echo) out.push({ type: 'info', text: 'Ultrasónico: Trig y Echo van cada uno a un pin digital (por ejemplo, Trig al 9 y Echo al 10).' })
+        else out.push({ type: 'ok', text: `Ultrasónico: Trig en el pin ${trig} y Echo en el ${echo}. distancia (cm) = pulseIn(${echo}, HIGH) / 58.` })
+      }
+      if (p.kind === 'buzzer' && m && m.volts > 3 && !pinOnNet(m.nets[0])) out.push({ type: 'info', text: 'Buzzer: está conectado directo a 5V, así que suena todo el tiempo. Para controlarlo, llevá su pata + a un pin.' })
+    }
     for (const p of placed)
       for (const l of p.legs)
         if (l === 'ard:0' || l === 'ard:1') out.push({ type: 'warn', text: 'Los pines 0 y 1 se usan para el USB: si tienen algo conectado puede fallar la carga del programa.' })
@@ -449,7 +540,7 @@ function Bench({ mission }: { mission?: Mission }) {
     if (out.length === 0) out.push({ type: 'info', text: placed.length ? 'No hay LEDs para revisar todavía.' : 'La mesa está vacía: elegí un ejemplo o una herramienta para empezar.' })
     out.unshift({ type: 'ok', text: 'Arduino UNO alimentado por USB (5 V).' })
     return out
-  }, [placed, sim, hypo, running, declared])
+  }, [placed, sim, hypo, running, declared, light])
 
   /* ---------------------------------------------------------------- pantalla */
 
@@ -470,7 +561,61 @@ function Bench({ mission }: { mission?: Mission }) {
     return set
   }, [hover, pending, holeById])
 
+  /** ángulo del servo: el que pidió el programa en el pin conectado a su señal (si tiene 5 V). */
+  const servoAngle = (p: Placed) => {
+    const m = sim.modules[p.id]
+    if (!running || !m?.powered) return 90
+    for (const [pn, a] of Object.entries(servoRef.current)) if (sim.netOf('ard:' + pn) === m.nets[2]) return a
+    return 90
+  }
+  /** frecuencia a la que suena un buzzer (0 = callado). */
+  const buzzFreq = (p: Placed) => {
+    const m = sim.modules[p.id]
+    if (!m) return 0
+    for (const [pn, f] of Object.entries(tonesRef.current)) if (sim.netOf('ard:' + pn) === m.nets[0] && m.volts > 1) return f
+    return m.volts > 3 ? 2300 : 0
+  }
+  const freq = Math.max(0, ...placed.filter((p) => p.kind === 'buzzer').map(buzzFreq))
+
+  // sonido del buzzer (Web Audio): se crea al primer sonido (siempre después de un clic del usuario)
+  const audio = useRef<{ ctx: AudioContext; osc: OscillatorNode; gain: GainNode } | null>(null)
+  useEffect(() => {
+    const on = freq > 0 && !muted
+    if (!on) {
+      if (audio.current) audio.current.gain.gain.setTargetAtTime(0, audio.current.ctx.currentTime, 0.01)
+      return
+    }
+    try {
+      if (!audio.current) {
+        const ctx = new AudioContext()
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.type = 'square'
+        gain.gain.value = 0
+        osc.connect(gain).connect(ctx.destination)
+        osc.start()
+        audio.current = { ctx, osc, gain }
+      }
+      const a = audio.current
+      void a.ctx.resume()
+      a.osc.frequency.setTargetAtTime(freq, a.ctx.currentTime, 0.005)
+      a.gain.gain.setTargetAtTime(0.04, a.ctx.currentTime, 0.01)
+    } catch {
+      /* sin audio */
+    }
+  }, [freq, muted])
+  useEffect(
+    () => () => {
+      void audio.current?.ctx.close()
+      audio.current = null
+    },
+    [],
+  )
+
   const potList = placed.filter((p) => p.kind === 'potenciometro')
+  const hasLdr = placed.some((p) => p.kind === 'ldr')
+  const hasUs = placed.some((p) => p.kind === 'ultrasonico')
+  const hasBuzzer = placed.some((p) => p.kind === 'buzzer')
   const groups = [...new Set(TOOLS.map((t) => t.group))]
   const led13 = running && pins['13']?.mode === 'OUTPUT' && pins['13'].value > 0
   const view = (v: ViewName) => setCam((c) => ({ view: v, n: c.n + 1 }))
@@ -525,7 +670,7 @@ function Bench({ mission }: { mission?: Mission }) {
                       setMsg(null)
                     }}
                   >
-                    <span className="bench-sw" style={{ background: t.color ?? (t.kind === 'resistencia' ? '#d9c29a' : t.kind === 'potenciometro' ? '#26407a' : '#333') }} />
+                    <span className="bench-sw" style={{ background: t.color ?? SWATCH[t.kind] ?? '#333' }} />
                     {t.label}
                   </button>
                 ))}
@@ -614,7 +759,20 @@ function Bench({ mission }: { mission?: Mission }) {
               </mesh>
             )
           })}
-          {placed.map((p) => (
+          {placed.map((p) =>
+            EXTRA.has(p.kind) ? (
+              <BenchItem
+                key={p.id}
+                item={p}
+                termPos={termPos}
+                floorY={-boardSize(COLS).height / 2}
+                frontZ={boardSize(COLS).depth / 2}
+                angle={servoAngle(p)}
+                sounding={!!buzzFreq(p)}
+                distance={distance}
+                onClick={tool === 'borrar' ? () => setPlaced((ps) => ps.filter((x) => x.id !== p.id)) : undefined}
+              />
+            ) : (
             <PlacedItem
               key={p.id}
               item={p}
@@ -625,7 +783,8 @@ function Bench({ mission }: { mission?: Mission }) {
               onPress={p.kind === 'pulsador' && tool === 'usar' ? (down) => press(p.id, down) : undefined}
               onClick={tool === 'borrar' ? () => setPlaced((ps) => ps.filter((x) => x.id !== p.id)) : undefined}
             />
-          ))}
+            ),
+          )}
           {pending.map((t) => {
             const v = termPos(t)
             return (
@@ -773,9 +932,30 @@ function Bench({ mission }: { mission?: Mission }) {
           )}
         </div>
 
-        {potList.length > 0 && (
+        {(potList.length > 0 || hasLdr || hasUs || hasBuzzer) && (
           <section className="bench-section">
-            <h4>Perillas</h4>
+            <h4>Perillas y ambiente</h4>
+            {hasLdr && (
+              <label className="bench-pot">
+                <span>☀ Luz ambiente</span>
+                <input type="range" min={0} max={100} value={light} onChange={(e) => setLight(Number(e.target.value))} />
+                <b>{light} %</b>
+              </label>
+            )}
+            {hasUs && (
+              <label className="bench-pot">
+                <span>↔ Distancia</span>
+                <input type="range" min={2} max={200} value={distance} onChange={(e) => setDistance(Number(e.target.value))} />
+                <b>{distance} cm</b>
+              </label>
+            )}
+            {hasBuzzer && (
+              <label className="bench-pot">
+                <span>🔊 Sonido</span>
+                <input type="checkbox" checked={!muted} onChange={(e) => setMuted(!e.target.checked)} />
+                <b>{freq > 0 ? `${Math.round(freq)} Hz` : 'callado'}</b>
+              </label>
+            )}
             {potList.map((p, i) => (
               <label key={p.id} className="bench-pot">
                 <span>Potenciómetro {i + 1}</span>

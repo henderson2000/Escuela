@@ -85,6 +85,8 @@ export function compileArduino(src: string): { ok: true; out: Compiled } | { ok:
     if (/^\s*#\s*include\b/.test(line)) return '//' + raw
     const def = line.match(/^\s*#\s*define\s+(\w+)\s+(.+?)\s*$/)
     if (def) return `const ${def[1]} = ${def[2]};${comment}`
+    // objetos de librerías: Servo motor;  →  let motor = new Servo();
+    line = line.replace(/^(\s*)Servo\s+([\w\s,]+);/, (_m, ind: string, names: string) => `${ind}let ${names.split(',').map((n) => `${n.trim()} = new Servo()`).join(', ')};`)
     // casts: (int) x  →  __int(x)  ·  (float) x  →  (x)
     line = line.replace(/\(\s*(?:int|long|byte|unsigned\s+long|unsigned\s+int)\s*\)\s*([\w.]+(?:\([^()]*\))?)/g, '__int($1)')
     line = line.replace(/\(\s*(?:float|double)\s*\)\s*/g, '')

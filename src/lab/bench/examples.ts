@@ -140,6 +140,118 @@ void loop() {
     ],
   },
   {
+    id: 'luz-nocturna',
+    title: 'Luz nocturna (LDR)',
+    desc: 'La LDR con una resistencia de 10 kΩ forma un divisor de tensión en A0. Cuando oscurece, se prende el LED del pin 9.',
+    code: `// Luz nocturna: LDR en A0 (divisor con 10 kΩ) y LED en el pin 9
+const int LED = 9;
+const int UMBRAL = 300; // por debajo de este valor, "está oscuro"
+
+void setup() {
+  pinMode(LED, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  int luz = analogRead(A0); // más luz → número más alto
+  Serial.print("Luz: ");
+  Serial.println(luz);
+  if (luz < UMBRAL) {
+    digitalWrite(LED, HIGH);
+  } else {
+    digitalWrite(LED, LOW);
+  }
+  delay(200);
+}
+`,
+    circuit: [
+      GND_RAIL,
+      cable('ard:5V', 'c10', C.rojo),
+      { kind: 'ldr', legs: ['a10', 'a12'] },
+      cable('ard:A0', 'c12', C.amarillo),
+      res('b12', 'b16', 10000),
+      cable('d16', 'T-16', C.negro),
+      ...ledOnPin('9', 20, RED, C.verde),
+    ],
+  },
+  {
+    id: 'servo',
+    title: 'Servo de barrido',
+    desc: 'Un servo SG90 en el pin 9 que va de 0° a 180° y vuelve, con la librería Servo.',
+    code: `// Barrido de un servo SG90 (señal en el pin 9)
+#include <Servo.h>
+
+Servo motor;
+
+void setup() {
+  motor.attach(9);
+  Serial.begin(9600);
+}
+
+void loop() {
+  for (int angulo = 0; angulo <= 180; angulo += 30) {
+    motor.write(angulo);
+    Serial.println(angulo);
+    delay(400);
+  }
+  for (int angulo = 180; angulo >= 0; angulo -= 30) {
+    motor.write(angulo);
+    delay(400);
+  }
+}
+`,
+    circuit: [GND_RAIL, { kind: 'servo', legs: ['a20', 'a21', 'a22'] }, cable('c20', 'T-20', C.negro), cable('c21', 'ard:5V', C.rojo), cable('c22', 'ard:9', C.amarillo)],
+  },
+  {
+    id: 'distancia',
+    title: 'Alarma de distancia',
+    desc: 'El sensor ultrasónico mide la distancia y, si algo se acerca a menos de 20 cm, suena el buzzer del pin 8. Mové la perilla "Distancia".',
+    code: `// Alarma de distancia con HC-SR04 (Trig 9, Echo 10) y buzzer en el 8
+const int TRIG = 9;
+const int ECHO = 10;
+const int BUZZER = 8;
+
+void setup() {
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+  pinMode(BUZZER, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  // pulso de 10 microsegundos en Trig
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+
+  long duracion = pulseIn(ECHO, HIGH); // ida y vuelta del sonido, en µs
+  int cm = duracion / 58;
+  Serial.print(cm);
+  Serial.println(" cm");
+
+  if (cm > 0 && cm < 20) {
+    tone(BUZZER, 1000);
+  } else {
+    noTone(BUZZER);
+  }
+  delay(150);
+}
+`,
+    circuit: [
+      GND_RAIL,
+      { kind: 'ultrasonico', legs: ['a10', 'a11', 'a12', 'a13'] },
+      cable('c10', 'ard:5V', C.rojo),
+      cable('c11', 'ard:9', C.amarillo),
+      cable('c12', 'ard:10', C.azul),
+      cable('c13', 'T-14', C.negro),
+      { kind: 'buzzer', legs: ['a20', 'a22'] },
+      cable('ard:8', 'c20', C.verde),
+      cable('c22', 'T-22', C.negro),
+    ],
+  },
+  {
     id: 'vacio',
     title: 'Proyecto vacío',
     desc: 'Mesa limpia y un programa en blanco para armar lo que quieras.',

@@ -2,7 +2,7 @@
 // Cada "terminal" (orificio de la protoboard o pin del Arduino) pertenece a un nodo.
 // Los cables unen nodos. Después se verifica que los componentes formen el circuito pedido.
 
-export type CompKind = 'cable' | 'resistencia' | 'led' | 'pulsador' | 'potenciometro'
+export type CompKind = 'cable' | 'resistencia' | 'led' | 'pulsador' | 'potenciometro' | 'ldr' | 'buzzer' | 'servo' | 'ultrasonico'
 
 export interface Placed {
   id: string
@@ -20,7 +20,15 @@ export const LEG_NAMES: Record<CompKind, string[]> = {
   led: ['ánodo (+, pata larga)', 'cátodo (−, pata corta)'],
   pulsador: ['pata 1', 'pata 2'],
   potenciometro: ['extremo 1', 'cursor (medio)', 'extremo 3'],
+  ldr: ['pata 1', 'pata 2'],
+  buzzer: ['pata + (larga)', 'pata −'],
+  // los módulos se enchufan en una fila: se elige sólo el primer orificio
+  servo: ['GND (marrón)', '5V (rojo)', 'señal (naranja)'],
+  ultrasonico: ['VCC', 'Trig', 'Echo', 'GND'],
 }
+
+/** Módulos que ocupan orificios seguidos de una misma fila (se coloca con un solo clic). */
+export const ROW_MODULES: Partial<Record<CompKind, number>> = { servo: 3, ultrasonico: 4 }
 
 class DSU {
   parent = new Map<string, string>()

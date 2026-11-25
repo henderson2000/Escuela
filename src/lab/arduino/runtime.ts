@@ -11,6 +11,10 @@ export interface BoardIO {
   readAnalog(pin: number): number
   tone(pin: number, freq: number | null): void
   serial(text: string): void
+  /** ángulo de un servo conectado a ese pin (null = se desconectó) */
+  servo(pin: number, angle: number | null): void
+  /** duración del pulso que llega al pin (µs); 0 si no llega nada */
+  pulseIn(pin: number, value: number): number
 }
 
 class Stop extends Error {}
@@ -125,7 +129,13 @@ export class ArduinoRunner {
       noTone: (p: number) => io.tone(p, null),
       delay: this.delay,
       delayMicroseconds: (us: number) => this.delay(us / 1000),
-      pulseIn: async () => 0,
+      pulseIn: async (p: number, v: number, timeout = 1000000) => {
+        const us = io.pulseIn(p, v)
+        // esperar el pulso también lleva tiempo (o el tiempo máximo si no llega)
+        await this.delay((us > 0 ? us * 2 : Math.min(timeout, 1000000)) / 1000)
+        return us
+      },
+      Servo: makeServo(io),
       millis: () => Math.floor(this.now),
       micros: () => Math.floor(this.now * 1000),
       map: (x: number, a: number, b: number, c: number, d: number) => Math.trunc(((x - a) * (d - c)) / (b - a) + c),
@@ -168,6 +178,38 @@ export class ArduinoRunner {
     } catch (e) {
       if (e instanceof Stop || this.stopped) return
       onError(explainRuntime(e as Error))
+    }
+  }
+}
+
+/** La librería Servo.h: attach, write, read, writeMicroseconds, attached, detach. */
+function makeServo(io: BoardIO) {
+  return class Servo {
+    private pin = -1
+    private angle = 90
+    attach(pin: number) {
+      this.pin = pin
+      io.servo(pin, this.angle)
+      return 1
+    }
+    write(a: number) {
+      // como la librería real: más de 544 se toma como microsegundos
+      const deg = a > 544 ? ((a - 544) / (2400 - 544)) * 180 : a
+      this.angle = Math.max(0, Math.min(180, Math.round(deg)))
+      if (this.pin >= 0) io.servo(this.pin, this.angle)
+    }
+    writeMicroseconds(us: number) {
+      this.write(Math.max(544, Math.min(2400, us)))
+    }
+    read() {
+      return this.angle
+    }
+    attached() {
+      return this.pin >= 0
+    }
+    detach() {
+      if (this.pin >= 0) io.servo(this.pin, null)
+      this.pin = -1
     }
   }
 }

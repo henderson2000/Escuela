@@ -21,6 +21,25 @@ export interface SimInputs {
   pressed: Set<string>
   /** posición de la perilla de cada potenciómetro (0 a 1) */
   pots: Record<string, number>
+  /** luz ambiente para las LDR, de 0 (oscuro) a 100 (pleno sol) */
+  light?: number
+}
+
+/** LDR GL5528: ~1 MΩ en oscuridad, ~200 Ω a pleno sol (aproximación logarítmica). */
+export function ldrResistance(lightPct: number): number {
+  const lg = 6 - (Math.min(100, Math.max(0, lightPct)) / 100) * (6 - Math.log10(200))
+  return Math.round(10 ** lg)
+}
+
+/** Estado de un módulo o actuador (buzzer, servo, ultrasónico). */
+export interface ModuleResult {
+  id: string
+  /** tiene 5 V entre sus patas de alimentación */
+  powered: boolean
+  /** tensión sobre el buzzer */
+  volts: number
+  /** nodo de cada pata */
+  nets: string[]
 }
 
 export interface LedResult {
@@ -45,6 +64,7 @@ export interface SimResult {
   /** corriente que entrega cada pin de salida (A) */
   pinCurrent: Record<string, number>
   netOf: (terminal: string) => string
+  modules: Record<string, ModuleResult>
 }
 
 /** Tensión directa típica según el color del LED. */
@@ -71,7 +91,7 @@ export const PIN_NUMBER: Record<string, number> = {
   A5: 19,
 }
 
-export function simulate({ placed, terminalNode, pins, pressed, pots }: SimInputs): SimResult {
+export function simulate({ placed, terminalNode, pins, pressed, pots, light = 60 }: SimInputs): SimResult {
   const nl = buildNetlist(placed, terminalNode)
   const gnd = nl.net('ard:GND')
   const v5 = nl.net('ard:5V')
@@ -121,6 +141,12 @@ export function simulate({ placed, terminalNode, pins, pressed, pots }: SimInput
       elems.push({ a: ns[0], b: ns[1], g: 1 / Math.max(1, (1 - pos) * R), j: 0 })
       elems.push({ a: ns[1], b: ns[2], g: 1 / Math.max(1, pos * R), j: 0 })
     } else if (p.kind === 'led') ledIdx.push({ p, a: ns[0], c: ns[1], vf: ledVf(p.color), on: false })
+    else if (p.kind === 'ldr') elems.push({ a: ns[0], b: ns[1], g: 1 / ldrResistance(light), j: 0 })
+    // buzzer activo: consume unos 30 mA a 5 V
+    else if (p.kind === 'buzzer') elems.push({ a: ns[0], b: ns[1], g: 1 / 170, j: 0 })
+    // módulos: sólo la carga de su alimentación (servo GND-5V-señal · ultrasónico VCC-Trig-Echo-GND)
+    else if (p.kind === 'servo') elems.push({ a: ns[1], b: ns[0], g: 1 / 500, j: 0 })
+    else if (p.kind === 'ultrasonico') elems.push({ a: ns[0], b: ns[3], g: 1 / 330, j: 0 })
   }
   nets.add(gnd)
   if (!short) {
@@ -217,7 +243,8 @@ export function simulate({ placed, terminalNode, pins, pressed, pots }: SimInput
         [n1, n2],
         [n2, n1],
       ])
-        if (shared === l.a || shared === l.c) {
+        // GND/5V no cuentan: muchas cosas comparten esos nodos sin estar en serie con el LED
+        if ((shared === l.a || shared === l.c) && !fixed.has(shared)) {
           const ledOther = shared === l.a ? l.c : l.a
           const hi = Math.max(V.get(other) ?? 0, V.get(ledOther) ?? 0)
           const lo = Math.min(V.get(other) ?? 0, V.get(ledOther) ?? 0)
@@ -234,6 +261,16 @@ export function simulate({ placed, terminalNode, pins, pressed, pots }: SimInput
     pinCurrent[name] = (vout - (V.get(pinNet[name]) ?? 0)) / R_PIN
   }
 
+  const modules: Record<string, ModuleResult> = {}
+  for (const p of placed) {
+    if (p.kind !== 'buzzer' && p.kind !== 'servo' && p.kind !== 'ultrasonico') continue
+    const ns = p.legs.map(nl.net)
+    const v = (n: string) => V.get(n) ?? 0
+    const [vcc, g] = p.kind === 'servo' ? [ns[1], ns[0]] : p.kind === 'ultrasonico' ? [ns[0], ns[3]] : [ns[0], ns[1]]
+    const volts = v(vcc) - v(g)
+    modules[p.id] = { id: p.id, powered: volts > 4, volts, nets: ns }
+  }
+
   return {
     ok: !short,
     short,
@@ -241,6 +278,7 @@ export function simulate({ placed, terminalNode, pins, pressed, pots }: SimInput
     leds,
     pinCurrent,
     netOf: nl.net,
+    modules,
   }
 }
 
