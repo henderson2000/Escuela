@@ -5,7 +5,7 @@ import { RoundedBox } from '@react-three/drei'
 import { Part } from '../Part'
 import { useCanvasTexture } from '../helpers'
 import { useKeepRendering } from '../keepRendering'
-import { FlatChip, SmdLed, SolderJoints, TactSwitch, blackPlastic, goldC, nickel, tin } from './Arduino'
+import { FlatChip, SmdLed, TactSwitch, blackPlastic, goldC, nickel, tin } from './Arduino'
 import type { PinGroup } from './Arduino'
 
 // Arduino Nano (V3) a escala: 43,2 × 17,8 mm (1 unidad = 10 mm). El USB queda a la izquierda.
@@ -136,6 +136,35 @@ function Tqfp() {
   )
 }
 
+/** Soldadura de arriba de cada pin: un cono bajo de estaño con la punta del pin asomando. */
+function TopJoints({ points }: { points: [number, number][] }) {
+  const cones = useRef<THREE.InstancedMesh>(null)
+  const tips = useRef<THREE.InstancedMesh>(null)
+  useLayoutEffect(() => {
+    const m = new THREE.Matrix4()
+    points.forEach(([x, z], i) => {
+      m.makeTranslation(x, T / 2 + 0.018, z)
+      cones.current?.setMatrixAt(i, m)
+      m.makeTranslation(x, T / 2 + 0.04, z)
+      tips.current?.setMatrixAt(i, m)
+    })
+    if (cones.current) cones.current.instanceMatrix.needsUpdate = true
+    if (tips.current) tips.current.instanceMatrix.needsUpdate = true
+  }, [points])
+  return (
+    <>
+      <instancedMesh ref={cones} args={[undefined, undefined, points.length]}>
+        <cylinderGeometry args={[0.035, 0.068, 0.036, 20]} />
+        <meshStandardMaterial color="#c4c8cd" metalness={1} roughness={0.26} />
+      </instancedMesh>
+      <instancedMesh ref={tips} args={[undefined, undefined, points.length]}>
+        <boxGeometry args={[0.045, 0.03, 0.045]} />
+        <meshStandardMaterial color="#b9bdc2" metalness={1} roughness={0.32} />
+      </instancedMesh>
+    </>
+  )
+}
+
 /* ------------------------------------------------------------------ modelo */
 
 export interface NanoProps {
@@ -257,21 +286,31 @@ export function NanoModel({ powered, blink, led13 }: NanoProps) {
         const label = n.replace(/2$/, '').replace('REF', 'REF').replace('RX0', 'RX0').replace('TX1', 'TX1')
         ctx.fillText(label, sx(x), sz(z) + (z > 0 ? -62 : 62))
       }
-      ctx.font = 'bold 74px Arial, sans-serif'
-      ctx.fillText('ARDUINO NANO', sx(1.2), sz(0.42))
-      ctx.font = '600 40px Arial, sans-serif'
-      ctx.fillText('V3', sx(1.2), sz(0.62) - 8)
-      ctx.fillText('RESET', sx(0.05), sz(-0.42))
-      ctx.fillText('ICSP', sx(1.9), sz(-0.42))
+      // nombre de la placa entre el micro y el ICSP, en vertical para que no choque con nada
+      ctx.save()
+      ctx.translate(sx(1.36), sz(0))
+      ctx.rotate(-Math.PI / 2)
+      ctx.font = 'bold 50px Arial, sans-serif'
+      ctx.fillText('NANO', 0, -18)
+      ctx.font = '600 30px Arial, sans-serif'
+      ctx.fillText('ARDUINO  V3', 0, 30)
+      ctx.restore()
+      ctx.font = '600 30px Arial, sans-serif'
+      ctx.fillText('RESET', sx(0.05), sz(-0.4))
+      ctx.fillText('ICSP', sx(1.9), sz(-0.5))
       ;[
-        ['TX', -1.05, 0.48],
-        ['RX', -0.86, 0.48],
-        ['L', -0.67, 0.48],
-        ['POW', -0.45, 0.48],
+        ['TX', -1.1, 0.46],
+        ['RX', -0.94, 0.46],
+        ['L', -0.78, 0.46],
+        ['POW', -0.6, 0.46],
       ].forEach(([t, x, z]) => ctx.fillText(t as string, sx(x as number), sz(z as number)))
-      ctx.lineWidth = 5
+      ctx.lineWidth = 4
       ctx.strokeStyle = '#f6f6f0'
-      ctx.strokeRect(sx(1.62), sz(-0.33), sx(0) - sx(-0.55), sz(0.38) - sz(0))
+      ctx.strokeRect(sx(1.71), sz(-0.4), sx(2.09) - sx(1.71), sz(0.4) - sz(-0.4))
+      // marca del pin 1 del ICSP
+      ctx.beginPath()
+      ctx.arc(sx(1.68), sz(-0.36), 8, 0, Math.PI * 2)
+      ctx.fill()
     },
     [],
   )
@@ -304,13 +343,11 @@ export function NanoModel({ powered, blink, led13 }: NanoProps) {
           <planeGeometry args={[NANO_L - 0.02, NANO_W - 0.02]} />
           <meshStandardMaterial color="#00545f" roughness={0.5} />
         </mesh>
-        {/* los pines se sueldan del lado de arriba (el plástico queda abajo) */}
-        <group rotation={[Math.PI, 0, 0]}>
-          <SolderJoints points={joints} />
-        </group>
-        {/* pasivos SMD */}
+        {/* los pines se sueldan del lado de arriba (el plástico queda abajo): punta del pin y un cono chico de estaño */}
+        <TopJoints points={joints} />
+        {/* pasivos SMD, en los lugares libres */}
         {[
-          [-0.3, 0.35], [-0.15, 0.35], [0.6, 0.38], [0.75, 0.38], [0.9, -0.38], [-0.3, -0.38], [-1.25, -0.3], [-1.25, 0.25], [0.95, 0.38], [0.45, -0.38],
+          [-1.15, -0.36], [-0.97, -0.36], [-0.55, -0.42], [-0.38, -0.42], [1.12, -0.42], [1.12, 0.42], [-0.12, 0.42], [0.25, -0.42],
         ].map(([x, z], i) => (
           <group key={i} position={[x, y, z]}>
             <mesh position={[0, 0.022, 0]}>
@@ -352,7 +389,7 @@ export function NanoModel({ powered, blink, led13 }: NanoProps) {
       </Part>
 
       <Part id="cristal" offset={[0, 0.8, 0]} labelAt={[-0.1, 0.3, 0.2]}>
-        <group position={[-0.1, y, 0.22]}>
+        <group position={[-0.25, y, 0.22]} rotation={[0, Math.PI / 2, 0]}>
           <RoundedBox args={[0.32, 0.1, 0.13]} radius={0.02} smoothness={2} position={[0, 0.05, 0]}>
             <meshStandardMaterial color="#c79a4c" roughness={0.55} />
           </RoundedBox>
@@ -379,10 +416,19 @@ export function NanoModel({ powered, blink, led13 }: NanoProps) {
       </Part>
 
       <Part id="leds" offset={[0, 0.7, 0]} labelAt={[-0.75, 0.3, 0.3]}>
-        <SmdLed position={[-1.05, y, 0.3]} color="#ffd23f" />
-        <SmdLed position={[-0.86, y, 0.3]} color="#ffd23f" />
-        <SmdLed position={[-0.67, y, 0.3]} color="#ffb347" matRef={lRef} />
-        <SmdLed position={[-0.45, y, 0.3]} color="#3dff6e" on={powered} />
+        {/* LEDs 0603, más chicos que los del UNO */}
+        {(
+          [
+            [-1.1, '#ffd23f', undefined, undefined],
+            [-0.94, '#ffd23f', undefined, undefined],
+            [-0.78, '#ffb347', undefined, lRef],
+            [-0.6, '#3dff6e', powered, undefined],
+          ] as const
+        ).map(([x, c, on, ref]) => (
+          <group key={x} position={[x, y, 0.3]} scale={0.7} rotation={[0, Math.PI / 2, 0]}>
+            <SmdLed position={[0, 0, 0]} color={c} on={on} matRef={ref} />
+          </group>
+        ))}
       </Part>
 
       <Part id="pinesA" offset={[0, -0.8, 0.5]} labelAt={[0, -0.5, ROW]}>

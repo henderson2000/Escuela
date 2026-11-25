@@ -100,24 +100,67 @@ function Bench() {
 
 /* ------------------------------------------------------------------ apoyar el modelo sobre la mesa */
 
+/** Caja de un modelo, sin contar lo marcado con `userData.noBounds` (lámparas, rayos de luz…). */
+function measure(root: THREE.Object3D): THREE.Box3 {
+  const box = new THREE.Box3()
+  const tmp = new THREE.Box3()
+  const visit = (o: THREE.Object3D) => {
+    if (o.userData?.noBounds || !o.visible) return
+    const m = o as THREE.Mesh | THREE.InstancedMesh
+    if ((m as THREE.Mesh).isMesh && m.geometry) {
+      if ((m as THREE.InstancedMesh).isInstancedMesh) {
+        const im = m as THREE.InstancedMesh
+        if (im.count > 0) {
+          im.computeBoundingBox()
+          if (im.boundingBox) tmp.copy(im.boundingBox).applyMatrix4(im.matrixWorld)
+          else tmp.makeEmpty()
+        } else tmp.makeEmpty()
+      } else {
+        if (!m.geometry.boundingBox) m.geometry.computeBoundingBox()
+        tmp.copy(m.geometry.boundingBox!).applyMatrix4(m.matrixWorld)
+      }
+      const ok = [tmp.min.x, tmp.min.y, tmp.min.z, tmp.max.x, tmp.max.y, tmp.max.z].every(Number.isFinite)
+      if (ok && !tmp.isEmpty()) box.union(tmp)
+      else if (!tmp.isEmpty()) console.warn('[lab] caja inválida en', o.name || o.type, tmp)
+    }
+    o.children.forEach(visit)
+  }
+  visit(root)
+  return box
+}
+
 /** Centra el modelo y lo apoya sobre la plancha. Informa su tamaño para encuadrar la cámara. */
 function Grounded({ children, onBox, k }: { children: ReactNode; onBox: (b: THREE.Box3) => void; k: string }) {
   const ref = useRef<THREE.Group>(null)
   const inner = useRef<THREE.Group>(null)
-  useLayoutEffect(() => {
+  const frames = useRef(0)
+  const invalidate = useThree((s) => s.invalidate)
+  const place = () => {
     const g = inner.current
     const outer = ref.current
     if (!g || !outer) return
     outer.position.set(0, 0, 0)
     outer.updateMatrixWorld(true)
-    const box = new THREE.Box3().setFromObject(g)
-    if (box.isEmpty()) return
+    const box = measure(g)
+    if (box.isEmpty() || !Number.isFinite(box.min.y)) return
     const c = box.getCenter(new THREE.Vector3())
     outer.position.set(-c.x, -box.min.y, -c.z)
     outer.updateMatrixWorld(true)
-    onBox(new THREE.Box3().setFromObject(g))
+    onBox(measure(g))
+  }
+  useLayoutEffect(() => {
+    frames.current = 0
+    place()
+    invalidate()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [k])
+  // algunos modelos terminan de armarse (instancias, texturas) en los primeros cuadros: se vuelve a medir
+  useFrame(() => {
+    if (frames.current > 3) return
+    frames.current++
+    if (frames.current === 3) place()
+    invalidate()
+  })
   return (
     <group ref={ref}>
       <group ref={inner}>{children}</group>
@@ -147,7 +190,9 @@ function CameraRig({
     const b = box.current
     if (!b || !controls) return
     const fov = (camera.fov * Math.PI) / 180
-    const fit = (sphereR: number) => (sphereR / Math.sin(fov / 2)) * 1.08
+    // el lado más angosto del visor manda (en pantallas angostas se aleja más)
+    const aspect = Math.min(camera.aspect, 1)
+    const fit = (sphereR: number) => (sphereR / Math.sin(Math.atan(Math.tan(fov / 2) * aspect))) * 1.18
     if (request.part) {
       const g = registry.current.get(request.part)
       if (!g) return
@@ -227,7 +272,7 @@ export function LabScene({ children, modelKey, parts, camera, overlay, onBackgro
           frameloop="demand"
           dpr={[1, 2]}
           camera={{ position: [8, 9, 11], fov: 35, near: 0.05, far: 400 }}
-          gl={{ antialias: true, powerPreference: 'high-performance' }}
+          gl={{ antialias: true, powerPreference: 'high-performance', toneMappingExposure: 0.88 }}
           onPointerMissed={onBackgroundClick}
         >
           <color attach="background" args={['#1a2230']} />

@@ -55,9 +55,35 @@ export function BreadboardBody({ cols, highlightStrips, hoverId, onHoleClick, on
       line(-6.85, '#25c')
       line(6.85, '#25c')
       line(9.2, '#d22')
-      // canal central
-      ctx.fillStyle = '#cfccc2'
-      ctx.fillRect(0, sz(-0.55 * PITCH), w, sz(0.55 * PITCH) - sz(-0.55 * PITCH))
+      // canal central: ranura con sombra en las paredes
+      const c0 = sz(-0.55 * PITCH)
+      const c1 = sz(0.55 * PITCH)
+      const gch = ctx.createLinearGradient(0, c0, 0, c1)
+      gch.addColorStop(0, '#8f8c84')
+      gch.addColorStop(0.25, '#c9c6bc')
+      gch.addColorStop(0.8, '#d8d5cb')
+      gch.addColorStop(1, '#f0eee6')
+      ctx.fillStyle = gch
+      ctx.fillRect(0, c0, w, c1 - c0)
+      // bocas cuadradas con chanfle: borde iluminado de un lado y en sombra del otro
+      const px = PITCH * 220
+      const outer = px * 0.66
+      const inner = px * 0.36
+      for (const hole of holes) {
+        const cx = sx(hole.x)
+        const cz = sz(hole.z)
+        const g = ctx.createLinearGradient(cx - outer / 2, cz - outer / 2, cx + outer / 2, cz + outer / 2)
+        g.addColorStop(0, '#9e9a90')
+        g.addColorStop(0.5, '#c4c0b6')
+        g.addColorStop(1, '#ebe8df')
+        ctx.fillStyle = g
+        ctx.fillRect(cx - outer / 2, cz - outer / 2, outer, outer)
+        ctx.fillStyle = '#26231f'
+        ctx.fillRect(cx - inner / 2, cz - inner / 2, inner, inner)
+        // brillo del contacto metálico al fondo
+        ctx.fillStyle = 'rgba(200,200,190,0.35)'
+        ctx.fillRect(cx - inner * 0.15, cz - inner * 0.35, inner * 0.3, inner * 0.7)
+      }
       ctx.fillStyle = '#555'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
@@ -79,7 +105,7 @@ export function BreadboardBody({ cols, highlightStrips, hoverId, onHoleClick, on
         ctx.fillText(r.endsWith('+') ? '+' : '−', sx(x0 - PITCH * 0.6), sz(ROW_Z[r] * PITCH))
       }
     },
-    [cols],
+    [cols, holes],
   )
 
   const interactive = !!onHoleClick || !!onHoleHover
@@ -125,9 +151,8 @@ export function BreadboardBody({ cols, highlightStrips, hoverId, onHoleClick, on
   return (
     <group ref={group}>
       <RoundedBox args={[width, height, depth]} radius={0.03} smoothness={3} castShadow receiveShadow>
-        <meshStandardMaterial color="#f3f1ea" roughness={0.75} />
-      </RoundedBox>
-      {/* encastres "cola de milano" para unir varias protoboards */}
+        <meshStandardMaterial color="#f1eee5" roughness={0.62} />
+      </RoundedBox>      {/* encastres "cola de milano" para unir varias protoboards */}
       {[-0.32, 0, 0.32].map((f) => (
         <group key={f}>
           <mesh position={[width / 2 + 0.05, -0.05, f * depth]}>
@@ -142,10 +167,10 @@ export function BreadboardBody({ cols, highlightStrips, hoverId, onHoleClick, on
       ))}
       <mesh position={[0, height / 2 + 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]} {...events}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial map={tex} roughness={0.75} />
+        <meshStandardMaterial map={tex} roughness={0.62} />
       </mesh>
       <instancedMesh ref={ref} args={[undefined, undefined, holes.length]} raycast={() => null}>
-        <boxGeometry args={[PITCH * 0.55, 0.02, PITCH * 0.55]} />
+        <boxGeometry args={[PITCH * 0.36, 0.004, PITCH * 0.36]} />
         <meshStandardMaterial roughness={0.9} />
       </instancedMesh>
     </group>

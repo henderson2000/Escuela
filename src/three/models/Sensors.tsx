@@ -305,7 +305,8 @@ export function LdrModel({ light }: { light: number }) {
   return (
     <group rotation={[0.5, 0, 0]}>
       <pointLight ref={lamp} position={[-1.2, 2.2, -1.2]} color="#fff6d8" intensity={0} distance={10} />
-      <mesh position={[-1.2, 2.2, -1.2]}>
+      {/* la lamparita no cuenta para encuadrar la cámara */}
+      <mesh position={[-1.2, 2.2, -1.2]} userData={{ noBounds: true }}>
         <sphereGeometry args={[0.12, 16, 16]} />
         <meshStandardMaterial color="#fff6d8" emissive="#ffe28a" emissiveIntensity={light / 25} />
       </mesh>
