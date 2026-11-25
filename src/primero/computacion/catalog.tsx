@@ -10,7 +10,7 @@ const pc: ComponentDef = {
   short: 'Placa base, procesador, memoria RAM, placa de video, fuente y discos. Sacale la tapa y despiezala.',
   parts: PC_PARTS,
   camera: [7.5, 6.5, 7.5],
-  target: [0, 2.1, 0],
+  target: [0, 2.4, 0],
   shadowY: 0,
   defaultParams: { encendida: true },
   render: (p) => <PcModel {...(p as PcParams)} />,
