@@ -72,6 +72,8 @@ export interface ComponentDef {
   activities: Activity[]
   /** entorno 3D propio en el laboratorio (si no, el del taller): p. ej. los accesorios van sobre un banco */
   environment?: EnvName
+  /** 'wall': el modelo va colgado en la pared del fondo (tableros) */
+  mount?: 'wall'
 }
 
 import type { EnvName } from '../lib/subject'

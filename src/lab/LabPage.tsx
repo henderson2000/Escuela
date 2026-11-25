@@ -142,6 +142,7 @@ function Lab({ def }: { def: ComponentDef }) {
 
         <LabScene
           environment={def.environment ?? environment}
+          mount={def.mount}
           modelKey={def.id}
           camera={cam}
           parts={{ explode, labels, hidden, selected, names, onSelect: (pid) => pick(pid === selected ? null : pid) }}

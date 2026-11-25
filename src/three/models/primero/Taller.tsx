@@ -1,52 +1,14 @@
-import { useMemo } from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import { Part } from '../../Part'
-import { latheGeometry, useCanvasTexture } from '../../helpers'
+import { BallPeenHammer, CenterPunch, Scriber, SteelRule, SurfaceGauge, SurfacePlate, TrySquare } from './herramientas'
+import { useCanvasTexture } from '../../helpers'
 
 // Herramientas e instrumentos de banco. 1 unidad = 1 cm.
 
 const STEEL = { color: '#c9ced5', metalness: 0.95, roughness: 0.25 }
 const DARK_STEEL = { color: '#5a6069', metalness: 0.85, roughness: 0.4 }
 const CAST = { color: '#2f5f8a', metalness: 0.4, roughness: 0.55 }
-
-/** Regla metálica con su escala grabada. */
-function Ruler({ length = 30 }: { length?: number }) {
-  const tex = useCanvasTexture(
-    2048,
-    128,
-    (ctx, w, h) => {
-      ctx.fillStyle = '#d7dbe0'
-      ctx.fillRect(0, 0, w, h)
-      ctx.strokeStyle = '#1b1d22'
-      ctx.fillStyle = '#1b1d22'
-      ctx.font = 'bold 30px system-ui'
-      const mm = length * 10
-      for (let i = 0; i <= mm; i++) {
-        const x = 10 + (i / mm) * (w - 20)
-        const l = i % 10 === 0 ? 60 : i % 5 === 0 ? 40 : 24
-        ctx.lineWidth = i % 10 === 0 ? 3 : 2
-        ctx.beginPath()
-        ctx.moveTo(x, 0)
-        ctx.lineTo(x, l)
-        ctx.stroke()
-        if (i % 50 === 0 && i > 0) ctx.fillText(String(i / 10), x - 12, 100)
-      }
-    },
-    [length],
-  )
-  return (
-    <mesh castShadow receiveShadow>
-      <boxGeometry args={[length + 1, 0.08, 2.5]} />
-      <meshStandardMaterial attach="material-0" {...STEEL} />
-      <meshStandardMaterial attach="material-1" {...STEEL} />
-      <meshStandardMaterial attach="material-2" map={tex} metalness={0.6} roughness={0.35} />
-      <meshStandardMaterial attach="material-3" {...STEEL} />
-      <meshStandardMaterial attach="material-4" {...STEEL} />
-      <meshStandardMaterial attach="material-5" {...STEEL} />
-    </mesh>
-  )
-}
 
 export const INSTRUMENTOS_PARTS = [
   { id: 'marmol', name: 'Mármol de trazado', desc: 'Placa de granito o fundición perfectamente plana: es la base de referencia para trazar con el gramil.' },
@@ -59,97 +21,42 @@ export const INSTRUMENTOS_PARTS = [
 ]
 
 export function InstrumentosModel() {
-  const knurl = useCanvasTexture(
-    64,
-    64,
-    (ctx, w, h) => {
-      ctx.fillStyle = '#8b9199'
-      ctx.fillRect(0, 0, w, h)
-      ctx.strokeStyle = '#4a4f57'
-      ctx.lineWidth = 3
-      for (let k = -h; k < w; k += 10) {
-        ctx.beginPath()
-        ctx.moveTo(k, 0)
-        ctx.lineTo(k + h, h)
-        ctx.stroke()
-        ctx.beginPath()
-        ctx.moveTo(k + h, 0)
-        ctx.lineTo(k, h)
-        ctx.stroke()
-      }
-    },
-    [],
-  )
-  knurl.wrapS = knurl.wrapT = THREE.RepeatWrapping
-  knurl.repeat.set(4, 3)
-  const scriber = useMemo(() => latheGeometry([[0, 0], [0.18, 3.5], [0.25, 5], [0.25, 11], [0.18, 12.5], [0, 16]], 24).translate(0, -8, 0).rotateZ(Math.PI / 2), [])
-  const punch = useMemo(() => latheGeometry([[0, 0], [0.22, 0.13], [0.3, 2.5], [0.42, 3.4], [0.42, 10], [0.36, 10.6], [0, 10.7]], 24).rotateZ(-Math.PI / 2), [])
   return (
     <group>
-      <Part id="marmol" offset={[0, -3, 0]} labelAt={[-14, 0.5, 9]}>
-        <mesh position={[0, -2, 0]} receiveShadow castShadow>
-          <boxGeometry args={[40, 4, 26]} />
-          <meshStandardMaterial color="#2b2e33" roughness={0.35} metalness={0.1} />
-        </mesh>
+      <Part id="marmol" offset={[0, -3, 0]} labelAt={[-17, 0.5, 11.5]}>
+        <SurfacePlate w={40} d={26} h={6} />
       </Part>
-      <Part id="regla" offset={[0, 3, 6]} labelAt={[-6, 0.6, 9]}>
-        <group position={[-2, 0.05, 8.5]}>
-          <Ruler />
+      <Part id="regla" offset={[0, 3, 6]} labelAt={[-10, 0.6, 10.5]}>
+        <group position={[-3, 0, 10.5]}>
+          <SteelRule length={30} />
         </group>
       </Part>
-      <Part id="escuadra" offset={[-6, 3, 0]} labelAt={[-13, 6, -4]}>
-        <group position={[-13, 0, -2]}>
-          {/* talón grueso + hoja fina */}
-          <mesh position={[0, 0.6, 0]} castShadow>
-            <boxGeometry args={[1.2, 1.2, 10]} />
-            <meshStandardMaterial {...DARK_STEEL} />
-          </mesh>
-          <mesh position={[0, 7.6, -4.6]} castShadow>
-            <boxGeometry args={[0.2, 14, 1.6]} />
-            <meshStandardMaterial {...STEEL} />
-          </mesh>
+      <Part id="escuadra" offset={[0, 3, -6]} labelAt={[8, 1.5, -10.5]}>
+        <group position={[-2, 0, -12]}>
+          <TrySquare blade={20} stock={12} />
         </group>
       </Part>
-      <Part id="gramil" offset={[5, 3, -4]} labelAt={[3, 17, -6]}>
-        <group position={[3, 0, -6]}>
-          <mesh position={[0, 0.8, 0]} castShadow>
-            <cylinderGeometry args={[3, 3.4, 1.6, 40]} />
-            <meshStandardMaterial {...CAST} />
-          </mesh>
-          <mesh position={[0, 9, 0]} castShadow>
-            <cylinderGeometry args={[0.45, 0.45, 15, 20]} />
-            <meshStandardMaterial {...STEEL} />
-          </mesh>
-          <mesh position={[0, 8, 0]}>
-            <boxGeometry args={[1.4, 1.4, 1.4]} />
-            <meshStandardMaterial {...DARK_STEEL} />
-          </mesh>
-          <mesh position={[-3.5, 8, 0]} rotation={[0, 0, Math.PI / 2 + 0.08]} castShadow>
-            <cylinderGeometry args={[0.12, 0.02, 8, 10]} />
-            <meshStandardMaterial {...STEEL} />
-          </mesh>
+      <Part id="gramil" offset={[-5, 3, -4]} labelAt={[-13, 24, -8.5]}>
+        <group position={[-13, 0, -8.5]} rotation={[0, Math.PI, 0]}>
+          <SurfaceGauge height={10} />
         </group>
       </Part>
-      <Part id="punta" offset={[0, 3, 4]} labelAt={[10, 1.2, 3]}>
-        <mesh geometry={scriber} position={[11, 0.3, 3]} rotation={[0, 0.4, 0]} castShadow>
-          <meshStandardMaterial map={knurl} {...STEEL} />
-        </mesh>
+      <Part id="punta" offset={[0, 3, 0]} labelAt={[12, 1.2, -4]}>
+        <group position={[9.5, 0.28, -4]} rotation={[0, 0.1, 0]}>
+          <Scriber />
+        </group>
       </Part>
-      <Part id="granete" offset={[4, 3, 0]} labelAt={[14, 1.2, -4]}>
-        <mesh geometry={punch} position={[9, 0.45, -4]} rotation={[0, -0.3, 0]} castShadow>
-          <meshStandardMaterial {...STEEL} />
-        </mesh>
+      <Part id="granete" offset={[4, 3, 0]} labelAt={[8, 1.5, -0.5]}>
+        <group position={[2, 0.5, -0.5]} rotation={[0, 0.15, 0]}>
+          <CenterPunch />
+        </group>
       </Part>
-      <Part id="martillo" offset={[4, 4, 4]} labelAt={[15, 3, 8]}>
-        <group position={[15, 1.1, 6]} rotation={[0, -0.6, 0]}>
-          <mesh castShadow>
-            <boxGeometry args={[2.2, 2.2, 9.5]} />
-            <meshStandardMaterial {...DARK_STEEL} />
-          </mesh>
-          <mesh position={[0, -0.2, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
-            <cylinderGeometry args={[0.7, 0.8, 20, 16]} />
-            <meshStandardMaterial color="#b98552" roughness={0.5} />
-          </mesh>
+      <Part id="martillo" offset={[0, 4, 4]} labelAt={[-15, 3.2, 4]}>
+        {/* acostado: la cabeza apoya de costado y el mango baja apenas hasta la mesa */}
+        <group position={[-15, 1.25, 4]} rotation={[0, 1.52, 0]}>
+          <group rotation={[-Math.PI / 2 + 0.02, 0, 0]}>
+            <BallPeenHammer len={30} />
+          </group>
         </group>
       </Part>
     </group>

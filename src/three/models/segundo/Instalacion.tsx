@@ -294,6 +294,111 @@ function Spark() {
   )
 }
 
+
+/** Altura del piso (el tablero se cuelga en la pared con su borde de abajo a 80 cm). */
+const FLOOR = -5.5 - 8
+
+/** Conductor de tierra con su aislación verde con franjas amarillas. */
+const GY_TEX = (() => {
+  if (typeof document === 'undefined') return null
+  const c = document.createElement('canvas')
+  c.width = 256
+  c.height = 16
+  const ctx = c.getContext('2d')!
+  ctx.fillStyle = '#2f9a3c'
+  ctx.fillRect(0, 0, 256, 16)
+  ctx.fillStyle = '#f2cf1d'
+  for (let x = 0; x < 256; x += 64) {
+    ctx.beginPath()
+    ctx.moveTo(x, 0)
+    ctx.lineTo(x + 26, 0)
+    ctx.lineTo(x + 40, 16)
+    ctx.lineTo(x + 14, 16)
+    ctx.fill()
+  }
+  const t = new THREE.CanvasTexture(c)
+  t.colorSpace = THREE.SRGBColorSpace
+  t.wrapS = t.wrapT = THREE.RepeatWrapping
+  t.repeat.set(60, 1)
+  return t
+})()
+const GY_MAT = new THREE.MeshStandardMaterial({ map: GY_TEX ?? undefined, color: GY_TEX ? '#ffffff' : '#3a9a3a', roughness: 0.45 })
+const COPPER = new THREE.MeshStandardMaterial({ color: '#c47a4c', metalness: 1, roughness: 0.3 })
+const BRONZE = new THREE.MeshStandardMaterial({ color: '#b08d57', metalness: 0.9, roughness: 0.35 })
+const CONCRETE = new THREE.MeshStandardMaterial({ color: '#8d8b85', roughness: 0.95 })
+
+/** Bajada de tierra: sale del tablero, baja por la pared engrampada y llega a la jabalina en su cámara. */
+function Jabalina() {
+  const X = -8.6
+  const JZ = 2.9
+  const geo = useMemo(() => {
+    const pts = [
+      [-8.2, 0.6, 0.3],
+      [-8.6, 0.6, 0.3],
+      [X, -5.2, 0.15],
+      [X, -5.7, -0.28],
+      [X, FLOOR + 0.6, -0.28],
+      [X, FLOOR + 0.12, 0.1],
+      [X, FLOOR + 0.12, JZ - 2.0],
+      [X, FLOOR + 0.5, JZ - 1.35],
+      [X, FLOOR + 0.75, JZ - 0.6],
+      [X + 0.2, FLOOR + 0.74, JZ],
+    ].map(([x, y, z]) => new THREE.Vector3(x, y, z))
+    return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, 'centripetal'), 160, 0.075, 10, false)
+  }, [])
+  return (
+    <group>
+      <mesh geometry={geo} material={GY_MAT} castShadow />
+      {/* grampas que sujetan el cable a la pared */}
+      {[-7.2, -9.2, -11.2].map((y) => (
+        <mesh key={y} position={[X, y, -0.3]} rotation={[0, 0, Math.PI / 2]}>
+          <torusGeometry args={[0.11, 0.025, 6, 16, Math.PI]} />
+          <meshStandardMaterial color="#e8e8e4" roughness={0.6} />
+        </mesh>
+      ))}
+      {/* cámara de inspección de hormigón, abierta */}
+      <group position={[X, FLOOR, JZ]} scale={1.7}>
+        {[
+          [0, 0.75, 1.7, 0.2],
+          [0, -0.75, 1.7, 0.2],
+          [0.75, 0, 0.2, 1.3],
+          [-0.75, 0, 0.2, 1.3],
+        ].map(([x, z, w, d], i) => (
+          <mesh key={i} position={[x, 0.09, z]} material={CONCRETE} castShadow receiveShadow>
+            <boxGeometry args={[w, 0.18, d]} />
+          </mesh>
+        ))}
+        {/* tierra y ripio en el fondo */}
+        <mesh position={[0, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[1.32, 1.32]} />
+          <meshStandardMaterial color="#3b2f24" roughness={1} />
+        </mesh>
+        {Array.from({ length: 18 }, (_, i) => (
+          <mesh key={i} position={[Math.sin(i * 2.4) * 0.5, 0.05, Math.cos(i * 3.7) * 0.5]} scale={[1, 0.6, 1]}>
+            <sphereGeometry args={[0.05 + (i % 3) * 0.02, 8, 6]} />
+            <meshStandardMaterial color={i % 2 ? '#7a746b' : '#a19a8e'} roughness={0.9} />
+          </mesh>
+        ))}
+        {/* cabeza de la jabalina y tomacable de bronce */}
+        <mesh position={[0, 0.3, 0]} material={COPPER} castShadow>
+          <cylinderGeometry args={[0.09, 0.09, 0.55, 20]} />
+        </mesh>
+        <mesh position={[0, 0.43, 0]} material={BRONZE}>
+          <boxGeometry args={[0.32, 0.16, 0.26]} />
+        </mesh>
+        <mesh position={[0.2, 0.43, 0]} rotation={[0, 0, Math.PI / 2]} material={BRONZE}>
+          <cylinderGeometry args={[0.05, 0.05, 0.14, 6]} />
+        </mesh>
+        {/* tapa de la cámara apoyada al costado */}
+        <mesh position={[1.25, 0.45, -0.2]} rotation={[0, 0, -1.2]} castShadow>
+          <boxGeometry args={[0.08, 1.4, 1.4]} />
+          <meshStandardMaterial color="#2e7d3a" roughness={0.6} />
+        </mesh>
+      </group>
+    </group>
+  )
+}
+
 export function instalacionParts(p: InstalacionParams) {
   const parts = [
     { id: 'panel', name: 'Tablero de práctica', desc: 'Base de madera donde se arma la instalación "a la vista", con los mismos materiales que en una casa.' },
@@ -301,6 +406,7 @@ export function instalacionParts(p: InstalacionParams) {
     { id: 'diferencial', name: 'Interruptor diferencial', desc: 'Compara la corriente que va por la fase con la que vuelve por el neutro. Si se escapa más de 30 mA (por una persona o una falla de aislamiento) se dispara. Protege a las PERSONAS. El botón T sirve para probarlo.' },
     { id: 'pia', name: 'Interruptor termomagnético (PIA)', desc: 'Protege la INSTALACIÓN: su parte térmica corta las sobrecargas y su parte magnética, los cortocircuitos.' },
     { id: 'conductores', name: 'Conductores', desc: 'Fase marrón, neutro celeste y tierra verde-amarilla (colores normalizados). El retorno (de la llave a la lámpara) es negro y los puentes, rojos. Los puntos amarillos muestran la corriente: en alterna va y viene.' },
+    { id: 'jabalina', name: 'Puesta a tierra (jabalina)', desc: 'Jabalina de acero cobreado de 1,5 m clavada en el suelo, con su cámara de inspección. El conductor verde-amarillo baja desde el tablero y se ajusta a la jabalina con un tomacable de bronce. Si una carcasa queda con tensión por una falla, la corriente se va a tierra por acá y el diferencial dispara.' },
     { id: 'h1', name: 'Lámpara H1', desc: 'Portalámparas sobre caja octogonal con una lámpara de 60 W / 220 V.' },
     { id: 's1', name: p.circuito === 'escalera' ? 'Llave de combinación S1' : 'Interruptor S1', desc: p.circuito === 'escalera' ? 'Llave de combinación (desviador): conecta su borne común con uno u otro de los dos conductores que van a S2.' : 'Interruptor de un punto: abre o cierra la fase que va a la lámpara. Siempre se corta la FASE, nunca el neutro.' },
   ]
@@ -395,6 +501,9 @@ export function InstalacionModel(p: InstalacionParams) {
           </group>
         </Part>
       )}
+      <Part id="jabalina" offset={[-1.5, -1, 2]} labelAt={[-8.6, FLOOR + 1.6, 2.4]}>
+        <Jabalina />
+      </Part>
       <Part id="s1" offset={[0, -1.5, 1.5]} labelAt={[S1[0], S1[1] - 1.1, 1]}>
         <group position={[S1[0], S1[1], 0]}>
           <SwitchBox on={p.s1} two={p.circuito === 'escalera'} />

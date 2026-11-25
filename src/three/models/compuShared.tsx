@@ -238,7 +238,8 @@ export function Cable({ pts, r = 0.04, material = CM.rubber, tension = 0.5, segm
     const c = new THREE.CatmullRomCurve3(
       pts.map((p) => new THREE.Vector3(...p)),
       false,
-      'catmullrom',
+      // centrípeta: no hace rulos ni se pasa de largo en las curvas cerradas
+      tension < 0.5 ? 'centripetal' : 'catmullrom',
       tension,
     )
     return new THREE.TubeGeometry(c, segments ?? Math.max(16, pts.length * 14), r, 10, false)

@@ -2,7 +2,23 @@
 // Cada "terminal" (orificio de la protoboard o pin del Arduino) pertenece a un nodo.
 // Los cables unen nodos. Después se verifica que los componentes formen el circuito pedido.
 
-export type CompKind = 'cable' | 'resistencia' | 'led' | 'pulsador' | 'potenciometro' | 'ldr' | 'buzzer' | 'servo' | 'ultrasonico'
+export type CompKind =
+  | 'cable'
+  | 'resistencia'
+  | 'led'
+  | 'pulsador'
+  | 'potenciometro'
+  | 'ldr'
+  | 'buzzer'
+  | 'servo'
+  | 'ultrasonico'
+  | 'transistor'
+  | 'diodo'
+  | 'capacitor'
+  | 'motor'
+  | 'rgb'
+  | 'display7'
+  | 'lm35'
 
 export interface Placed {
   id: string
@@ -25,6 +41,36 @@ export const LEG_NAMES: Record<CompKind, string[]> = {
   // los módulos se enchufan en una fila: se elige sólo el primer orificio
   servo: ['GND (marrón)', '5V (rojo)', 'señal (naranja)'],
   ultrasonico: ['VCC', 'Trig', 'Echo', 'GND'],
+  transistor: ['colector (C)', 'base (B)', 'emisor (E)'],
+  diodo: ['ánodo (+)', 'cátodo (−, lado de la franja)'],
+  capacitor: ['pata + (larga)', 'pata − (franja)'],
+  motor: ['borne + (rojo)', 'borne − (negro)'],
+  rgb: ['rojo (R)', 'cátodo común (−, la más larga)', 'verde (G)', 'azul (B)'],
+  // display de cátodo común: fila de arriba g f COM a b · fila de abajo e d COM c dp
+  display7: ['g', 'f', 'COM', 'a', 'b', 'e', 'd', 'COM', 'c', 'dp'],
+  lm35: ['+Vs (5 V)', 'Vout (salida)', 'GND'],
+}
+
+/**
+ * Cómo se enchufa cada componente cuando se coloca solo (estilo Tinkercad): columnas que ocupa cada pata
+ * a partir de la primera, en la misma fila. El display va a caballo de la canaleta central (filas f y e).
+ */
+export const PLACE_COLS: Record<Exclude<CompKind, 'cable'>, number[]> = {
+  resistencia: [0, 4],
+  led: [0, 1],
+  pulsador: [0, 2],
+  potenciometro: [0, 1, 2],
+  ldr: [0, 3],
+  buzzer: [0, 3],
+  servo: [0, 1, 2],
+  ultrasonico: [0, 1, 2, 3],
+  transistor: [0, 1, 2],
+  diodo: [0, 4],
+  capacitor: [0, 2],
+  motor: [0, 3],
+  rgb: [0, 1, 2, 3],
+  display7: [0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
+  lm35: [0, 1, 2],
 }
 
 /** Módulos que ocupan orificios seguidos de una misma fila (se coloca con un solo clic). */

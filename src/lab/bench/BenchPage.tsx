@@ -11,12 +11,12 @@ import { ArduinoModel, arduinoPinPositions } from '../../three/models/Arduino'
 import { Label } from '../../three/Label'
 import { ARD_POS, COLS, HEADER_TOP, PlacedItem, USABLE_PINS, describePin } from '../../games/BreadboardGame'
 import { boardSize, buildHoles, describeHole } from '../../lib/breadboard'
-import { LEG_NAMES, ROW_MODULES, type CompKind, type Placed } from '../../lib/circuit'
+import { LEG_NAMES, PLACE_COLS, type CompKind, type Placed } from '../../lib/circuit'
 import { BenchItem } from './BenchItems'
 import { CodeEditor } from '../../compu/CodeEditor'
 import { compileArduino, type CompileError } from '../arduino/compile'
 import { ArduinoRunner, type BoardIO } from '../arduino/runtime'
-import { ldrResistance, simulate, type PinModeName, type PinState, type SimResult } from '../sim/solve'
+import { SEG_LEGS, ldrResistance, simulate, type PinModeName, type PinState, type SimResult } from '../sim/solve'
 import { EXAMPLES, WIRE_COLORS } from './examples'
 import { useSub } from '../../lib/nav'
 import '../lab.css'
@@ -44,16 +44,28 @@ const TOOLS: Tool[] = [
   { kind: 'resistencia', label: '330 Ω', value: 330, group: 'Resistencias' },
   { kind: 'resistencia', label: '1 kΩ', value: 1000, group: 'Resistencias' },
   { kind: 'resistencia', label: '10 kΩ', value: 10000, group: 'Resistencias' },
+  { kind: 'resistencia', label: '100 Ω', value: 100, group: 'Resistencias' },
+  { kind: 'resistencia', label: '470 Ω', value: 470, group: 'Resistencias' },
+  { kind: 'resistencia', label: '4,7 kΩ', value: 4700, group: 'Resistencias' },
+  { kind: 'resistencia', label: '100 kΩ', value: 100000, group: 'Resistencias' },
   { kind: 'led', label: 'Rojo', color: '#ff2a2a', group: 'LEDs' },
   { kind: 'led', label: 'Verde', color: '#2aff5a', group: 'LEDs' },
   { kind: 'led', label: 'Amarillo', color: '#ffd21a', group: 'LEDs' },
   { kind: 'led', label: 'Azul', color: BLUE, group: 'LEDs' },
+  { kind: 'led', label: 'Blanco', color: '#ffffff', group: 'LEDs' },
+  { kind: 'rgb', label: 'RGB', group: 'LEDs' },
   { kind: 'pulsador', label: 'Pulsador', group: 'Entradas' },
   { kind: 'potenciometro', label: 'Potenciómetro 10 kΩ', value: 10000, group: 'Entradas' },
   { kind: 'ldr', label: 'LDR (sensor de luz)', group: 'Sensores y actuadores' },
   { kind: 'ultrasonico', label: 'Ultrasónico HC-SR04', group: 'Sensores y actuadores' },
   { kind: 'buzzer', label: 'Buzzer', group: 'Sensores y actuadores' },
   { kind: 'servo', label: 'Servo SG90', group: 'Sensores y actuadores' },
+  { kind: 'lm35', label: 'LM35 (temperatura)', group: 'Sensores y actuadores' },
+  { kind: 'motor', label: 'Motor DC', group: 'Sensores y actuadores' },
+  { kind: 'display7', label: 'Display 7 segmentos', group: 'Sensores y actuadores' },
+  { kind: 'transistor', label: 'Transistor NPN BC547', group: 'Semiconductores y capacitores' },
+  { kind: 'diodo', label: 'Diodo 1N4007', group: 'Semiconductores y capacitores' },
+  { kind: 'capacitor', label: 'Capacitor 100 µF', value: 100e-6, group: 'Semiconductores y capacitores' },
 ]
 
 const SWATCH: Partial<Record<CompKind, string>> = {
@@ -63,10 +75,32 @@ const SWATCH: Partial<Record<CompKind, string>> = {
   ultrasonico: '#1c5bb8',
   buzzer: '#141416',
   servo: '#2f6fe0',
+  transistor: '#17181b',
+  diodo: '#141416',
+  capacitor: '#1b3f8f',
+  motor: '#c3c8cf',
+  rgb: 'linear-gradient(135deg,#ff3b3b,#3bff6a,#3b7bff)',
+  display7: '#d9d4cf',
+  lm35: '#17181b',
 }
-const EXTRA = new Set<CompKind>(['ldr', 'buzzer', 'servo', 'ultrasonico'])
+const EXTRA = new Set<CompKind>(['ldr', 'buzzer', 'servo', 'ultrasonico', 'transistor', 'diodo', 'capacitor', 'motor', 'rgb', 'display7', 'lm35'])
 
-const LED_NAME: Record<string, string> = { '#ff2a2a': 'rojo', '#2aff5a': 'verde', '#ffd21a': 'amarillo', [BLUE]: 'azul' }
+const LED_NAME: Record<string, string> = { '#ff2a2a': 'rojo', '#2aff5a': 'verde', '#ffd21a': 'amarillo', [BLUE]: 'azul', '#ffffff': 'blanco' }
+const PART_NAME: Partial<Record<CompKind, string>> = {
+  resistencia: 'Una resistencia',
+  led: 'Un LED',
+  pulsador: 'Un pulsador',
+  potenciometro: 'Un potenciómetro',
+  ldr: 'Una LDR',
+  buzzer: 'Un buzzer',
+  transistor: 'Un transistor',
+  diodo: 'Un diodo',
+  capacitor: 'Un capacitor',
+  motor: 'Un motor',
+  rgb: 'Un LED RGB',
+  display7: 'El display',
+  lm35: 'El LM35',
+}
 const fmt = (n: number, d = 1) => (Number.isFinite(n) ? n.toFixed(d).replace('.', ',') : '—')
 const uid = () => Math.random().toString(36).slice(2, 10)
 const pinName = (n: number) => (n >= 14 && n <= 19 ? `A${n - 14}` : String(n))
@@ -130,7 +164,10 @@ function Bench({ mission }: { mission?: Mission }) {
 
   const [placed, setPlaced] = useState<Placed[]>(initial.placed)
   const [code, setCode] = useState(initial.code)
-  const [tool, setTool] = useState<Tool | 'borrar' | 'usar'>('usar')
+  const [tool, setTool] = useState<Tool | 'borrar' | 'usar' | 'mover'>('usar')
+  /** pieza elegida para mover */
+  const [sel, setSel] = useState<string | null>(null)
+  const [temp, setTemp] = useState(25)
   const [pending, setPending] = useState<string[]>([])
   const [hover, setHover] = useState<string | null>(null)
   const [msg, setMsg] = useState<{ type: 'info' | 'bad'; text: string } | null>(null)
@@ -193,8 +230,8 @@ function Bench({ mission }: { mission?: Mission }) {
     })
   }
   // lo que el programa necesita leer en el momento (no puede esperar a que se dibuje la pantalla)
-  const live = useRef({ placed, pressed, pots, light, distance })
-  live.current = { placed, pressed, pots, light, distance }
+  const live = useRef({ placed, pressed, pots, light, distance, temp })
+  live.current = { placed, pressed, pots, light, distance, temp }
   const simCache = useRef<SimResult | null>(null)
   const dirty = () => {
     simCache.current = null
@@ -202,7 +239,7 @@ function Bench({ mission }: { mission?: Mission }) {
   }
   useEffect(() => {
     simCache.current = null
-  }, [placed, pressed, pots, light])
+  }, [placed, pressed, pots, light, temp])
   const currentSim = () => {
     if (!simCache.current) simCache.current = simulate({ ...live.current, terminalNode, pins: { ...pinsRef.current } })
     return simCache.current
@@ -216,8 +253,8 @@ function Bench({ mission }: { mission?: Mission }) {
   const hypo = useMemo(() => {
     const ps: Record<string, PinState> = {}
     for (const [n, m] of Object.entries(declared)) ps[n] = { mode: m, value: m === 'OUTPUT' ? 1 : 0 }
-    return simulate({ placed, terminalNode, pins: ps, pressed: new Set(), pots, light })
-  }, [placed, declared, pots, terminalNode, light])
+    return simulate({ placed, terminalNode, pins: ps, pressed: new Set(), pots, light, temp })
+  }, [placed, declared, pots, terminalNode, light, temp])
 
   const runner = useRef<ArduinoRunner | null>(null)
   const stop = () => {
@@ -403,9 +440,59 @@ function Bench({ mission }: { mission?: Mission }) {
     return m
   }, [placed, pending])
 
+  /**
+   * Dónde entra un componente si su primera pata va en el orificio `start` (misma fila, columnas según
+   * PLACE_COLS; el display va a caballo de la canaleta, filas f y e). Devuelve null si no entra.
+   */
+  // lo último que se colocó (aunque todavía no se haya vuelto a dibujar): dos clics seguidos no se pisan
+  const placedRef = useRef(placed)
+  placedRef.current = placed
+  const fit = (kind: Exclude<CompKind, 'cable'>, start: string, ignore?: string, taken: Map<string, string> = occupied): string[] | null => {
+    const h = holeById.get(start)
+    if (!h || /^[TB]/.test(h.row)) return null
+    const offs = PLACE_COLS[kind]
+    const legs = kind === 'display7' ? offs.map((dc, i) => `${i < 5 ? 'f' : 'e'}${h.col + dc}`) : offs.map((dc) => `${h.row}${h.col + dc}`)
+    if (legs.some((l) => !holeById.has(l))) return null
+    if (legs.some((l) => taken.has(l) && taken.get(l) !== ignore)) return null
+    return legs
+  }
+
+  /** Coloca el componente solo, en el primer lugar libre que no toque las tiras de otras piezas. */
+  const autoPlace = (t: Tool) => {
+    if (t.kind === 'cable') return
+    const kind = t.kind
+    const now = placedRef.current
+    const used = new Set<string>()
+    const taken = new Map<string, string>()
+    now.forEach((p) => p.legs.forEach((l) => (taken.set(l, p.id), !l.startsWith('ard:') && used.add(holeById.get(l)!.strip))))
+    const rows = kind === 'display7' ? ['f'] : ['e', 'd', 'c', 'b', 'a', 'f', 'g', 'h', 'i', 'j']
+    const side = (c: number) => [...holeById.values()].filter((hh) => hh.col === c && !/^[TB]/.test(hh.row)).map((hh) => hh.strip)
+    // primero se busca un lugar con una columna libre a cada lado; si no hay, alcanza con no compartir tiras
+    for (const roomy of [true, false])
+      for (let col = 2; col <= COLS; col++)
+        for (const row of rows) {
+          const legs = fit(kind, `${row}${col}`, undefined, taken)
+          if (!legs) continue
+          const strips = legs.map((l) => holeById.get(l)!.strip)
+          const cols = legs.map((l) => holeById.get(l)!.col)
+          const near = roomy ? [...side(Math.min(...cols) - 1), ...side(Math.max(...cols) + 1)] : []
+          if (strips.some((st) => used.has(st)) || near.some((st) => used.has(st)) || new Set(strips).size < strips.length) continue
+          const id = uid()
+          const next = [...now, { id, kind, legs, color: t.color, value: t.value }]
+          placedRef.current = next
+          setPlaced(next)
+          setSel(id)
+          setTool('mover')
+          setPending([])
+          setMsg({ type: 'info', text: `Listo: ${t.group === 'LEDs' ? 'LED ' + t.label.toLowerCase() : t.label} en la protoboard. Tocá otro orificio para moverlo, o conectalo con cables. Patas: ${LEG_NAMES[kind].filter((n, i, all) => all.indexOf(n) === i).join(' · ')}.` })
+          return
+        }
+    setMsg({ type: 'bad', text: 'No queda lugar libre en la protoboard: borrá o mové alguna pieza.' })
+  }
+
   const clickTerminal = (t: string) => {
     if (tool === 'usar') {
-      setMsg({ type: 'info', text: 'Elegí una herramienta a la izquierda para colocar componentes o cables.' })
+      setMsg({ type: 'info', text: 'Elegí un componente a la izquierda (aparece solo en la protoboard) o un cable para conectar.' })
       return
     }
     if (tool === 'borrar') {
@@ -413,46 +500,43 @@ function Bench({ mission }: { mission?: Mission }) {
       if (id && id !== 'pending') setPlaced((ps) => ps.filter((p) => p.id !== id))
       return
     }
+    if (tool === 'mover') {
+      const here = occupied.get(t)
+      if (here && here !== 'pending' && here !== sel) {
+        setSel(here)
+        return
+      }
+      const p = placed.find((x) => x.id === sel)
+      if (!p) {
+        setMsg({ type: 'info', text: 'Tocá una pieza para elegirla y después el orificio adonde la querés llevar.' })
+        return
+      }
+      if (p.kind === 'cable') {
+        setMsg({ type: 'bad', text: 'Los cables no se mueven: borralo y volvé a tenderlo.' })
+        return
+      }
+      const legs = fit(p.kind, t, p.id)
+      if (!legs) {
+        setMsg({ type: 'bad', text: p.kind === 'display7' ? 'El display va a caballo de la canaleta central: tocá una columna con 5 lugares libres.' : 'No entra ahí: necesita orificios libres seguidos en la zona central.' })
+        return
+      }
+      setPlaced((ps) => ps.map((x) => (x.id === p.id ? { ...x, legs } : x)))
+      setMsg(null)
+      return
+    }
     if (occupied.has(t)) {
       setMsg({ type: 'bad', text: 'Ese lugar ya está ocupado: cada orificio admite una sola pata o cable.' })
       return
     }
-    if (tool.kind !== 'cable' && t.startsWith('ard:')) {
-      setMsg({ type: 'bad', text: 'Los componentes van en la protoboard. Para llegar al Arduino usá cables.' })
-      return
-    }
-    const rowN = ROW_MODULES[tool.kind]
-    if (rowN) {
-      const h = holeById.get(t)
-      if (!h || /^[TB]/.test(h.row)) {
-        setMsg({ type: 'bad', text: 'Los módulos se enchufan en la zona central (filas a a j), no en los rieles.' })
-        return
-      }
-      const legs = Array.from({ length: rowN }, (_, i) => `${h.row}${h.col + i}`)
-      if (legs.some((l) => !holeById.has(l))) {
-        setMsg({ type: 'bad', text: `No entra: necesita ${rowN} orificios seguidos hacia la derecha.` })
-        return
-      }
-      if (legs.some((l) => occupied.has(l))) {
-        setMsg({ type: 'bad', text: 'Alguno de esos orificios ya está ocupado.' })
-        return
-      }
-      setPlaced((ps) => [...ps, { id: uid(), kind: tool.kind, legs }])
-      setMsg({ type: 'info', text: `Pines de izquierda a derecha: ${LEG_NAMES[tool.kind].join(' · ')}. Conectalos con cables desde sus columnas.` })
-      return
-    }
-    if (tool.kind !== 'cable' && pending.length > 0 && termPos(pending[pending.length - 1]).distanceTo(termPos(t)) > 1.6) {
-      setMsg({ type: 'bad', text: 'Las patas no llegan tan lejos. Poné la siguiente más cerca.' })
-      return
-    }
+    // con la herramienta cable: se elige un extremo y después el otro
     const legs = [...pending, t]
-    const need = LEG_NAMES[tool.kind].length
-    if (legs.length < need) {
+    if (legs.length < 2) {
       setPending(legs)
-      setMsg({ type: 'info', text: `Ahora: ${LEG_NAMES[tool.kind][legs.length]}.` })
+      setMsg({ type: 'info', text: 'Ahora: el otro extremo del cable.' })
       return
     }
-    setPlaced((ps) => [...ps, { id: uid(), kind: tool.kind, legs, color: tool.color, value: tool.value }])
+    if (tool.kind !== 'cable') return
+    setPlaced((ps) => [...ps, { id: uid(), kind: 'cable', legs, color: tool.color }])
     setPending([])
     setMsg(null)
   }
@@ -490,7 +574,7 @@ function Bench({ mission }: { mission?: Mission }) {
     for (const p of placed) {
       if (p.kind === 'cable') continue
       if (new Set(p.legs.map(sim.netOf)).size < p.legs.length)
-        out.push({ type: 'warn', text: `Un${p.kind === 'resistencia' ? 'a resistencia' : p.kind === 'led' ? ' LED' : p.kind === 'pulsador' ? ' pulsador' : ' potenciómetro'} tiene dos patas en la misma tira: queda en cortocircuito y no hace nada.` })
+        out.push({ type: 'warn', text: `${PART_NAME[p.kind] ?? 'Una pieza'} tiene dos patas en la misma tira: queda en cortocircuito y no hace nada.` })
     }
     let n = 0
     for (const p of placed) {
@@ -528,6 +612,34 @@ function Bench({ mission }: { mission?: Mission }) {
         if (!trig || !echo) out.push({ type: 'info', text: 'Ultrasónico: Trig y Echo van cada uno a un pin digital (por ejemplo, Trig al 9 y Echo al 10).' })
         else out.push({ type: 'ok', text: `Ultrasónico: Trig en el pin ${trig} y Echo en el ${echo}. distancia (cm) = pulseIn(${echo}, HIGH) / 58.` })
       }
+      if (p.kind === 'transistor' && m) {
+        const be = s.leds[`${p.id}:be`]
+        if (be && be.current > 0.02) out.push({ type: 'bad', text: `Transistor: le entran ${fmt(be.current * 1000, 0)} mA por la base. Poné una resistencia de 1 kΩ entre el pin y la base.` })
+        if (m.powered) out.push({ type: 'ok', text: `Transistor: saturado, funciona como una llave cerrada. Pasan ${fmt(m.volts * 1000)} mA de colector a emisor.` })
+        else if (m.volts > 0.0005) out.push({ type: 'ok', text: `Transistor: conduce ${fmt(m.volts * 1000)} mA (Ic = β × Ib, con β ≈ 150).` })
+        else out.push({ type: 'info', text: 'Transistor: cortado (llave abierta). La base necesita unos 0,7 V más que el emisor: llevala a un pin con una resistencia de 1 kΩ y el emisor a GND.' })
+      }
+      if (p.kind === 'motor' && m) {
+        if (pinOnNet(m.nets[0]) || pinOnNet(m.nets[1])) out.push({ type: 'bad', text: 'Motor: está conectado directo a un pin. Un pin da como máximo 40 mA y el motor necesita unos 200 mA: manejalo con un transistor (y un diodo en paralelo).' })
+        else if (Math.abs(m.volts) > 0.8) out.push({ type: 'ok', text: `Motor: recibe ${fmt(Math.abs(m.volts))} V y gira${m.volts < 0 ? ' al revés' : ''}.` })
+        else out.push({ type: 'info', text: 'Motor: no le llega tensión. Un borne va a 5V y el otro al colector de un transistor (emisor a GND).' })
+      }
+      if (p.kind === 'lm35' && m) {
+        if (!m.powered) out.push({ type: 'warn', text: 'LM35: le falta alimentación (+Vs a 5V y GND a GND). La pata del medio es la salida.' })
+        else out.push({ type: 'ok', text: `LM35: a ${temp} °C da ${temp} × 10 mV = ${fmt(m.volts, 2)} V. Con analogRead: ${Math.round((m.volts / 5) * 1023)} → temperatura = lectura × 500 / 1023.` })
+      }
+      if (p.kind === 'display7') {
+        const segs = SEG_LEGS.filter((k) => k !== 'COM').map((k) => s.leds[`${p.id}:${k}`]).filter(Boolean)
+        if (segs.some((l) => l.burnt)) out.push({ type: 'bad', text: 'Display: algún segmento recibe más de 30 mA. Cada segmento lleva su resistencia de 220 Ω.' })
+        else if (segs.some((l) => l.current > 0.0005)) out.push({ type: 'ok', text: `Display: encendidos ${segs.filter((l) => l.current > 0.0005).length} segmentos.` })
+        else out.push({ type: 'info', text: 'Display (cátodo común): el COM va a GND y cada segmento (a a g, dp) a un pin con una resistencia de 220 Ω.' })
+      }
+      if (p.kind === 'rgb')
+        (['r', 'g', 'b'] as const).forEach((k) => {
+          const l = s.leds[`${p.id}:${k}`]
+          if (l?.burnt) out.push({ type: 'bad', text: `LED RGB (${k.toUpperCase()}): ${fmt(l.current * 1000, 0)} mA. Cada color necesita su resistencia de 220 Ω.` })
+        })
+      if (p.kind === 'capacitor') out.push({ type: 'info', text: 'Capacitor: en continua se carga y después ya no deja pasar corriente. La pata larga (+) va hacia el lado de mayor tensión.' })
       if (p.kind === 'buzzer' && m && m.volts > 3 && !pinOnNet(m.nets[0])) out.push({ type: 'info', text: 'Buzzer: está conectado directo a 5V, así que suena todo el tiempo. Para controlarlo, llevá su pata + a un pin.' })
     }
     for (const p of placed)
@@ -540,7 +652,7 @@ function Bench({ mission }: { mission?: Mission }) {
     if (out.length === 0) out.push({ type: 'info', text: placed.length ? 'No hay LEDs para revisar todavía.' : 'La mesa está vacía: elegí un ejemplo o una herramienta para empezar.' })
     out.unshift({ type: 'ok', text: 'Arduino UNO alimentado por USB (5 V).' })
     return out
-  }, [placed, sim, hypo, running, declared, light])
+  }, [placed, sim, hypo, running, declared, light, temp])
 
   /* ---------------------------------------------------------------- pantalla */
 
@@ -616,6 +728,19 @@ function Bench({ mission }: { mission?: Mission }) {
   const hasLdr = placed.some((p) => p.kind === 'ldr')
   const hasUs = placed.some((p) => p.kind === 'ultrasonico')
   const hasBuzzer = placed.some((p) => p.kind === 'buzzer')
+  const hasLm = placed.some((p) => p.kind === 'lm35')
+  /** brillo de cada color del RGB o de cada segmento del display */
+  const glowOf = (p: Placed): Record<string, number> | undefined => {
+    if (p.kind !== 'rgb' && p.kind !== 'display7') return undefined
+    const keys = p.kind === 'rgb' ? ['r', 'g', 'b'] : SEG_LEGS.filter((k) => k !== 'COM')
+    return Object.fromEntries(keys.map((k) => [k, sim.leds[`${p.id}:${k}`]?.brightness ?? 0]))
+  }
+  const itemClick = (p: Placed) =>
+    tool === 'borrar'
+      ? () => setPlaced((ps) => ps.filter((x) => x.id !== p.id))
+      : tool === 'mover'
+        ? () => (setSel(p.id), setMsg({ type: 'info', text: 'Elegida: ahora tocá el orificio adonde la querés llevar.' }))
+        : undefined
   const groups = [...new Set(TOOLS.map((t) => t.group))]
   const led13 = running && pins['13']?.mode === 'OUTPUT' && pins['13'].value > 0
   const view = (v: ViewName) => setCam((c) => ({ view: v, n: c.n + 1 }))
@@ -663,11 +788,12 @@ function Bench({ mission }: { mission?: Mission }) {
                     key={t.label + t.group}
                     type="button"
                     disabled={running}
-                    className={`bench-tool ${tool !== 'borrar' && tool !== 'usar' && tool.label === t.label && tool.group === t.group ? 'active' : ''}`}
+                    className={`bench-tool ${typeof tool === 'object' && tool.label === t.label && tool.group === t.group ? 'active' : ''}`}
                     onClick={() => {
-                      setTool(t)
                       setPending([])
                       setMsg(null)
+                      if (t.kind === 'cable') setTool(t)
+                      else autoPlace(t)
                     }}
                   >
                     <span className="bench-sw" style={{ background: t.color ?? SWATCH[t.kind] ?? '#333' }} />
@@ -678,6 +804,9 @@ function Bench({ mission }: { mission?: Mission }) {
             </section>
           ))}
           <h4>Editar</h4>
+          <button type="button" disabled={running} className={`bench-tool ${tool === 'mover' ? 'active' : ''}`} onClick={() => (setTool('mover'), setPending([]))}>
+            <span className="bench-sw">✥</span> Mover (tocá una pieza y después el lugar)
+          </button>
           <button type="button" disabled={running} className={`bench-tool ${tool === 'borrar' ? 'active' : ''}`} onClick={() => (setTool('borrar'), setPending([]))}>
             <span className="bench-sw">🗑</span> Borrar (tocá una pieza)
           </button>
@@ -770,7 +899,9 @@ function Bench({ mission }: { mission?: Mission }) {
                 angle={servoAngle(p)}
                 sounding={!!buzzFreq(p)}
                 distance={distance}
-                onClick={tool === 'borrar' ? () => setPlaced((ps) => ps.filter((x) => x.id !== p.id)) : undefined}
+                glow={glowOf(p)}
+                speed={p.kind === 'motor' ? sim.modules[p.id]?.volts ?? 0 : 0}
+                onClick={itemClick(p)}
               />
             ) : (
             <PlacedItem
@@ -781,7 +912,7 @@ function Bench({ mission }: { mission?: Mission }) {
               glow={sim.leds[p.id]?.brightness ?? 0}
               pressed={pressed.has(p.id)}
               onPress={p.kind === 'pulsador' && tool === 'usar' ? (down) => press(p.id, down) : undefined}
-              onClick={tool === 'borrar' ? () => setPlaced((ps) => ps.filter((x) => x.id !== p.id)) : undefined}
+              onClick={itemClick(p)}
             />
             ),
           )}
@@ -794,6 +925,18 @@ function Bench({ mission }: { mission?: Mission }) {
               </mesh>
             )
           })}
+          {tool === 'mover' &&
+            placed
+              .find((p) => p.id === sel)
+              ?.legs.map((t) => {
+                const v = termPos(t)
+                return (
+                  <mesh key={'sel' + t} position={[v.x, v.y + 0.02, v.z]} rotation={[-Math.PI / 2, 0, 0]}>
+                    <ringGeometry args={[0.07, 0.11, 20]} />
+                    <meshBasicMaterial color="#ffd400" />
+                  </mesh>
+                )
+              })}
           {hover && hoverText && (
             <Label position={termPos(hover).add(new THREE.Vector3(0, 0.45, 0))} center style={{ pointerEvents: 'none' }} zIndexRange={[30, 0]}>
               <div className="part-label selected">{hoverText}</div>
@@ -806,7 +949,9 @@ function Bench({ mission }: { mission?: Mission }) {
             ? 'Clic sostenido sobre un pulsador para apretarlo · arrastrá para girar · rueda para acercar'
             : tool === 'borrar'
               ? 'Tocá una pieza o un cable para sacarlo'
-              : `${tool.group === 'Cables' ? 'Cable' : tool.label}: tocá dónde va ${LEG_NAMES[tool.kind][pending.length]}`}
+              : tool === 'mover'
+                ? 'Tocá una pieza para elegirla y después el orificio donde va su primera pata'
+                : `Cable: tocá dónde va el ${pending.length ? 'otro extremo' : 'primer extremo'}`}
         </div>
       </div>
 
@@ -932,7 +1077,7 @@ function Bench({ mission }: { mission?: Mission }) {
           )}
         </div>
 
-        {(potList.length > 0 || hasLdr || hasUs || hasBuzzer) && (
+        {(potList.length > 0 || hasLdr || hasUs || hasBuzzer || hasLm) && (
           <section className="bench-section">
             <h4>Perillas y ambiente</h4>
             {hasLdr && (
@@ -940,6 +1085,13 @@ function Bench({ mission }: { mission?: Mission }) {
                 <span>☀ Luz ambiente</span>
                 <input type="range" min={0} max={100} value={light} onChange={(e) => setLight(Number(e.target.value))} />
                 <b>{light} %</b>
+              </label>
+            )}
+            {hasLm && (
+              <label className="bench-pot">
+                <span>🌡 Temperatura</span>
+                <input type="range" min={0} max={100} value={temp} onChange={(e) => setTemp(Number(e.target.value))} />
+                <b>{temp} °C</b>
               </label>
             )}
             {hasUs && (

@@ -2,13 +2,13 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import { Part } from '../../Part'
-import { latheGeometry } from '../../helpers'
+import { canvasTex } from '../segundo/soldaduraShared'
+import { Bigornia, CenterPunch, Dividers, FlatSquare, Scriber, TinSnips, TinsmithHammer } from './herramientas'
 
 // Herramientas y máquinas de hojalatería. 1 unidad = 1 cm.
 
 const STEEL = { color: '#c9ced5', metalness: 0.95, roughness: 0.25 }
 const DARK = { color: '#3b4049', metalness: 0.7, roughness: 0.45 }
-const RED = { color: '#c1121f', roughness: 0.5 }
 const GALV = { color: '#c3c9d1', metalness: 0.7, roughness: 0.35 }
 
 export const HERRAMIENTAS_PARTS = [
@@ -21,128 +21,63 @@ export const HERRAMIENTAS_PARTS = [
   { id: 'escuadra', name: 'Escuadra de 90°', desc: 'Comprueba que la chapa esté cortada a escuadra y traza perpendiculares y líneas a 45°.' },
 ]
 
-/** Hoja de tijera (perfil plano extruido). */
-function Blade({ flip }: { flip: number }) {
-  const geo = useMemo(() => {
-    const s = new THREE.Shape()
-    s.moveTo(0, 0)
-    s.quadraticCurveTo(5, 0.9 * flip, 9, 0.15 * flip)
-    s.lineTo(9, -0.2 * flip)
-    s.quadraticCurveTo(4.5, -0.25 * flip, 0, -0.5 * flip)
-    s.closePath()
-    return new THREE.ExtrudeGeometry(s, { depth: 0.25, bevelEnabled: false })
-  }, [flip])
-  return (
-    <mesh geometry={geo} castShadow>
-      <meshStandardMaterial {...STEEL} />
-    </mesh>
-  )
-}
+/** Veta del tablero de madera del banco. */
+const BENCH = canvasTex(1024, 512, (ctx, w, h) => {
+  ctx.fillStyle = '#a27b52'
+  ctx.fillRect(0, 0, w, h)
+  for (let i = 0; i < 120; i++) {
+    const y = (i * 97) % h
+    ctx.strokeStyle = i % 3 ? `rgba(95,62,34,${0.08 + (i % 5) * 0.03})` : `rgba(220,180,130,${0.08 + (i % 4) * 0.03})`
+    ctx.lineWidth = 1 + (i % 4)
+    ctx.beginPath()
+    for (let x = 0; x <= w; x += 24) ctx.lineTo(x, y + Math.sin(x / 110 + i) * 5)
+    ctx.stroke()
+  }
+})
 
 export function HerramientasModel() {
-  const anvilHorn = useMemo(() => new THREE.ConeGeometry(1.6, 9, 32).rotateZ(Math.PI / 2), [])
-  const punch = useMemo(() => latheGeometry([[0, 0], [0.22, 0.13], [0.3, 2.5], [0.42, 3.4], [0.42, 10], [0.36, 10.6], [0, 10.7]], 24).rotateZ(-Math.PI / 2), [])
   return (
     <group scale={0.75}>
-      {/* banco */}
-      <mesh position={[0, -1, 0]} receiveShadow>
+      {/* tablero del banco */}
+      <mesh position={[0, -1, 0]} receiveShadow castShadow>
         <boxGeometry args={[60, 2, 34]} />
-        <meshStandardMaterial color="#8a6a48" roughness={0.85} />
+        <meshStandardMaterial map={BENCH ?? undefined} roughness={0.75} />
       </mesh>
-      <Part id="tijera" offset={[0, 4, 4]} labelAt={[-18, 2.5, 8]}>
-        <group position={[-24, 0.3, 8]} rotation={[-Math.PI / 2, 0, 0.2]}>
-          <group position={[9, 0, 0]}>
-            <Blade flip={1} />
-            <group position={[0, 0, 0.3]}>
-              <Blade flip={-1} />
-            </group>
+      <Part id="tijera" offset={[0, 4, 4]} labelAt={[-8, 2.5, 12]}>
+        <group position={[-2, 0, 12]} rotation={[0, 0.05, 0]}>
+          <TinSnips />
+        </group>
+      </Part>
+      <Part id="martillo" offset={[0, 4, 0]} labelAt={[-20, 3.5, 1]}>
+        <group position={[-20, 1.03, 1]} rotation={[0, Math.PI / 2, 0]}>
+          <group rotation={[-Math.PI / 2 + 0.015, 0, 0]}>
+            <TinsmithHammer len={30} />
           </group>
-          {[1, -1].map((s) => (
-            <mesh key={s} position={[-2.5, 0.9 * s, 0.25]} rotation={[0, 0, 0.18 * s]} castShadow>
-              <boxGeometry args={[11, 0.7, 0.7]} />
-              <meshStandardMaterial {...RED} />
-            </mesh>
-          ))}
-          <mesh position={[8.6, 0, 0.3]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.35, 0.35, 0.9, 16]} />
-            <meshStandardMaterial {...DARK} />
-          </mesh>
         </group>
       </Part>
-      <Part id="martillo" offset={[0, 4, 0]} labelAt={[-8, 3, -8]}>
-        <group position={[-8, 1, -8]} rotation={[0, 0.4, 0]}>
-          <mesh position={[0, 0.6, 0]} castShadow>
-            <boxGeometry args={[1.6, 1.6, 7]} />
-            <meshStandardMaterial {...DARK} />
-          </mesh>
-          <mesh position={[0, 0.6, -4.2]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-            <cylinderGeometry args={[0.8, 0.8, 1.4, 24]} />
-            <meshStandardMaterial {...DARK} />
-          </mesh>
-          <mesh position={[0, 0.3, 4.1]} rotation={[0.25, 0, 0]} castShadow>
-            <boxGeometry args={[1.6, 0.5, 1.6]} />
-            <meshStandardMaterial {...DARK} />
-          </mesh>
-          <mesh position={[11, 0.4, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
-            <cylinderGeometry args={[0.6, 0.7, 20, 16]} />
-            <meshStandardMaterial color="#b98552" roughness={0.5} />
-          </mesh>
+      <Part id="bigornia" offset={[0, 6, -4]} labelAt={[16, 16, -9]}>
+        <group position={[16, 0, -9]} rotation={[0, 0.25, 0]}>
+          <Bigornia />
         </group>
       </Part>
-      <Part id="bigornia" offset={[0, 6, -4]} labelAt={[16, 9, -6]}>
-        <group position={[16, 0, -6]}>
-          <mesh position={[0, 2, 0]} castShadow>
-            <cylinderGeometry args={[2.6, 3.6, 4, 24]} />
-            <meshStandardMaterial {...DARK} />
-          </mesh>
-          <mesh position={[0, 5.2, 0]} castShadow>
-            <boxGeometry args={[6, 2.6, 3.6]} />
-            <meshStandardMaterial {...DARK} />
-          </mesh>
-          <mesh geometry={anvilHorn} position={[7.4, 5.4, 0]} castShadow>
-            <meshStandardMaterial {...DARK} />
-          </mesh>
-          <mesh position={[-5.5, 5.6, 0]} rotation={[0, 0, -Math.PI / 2]} castShadow>
-            <coneGeometry args={[1.3, 5, 4]} />
-            <meshStandardMaterial {...DARK} />
-          </mesh>
+      <Part id="compas" offset={[0, 4, 4]} labelAt={[20, 2, 1]}>
+        <group position={[14, 0, 1]} rotation={[0, Math.PI / 2, 0]}>
+          <Dividers />
         </group>
       </Part>
-      <Part id="compas" offset={[0, 4, 4]} labelAt={[4, 2, 10]}>
-        <group position={[4, 0.3, 9]} rotation={[-Math.PI / 2, 0, -0.3]}>
-          {[-0.18, 0.18].map((a) => (
-            <mesh key={a} position={[Math.sin(a) * 6, 6 - Math.cos(a) * 6, 0]} rotation={[0, 0, a]} castShadow>
-              <cylinderGeometry args={[0.2, 0.06, 12, 12]} />
-              <meshStandardMaterial {...STEEL} />
-            </mesh>
-          ))}
-          <mesh position={[0, 6.2, 0]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.6, 0.6, 0.5, 16]} />
-            <meshStandardMaterial {...STEEL} />
-          </mesh>
+      <Part id="punta" offset={[0, 4, 4]} labelAt={[17, 1.5, 12]}>
+        <group position={[16, 0.28, 12]} rotation={[0, -0.05, 0]}>
+          <Scriber />
         </group>
       </Part>
-      <Part id="punta" offset={[0, 4, 4]} labelAt={[14, 1.5, 10]}>
-        <mesh position={[14, 0.3, 10]} rotation={[0, 0.3, Math.PI / 2]} castShadow>
-          <cylinderGeometry args={[0.22, 0.03, 15, 12]} />
-          <meshStandardMaterial {...STEEL} />
-        </mesh>
+      <Part id="granete" offset={[0, 4, -4]} labelAt={[-9, 1.5, -10]}>
+        <group position={[-14, 0.5, -10]} rotation={[0, 0.15, 0]}>
+          <CenterPunch />
+        </group>
       </Part>
-      <Part id="granete" offset={[0, 4, 4]} labelAt={[22, 1.5, 6]}>
-        <mesh geometry={punch} position={[19, 0.45, 5]} rotation={[0, -0.4, 0]} castShadow>
-          <meshStandardMaterial {...STEEL} />
-        </mesh>
-      </Part>
-      <Part id="escuadra" offset={[0, 4, -4]} labelAt={[-22, 2, -8]}>
-        <group position={[-24, 0.1, -12]}>
-          <mesh position={[0, 0, 4]} castShadow>
-            <boxGeometry args={[1.8, 0.25, 10]} />
-            <meshStandardMaterial {...STEEL} />
-          </mesh>
-          <mesh position={[3.6, 0, -0.1]} castShadow>
-            <boxGeometry args={[9, 0.25, 1.8]} />
-            <meshStandardMaterial {...STEEL} />
-          </mesh>
+      <Part id="escuadra" offset={[0, 4, -4]} labelAt={[-20, 1.5, -14.5]}>
+        <group position={[-29, 0, -16]}>
+          <FlatSquare a={30} b={20} w={3} />
         </group>
       </Part>
     </group>

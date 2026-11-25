@@ -525,7 +525,7 @@ function LogoDisplay({ inputs, outputs, powered }: { inputs: boolean[]; outputs:
         <boxGeometry args={[1.4, 0.3, 0.02]} />
         <meshStandardMaterial color="#c58a2b" roughness={0.5} />
       </mesh>
-      <mesh position={[0, 0, 0.004]}>
+      <mesh position={[0, 0, 0.008]}>
         <planeGeometry args={[DW, DH]} />
         <meshStandardMaterial
           map={tex}
@@ -536,7 +536,7 @@ function LogoDisplay({ inputs, outputs, powered }: { inputs: boolean[]; outputs:
         />
       </mesh>
       {/* ventana transparente que refleja el ambiente */}
-      <mesh position={[0, 0, 0.012]}>
+      <mesh position={[0, 0, 0.016]}>
         <planeGeometry args={[DW + 0.2, DH + 0.2]} />
         <meshPhysicalMaterial color="#ffffff" transparent opacity={0.12} roughness={0.05} metalness={0} clearcoat={1} />
       </mesh>
@@ -969,7 +969,7 @@ function RJ45() {
   return (
     <group position={[RJ[0], RJ[1], LF]}>
       {/* blindaje metálico */}
-      <mesh position={[0, 0, -0.8]}>
+      <mesh position={[0, 0, -0.82]}>
         <boxGeometry args={[1.3, 1.08, 1.6]} />
         <meshStandardMaterial {...metal} roughness={0.35} />
       </mesh>
@@ -978,9 +978,9 @@ function RJ45() {
         <boxGeometry args={[0.98, 0.8, 0.5]} />
         <meshStandardMaterial color="#0c0d0f" roughness={0.8} />
       </mesh>
-      <mesh position={[0, -0.04, 0.001]}>
+      <mesh position={[0, -0.04, 0.008]}>
         <planeGeometry args={[0.98, 0.8]} />
-        <meshStandardMaterial color="#000" transparent opacity={0.4} />
+        <meshStandardMaterial color="#08090a" roughness={0.9} polygonOffset polygonOffsetFactor={-2} />
       </mesh>
       <mesh geometry={contacts}>
         <meshStandardMaterial {...metal} color="#e0bf5a" />
@@ -995,7 +995,7 @@ function RJ45() {
         [-0.5, '#3dff6a'],
         [0.5, '#ffb12a'],
       ].map(([x, c]) => (
-        <mesh key={x as number} position={[x as number, 0.42, 0.004]}>
+        <mesh key={x as number} position={[x as number, 0.42, 0.01]}>
           <planeGeometry args={[0.18, 0.12]} />
           <meshStandardMaterial color={c as string} emissive={c as string} emissiveIntensity={0.6} />
         </mesh>

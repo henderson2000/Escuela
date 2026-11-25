@@ -599,10 +599,24 @@ export function RedModel({ topologia, desde, hasta }: RedParams) {
   const jack = (k: number): V3 => [pos[k][0] + 0.75, 0.05, pos[k][2] - 0.55]
   const portX = (k: number) => -0.56 + k * 0.16
   const cables: { pts: V3[]; color: string; plugs?: boolean; r?: number }[] = []
+  // cada nodo usa la boca que le queda más cerca según de qué lado llega su cable:
+  // así los cables entran ordenados al switch, sin cruzarse
+  const order = pos.map((_, k) => k).sort((p1, p2) => Math.atan2(jack(p1)[0], jack(p1)[2]) - Math.atan2(jack(p2)[0], jack(p2)[2]))
+  const portOf = (k: number) => order.indexOf(k)
   if (topologia === 'estrella')
     pos.forEach((_, k) => {
       const [x, , z] = jack(k)
-      cables.push({ pts: [[x, 0.05, z], [x * 0.55, 0.03, z * 0.55 + 0.5], [portX(k), 0.03, 0.95], [portX(k), 0.2, 0.62]], color: '#2f6fd6', plugs: true })
+      const px = portX(portOf(k))
+      const th = Math.atan2(x, z)
+      const pts: V3[] = [[x, 0.04, z]]
+      // los que llegan de atrás o de los costados rodean el switch por su lado
+      if (Math.abs(th) > 0.9) {
+        const side = Math.sign(x) || 1
+        const lane = 1.15 + Math.abs(th) * 0.12
+        pts.push([side * lane, 0.03, Math.min(z * 0.5, -0.3)], [side * lane, 0.03, 0.75])
+      } else pts.push([x * 0.45 + px * 0.55, 0.03, Math.max(1.6, z * 0.5)])
+      pts.push([px, 0.03, 1.15], [px, 0.15, 0.85], [px, 0.17, 0.66])
+      cables.push({ pts, color: '#2f6fd6', plugs: true })
     })
   else if (topologia === 'bus') {
     cables.push({ pts: [[-6.2, 0.06, 0], [6.2, 0.06, 0]], color: '#111', r: 0.06 })
@@ -622,7 +636,7 @@ export function RedModel({ topologia, desde, hasta }: RedParams) {
     <group>
       <Part id="enlaces" offset={[0, -0.6, 0]} labelAt={topologia === 'bus' ? [-5.8, 0.4, 0] : [2.3, 0.4, -2.6]}>
         {cables.map((c, i) => (
-          <Cable key={`${topologia}-${i}`} pts={c.pts} r={c.r ?? 0.035} material={cableMats[c.color]} />
+          <Cable key={`${topologia}-${i}`} pts={c.pts} r={c.r ?? 0.03} tension={0.3} material={cableMats[c.color]} />
         ))}
         {topologia === 'bus' && (
           <>
@@ -690,7 +704,7 @@ export function RedModel({ topologia, desde, hasta }: RedParams) {
             ))}
           </group>
           {pos.map((_, k) => (
-            <group key={k} position={[portX(k), 0.18, 0.66]} scale={1}>
+            <group key={k} position={[portX(portOf(k)), 0.17, 0.48]}>
               <Rj45 />
             </group>
           ))}

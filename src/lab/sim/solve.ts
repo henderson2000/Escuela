@@ -23,6 +23,8 @@ export interface SimInputs {
   pots: Record<string, number>
   /** luz ambiente para las LDR, de 0 (oscuro) a 100 (pleno sol) */
   light?: number
+  /** temperatura del ambiente para el LM35 (°C) */
+  temp?: number
 }
 
 /** LDR GL5528: ~1 MΩ en oscuridad, ~200 Ω a pleno sol (aproximación logarítmica). */
@@ -77,6 +79,11 @@ export function ledVf(color?: string): number {
 }
 
 const R_PIN = 25 // resistencia interna aproximada de un pin de salida
+const BETA = 150 // ganancia de corriente del transistor (BC547 / 2N2222)
+const R_SAT = 2 // transistor saturado: casi un cortocircuito entre colector y emisor
+const R_MOTOR = 25 // motor de juguete de 3-6 V en marcha
+/** segmentos del display en el orden de sus patas */
+export const SEG_LEGS = ['g', 'f', 'COM', 'a', 'b', 'e', 'd', 'COM', 'c', 'dp']
 const R_PULLUP = 35000
 const R_LED_ON = 12
 const G_OPEN = 1e-12
@@ -91,7 +98,7 @@ export const PIN_NUMBER: Record<string, number> = {
   A5: 19,
 }
 
-export function simulate({ placed, terminalNode, pins, pressed, pots, light = 60 }: SimInputs): SimResult {
+export function simulate({ placed, terminalNode, pins, pressed, pots, light = 60, temp = 25 }: SimInputs): SimResult {
   const nl = buildNetlist(placed, terminalNode)
   const gnd = nl.net('ard:GND')
   const v5 = nl.net('ard:5V')
@@ -127,7 +134,10 @@ export function simulate({ placed, terminalNode, pins, pressed, pots, light = 60
     else if (st.mode === 'INPUT_PULLUP' && !short) elems.push({ a: n, b: v5, g: 1 / R_PULLUP, j: 0 })
   }
 
-  const ledIdx: { p: Placed; a: string; c: string; vf: number; on: boolean }[] = []
+  // diodos: LEDs, diodos, cada color del LED RGB, cada segmento del display y la juntura base-emisor
+  const ledIdx: { id: string; p: Placed; a: string; c: string; vf: number; on: boolean }[] = []
+  const trans: { id: string; c: string; e: string; be: string; sat: boolean; ib: number }[] = []
+  const lm: { vs: string; out: string; g: string; on: boolean }[] = []
   for (const p of placed) {
     if (p.kind === 'cable') continue
     const ns = p.legs.map(nl.net)
@@ -140,7 +150,32 @@ export function simulate({ placed, terminalNode, pins, pressed, pots, light = 60
       const pos = Math.min(1, Math.max(0, pots[p.id] ?? 0.5))
       elems.push({ a: ns[0], b: ns[1], g: 1 / Math.max(1, (1 - pos) * R), j: 0 })
       elems.push({ a: ns[1], b: ns[2], g: 1 / Math.max(1, pos * R), j: 0 })
-    } else if (p.kind === 'led') ledIdx.push({ p, a: ns[0], c: ns[1], vf: ledVf(p.color), on: false })
+    } else if (p.kind === 'led') ledIdx.push({ id: p.id, p, a: ns[0], c: ns[1], vf: ledVf(p.color), on: false })
+    else if (p.kind === 'diodo') ledIdx.push({ id: p.id, p, a: ns[0], c: ns[1], vf: 0.7, on: false })
+    else if (p.kind === 'rgb')
+      (
+        [
+          ['r', 0, 2.0],
+          ['g', 2, 3.0],
+          ['b', 3, 3.0],
+        ] as const
+      ).forEach(([k, i, vf]) => ledIdx.push({ id: `${p.id}:${k}`, p, a: ns[i], c: ns[1], vf, on: false }))
+    else if (p.kind === 'display7') {
+      // los dos COM están unidos por dentro
+      elems.push({ a: ns[2], b: ns[7], g: 1e3, j: 0 })
+      SEG_LEGS.forEach((seg, i) => {
+        if (seg !== 'COM') ledIdx.push({ id: `${p.id}:${seg}`, p, a: ns[i], c: ns[2], vf: 2.0, on: false })
+      })
+    } else if (p.kind === 'transistor') {
+      const be = `${p.id}:be`
+      ledIdx.push({ id: be, p, a: ns[1], c: ns[2], vf: 0.65, on: false })
+      trans.push({ id: p.id, c: ns[0], e: ns[2], be, sat: false, ib: 0 })
+    } else if (p.kind === 'motor') elems.push({ a: ns[0], b: ns[1], g: 1 / R_MOTOR, j: 0 })
+    else if (p.kind === 'lm35') {
+      elems.push({ a: ns[0], b: ns[2], g: 1 / 80000, j: 0 })
+      lm.push({ vs: ns[0], out: ns[1], g: ns[2], on: false })
+    }
+    // capacitor: en continua no deja pasar corriente (queda abierto)
     else if (p.kind === 'ldr') elems.push({ a: ns[0], b: ns[1], g: 1 / ldrResistance(light), j: 0 })
     // buzzer activo: consume unos 30 mA a 5 V
     else if (p.kind === 'buzzer') elems.push({ a: ns[0], b: ns[1], g: 1 / 170, j: 0 })
@@ -163,6 +198,13 @@ export function simulate({ placed, terminalNode, pins, pressed, pots, light = 60
     const A = Array.from({ length: N }, () => new Float64Array(N))
     const B = new Float64Array(N)
     const all: Elem[] = [...elems]
+    for (const t of trans) {
+      // saturado: llave cerrada · activo: fuente de corriente Ic = β·Ib (de colector a emisor)
+      if (t.sat) all.push({ a: t.c, b: t.e, g: 1 / R_SAT, j: 0 })
+      else all.push({ a: t.c, b: t.e, g: G_OPEN, j: -BETA * t.ib })
+    }
+    // LM35: 10 mV por °C en la salida (si tiene alimentación)
+    for (const m of lm) if (m.on) all.push({ a: m.out, b: m.g, g: 1 / 80, j: (temp * 0.01) / 80 })
     for (const l of ledIdx) {
       // encendido: I = (Va − Vc − Vf) / R  →  g = 1/R y j = Vf/R
       if (l.on) all.push({ a: l.a, b: l.c, g: 1 / R_LED_ON, j: l.vf / R_LED_ON })
@@ -193,9 +235,33 @@ export function simulate({ placed, terminalNode, pins, pressed, pots, light = 60
     unknown.forEach((n, i) => V.set(n, x[i]))
   }
 
-  for (let it = 0; it < 30; it++) {
+  const vOf = (n: string) => V.get(n) ?? 0
+  for (let it = 0; it < 80; it++) {
     solve()
     let changed = false
+    for (const m of lm) {
+      const on = vOf(m.vs) - vOf(m.g) > 4
+      if (on !== m.on) {
+        m.on = on
+        changed = true
+      }
+    }
+    for (const t of trans) {
+      const be = ledIdx.find((l) => l.id === t.be)!
+      const ib = be.on ? Math.max(0, (vOf(be.a) - vOf(be.c) - be.vf) / R_LED_ON) : 0
+      if (Math.abs(ib - t.ib) > 1e-7 + t.ib * 0.002) {
+        t.ib = ib
+        changed = true
+      }
+      const vce = vOf(t.c) - vOf(t.e)
+      if (!t.sat && t.ib > 0 && vce < 0.2) {
+        t.sat = true
+        changed = true
+      } else if (t.sat && (t.ib === 0 || vce / R_SAT > BETA * t.ib * 1.001)) {
+        t.sat = false
+        changed = true
+      }
+    }
     for (const l of ledIdx) {
       const vd = (V.get(l.a) ?? 0) - (V.get(l.c) ?? 0)
       const cur = (vd - l.vf) / R_LED_ON
@@ -219,8 +285,8 @@ export function simulate({ placed, terminalNode, pins, pressed, pots, light = 60
     let duty = 1
     for (const [name, st] of Object.entries(pins))
       if (st.mode === 'OUTPUT' && st.value > 0 && st.value < 1 && (pinNet[name] === l.a || pinNet[name] === l.c || connectedThroughOne(l, pinNet[name]))) duty = st.value
-    leds[l.p.id] = {
-      id: l.p.id,
+    leds[l.id] = {
+      id: l.id,
       current,
       brightness: Math.min(1, current / 0.012) * duty,
       vf: l.vf,
@@ -263,9 +329,20 @@ export function simulate({ placed, terminalNode, pins, pressed, pots, light = 60
 
   const modules: Record<string, ModuleResult> = {}
   for (const p of placed) {
-    if (p.kind !== 'buzzer' && p.kind !== 'servo' && p.kind !== 'ultrasonico') continue
+    if (p.kind !== 'buzzer' && p.kind !== 'servo' && p.kind !== 'ultrasonico' && p.kind !== 'motor' && p.kind !== 'lm35' && p.kind !== 'transistor') continue
     const ns = p.legs.map(nl.net)
     const v = (n: string) => V.get(n) ?? 0
+    if (p.kind === 'lm35') {
+      modules[p.id] = { id: p.id, powered: v(ns[0]) - v(ns[2]) > 4, volts: v(ns[1]) - v(ns[2]), nets: ns }
+      continue
+    }
+    if (p.kind === 'transistor') {
+      const t = trans.find((x) => x.id === p.id)!
+      // volts = corriente de colector (A); powered = saturado (llave cerrada)
+      const ic = t.sat ? Math.max(0, (v(ns[0]) - v(ns[2])) / R_SAT) : BETA * t.ib
+      modules[p.id] = { id: p.id, powered: t.sat, volts: ic, nets: ns }
+      continue
+    }
     const [vcc, g] = p.kind === 'servo' ? [ns[1], ns[0]] : p.kind === 'ultrasonico' ? [ns[0], ns[3]] : [ns[0], ns[1]]
     const volts = v(vcc) - v(g)
     modules[p.id] = { id: p.id, powered: volts > 4, volts, nets: ns }

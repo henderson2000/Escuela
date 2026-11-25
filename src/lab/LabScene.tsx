@@ -190,10 +190,13 @@ export interface LabSceneProps {
   /** se dibuja junto al modelo (mismo sistema de coordenadas), por ejemplo los pines resaltados */
   overlay?: ReactNode
   onBackgroundClick?: () => void
+  /** 'wall': la pared del fondo se pone justo detrás del modelo (tableros colgados) */
+  mount?: 'wall'
 }
 
-export function LabScene({ children, modelKey, parts, camera, overlay, onBackgroundClick, environment = 'electronica' }: LabSceneProps) {
+export function LabScene({ children, modelKey, parts, camera, overlay, onBackgroundClick, environment = 'electronica', mount }: LabSceneProps) {
   const [size, setSize] = useState(4)
+  const [wall, setWall] = useState<{ back: number; left: number } | null>(null)
   const layer = useRef<HTMLDivElement>(null)
   const registry = useRef(new Map<string, THREE.Group>())
   const box = useRef<THREE.Box3 | null>(null)
@@ -225,7 +228,7 @@ export function LabScene({ children, modelKey, parts, camera, overlay, onBackgro
           <hemisphereLight args={['#f4f7ff', '#3b3227', 0.55]} />
           <SunLight size={size} />
           <directionalLight position={[-8, 6, -6]} intensity={0.5} color="#a9c4ff" />
-          <Environment name={environment} size={size} />
+          <Environment name={environment} size={size} wall={mount === 'wall' ? wall : null} />
           <WakeFor deps={[modelKey, size, environment]} ms={3000} />
           <Suspense fallback={null}>
             <HtmlLayerContext.Provider value={layer}>
@@ -236,6 +239,7 @@ export function LabScene({ children, modelKey, parts, camera, overlay, onBackgro
                     box.current = b
                     const r = b.getBoundingSphere(new THREE.Sphere()).radius
                     if (Number.isFinite(r) && Math.abs(r - size) > 0.05) setSize(r)
+                    if (mount === 'wall' && Number.isFinite(b.min.z)) setWall((w) => (w && Math.abs(w.back - b.min.z) < 0.01 && Math.abs(w.left - b.min.x) < 0.01 ? w : { back: b.min.z, left: b.min.x }))
                     setFirst()
                   }}
                 >

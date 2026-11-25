@@ -30,38 +30,42 @@ export interface ChildSpec {
 const S = 0.1; // mm → unidades (cm)
 const T = 0.6; // espesor dibujado (mm), exagerado para que se vea
 
-function useGalvanized() {
+/** Acero inoxidable cepillado: rayas finas y largas en un solo sentido, de poco contraste. */
+function useStainless() {
   const tex = useCanvasTexture(
-    512,
-    512,
+    1024,
+    1024,
     (ctx, w, h) => {
-      ctx.fillStyle = "#b8bec6";
+      ctx.fillStyle = "#c4c9cf";
       ctx.fillRect(0, 0, w, h);
-      // "flor" del zinc: cristales irregulares con brillos distintos
-      let seed = 11;
+      let seed = 7;
       const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-      for (let k = 0; k < 220; k++) {
-        const x = rnd() * w;
+      ctx.filter = "blur(0.8px)";
+      for (let k = 0; k < 2600; k++) {
         const y = rnd() * h;
-        const r = 10 + rnd() * 36;
-        const g = 160 + Math.floor(rnd() * 70);
-        ctx.fillStyle = `rgb(${g},${g + 4},${g + 10})`;
+        const x = rnd() * w;
+        const len = 80 + rnd() * 500;
+        const light = rnd() < 0.5;
+        ctx.strokeStyle = light ? `rgba(255,255,255,${0.04 + rnd() * 0.08})` : `rgba(70,76,84,${0.03 + rnd() * 0.07})`;
+        ctx.lineWidth = 0.6 + rnd() * 1.6;
         ctx.beginPath();
-        const n = 5 + Math.floor(rnd() * 3);
-        for (let i = 0; i < n; i++) {
-          const a = (i / n) * Math.PI * 2 + rnd() * 0.6;
-          const rr = r * (0.6 + rnd() * 0.5);
-          if (i === 0) ctx.moveTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
-          else ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
-        }
-        ctx.closePath();
-        ctx.fill();
+        ctx.moveTo(x - len / 2, y);
+        ctx.lineTo(x + len / 2, y);
+        ctx.stroke();
+        // las rayas que se salen por un borde siguen por el otro (textura sin costuras)
+        ctx.beginPath();
+        ctx.moveTo(x - len / 2 - w, y);
+        ctx.lineTo(x + len / 2 - w, y);
+        ctx.moveTo(x - len / 2 + w, y);
+        ctx.lineTo(x + len / 2 + w, y);
+        ctx.stroke();
       }
+      ctx.filter = "none";
     },
     [],
   );
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(1 / 140, 1 / 140);
+  tex.repeat.set(1 / 260, 1 / 260);
   return tex;
 }
 
@@ -84,24 +88,59 @@ function PanelMesh({
     }).rotateX(Math.PI / 2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
+  // los recortes se marcan sobre el plano de la chapa: relleno rojo suave y el contorno por donde se corta
+  const flat = useMemo(() => {
+    if (!scrap) return null;
+    const sh = new THREE.Shape(poly.map(([u, v]) => new THREE.Vector2(u, v)));
+    const fill = new THREE.ShapeGeometry(sh).rotateX(Math.PI / 2);
+    const pts = [...poly, poly[0]].map(([u, v]) => new THREE.Vector3(u, 0, v));
+    const line = new THREE.BufferGeometry().setFromPoints(pts);
+    return { fill, line };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, scrap]);
+  if (flat)
+    return (
+      <group position={[0, -T / 2, 0]}>
+        <mesh geometry={flat.fill} renderOrder={2}>
+          <meshBasicMaterial color="#ef4444" transparent opacity={0.28} side={THREE.DoubleSide} depthWrite={false} />
+        </mesh>
+        <lineLoop geometry={flat.line} renderOrder={3} onUpdate={(l) => l.computeLineDistances()}>
+          <lineDashedMaterial color="#dc2626" dashSize={3} gapSize={2} />
+        </lineLoop>
+      </group>
+    );
   return (
     <mesh geometry={geo} castShadow receiveShadow>
-      {scrap ? (
-        <meshStandardMaterial
-          color="#ef4444"
-          transparent
-          opacity={0.35}
-          side={THREE.DoubleSide}
-        />
-      ) : (
-        <meshStandardMaterial
-          map={map}
-          color="#ffffff"
-          metalness={0.65}
-          roughness={0.38}
-          side={THREE.DoubleSide}
-        />
-      )}
+      <meshStandardMaterial
+        map={map}
+        color="#ffffff"
+        metalness={0.85}
+        roughness={0.3}
+        side={THREE.DoubleSide}
+      />
+    </mesh>
+  );
+}
+
+/** Radio del pliegue: llena la cuña que queda entre dos paneles para que el doblez se vea redondeado. */
+function Bend({ u0, u1, angle }: { u0: number; u1: number; angle: number }) {
+  const a = Math.abs(angle);
+  const geo = useMemo(() => {
+    if (a < 0.01) return null;
+    const sh = new THREE.Shape();
+    sh.moveTo(0, 0);
+    // arco en el plano (v, y) desde "hacia abajo" (−90°) girando hacia +v
+    sh.absarc(0, 0, T, -Math.PI / 2, -Math.PI / 2 + a, false);
+    sh.lineTo(0, 0);
+    // extruido a lo largo de la bisagra (eje u = X)
+    return new THREE.ExtrudeGeometry(sh, { depth: u1 - u0, bevelEnabled: false, curveSegments: 10 })
+      .rotateY(Math.PI / 2)
+      .translate(u0, 0, 0);
+  }, [a, u0, u1]);
+  if (!geo) return null;
+  return (
+    <mesh geometry={geo}>
+      <meshStandardMaterial color="#c4c9cf" metalness={0.85} roughness={0.3} side={THREE.DoubleSide} />
     </mesh>
   );
 }
@@ -137,6 +176,7 @@ function PanelNode({
             position={[ch.at[0], 0, ch.at[1]]}
             rotation={[0, ch.phi, 0]}
           >
+            {!ch.panel.scrap && <Bend u0={hingeSpan(ch.panel.poly)[0]} u1={hingeSpan(ch.panel.poly)[1]} angle={ch.angle} />}
             <group rotation={[-ch.angle, 0, 0]}>
               <PanelNode
                 spec={ch.panel}
@@ -150,6 +190,12 @@ function PanelNode({
       </Follow>
     </>
   );
+}
+
+/** Tramo de la bisagra: los puntos del panel que están sobre v = 0. */
+function hingeSpan(p: Poly): [number, number] {
+  const us = p.filter((q) => Math.abs(q[1]) < 1e-6).map((q) => q[0]);
+  return us.length >= 2 ? [Math.min(...us), Math.max(...us)] : [0, 0];
 }
 
 /** Grupo que se desplaza junto con su panel al despiezar (así los pliegues hijos no quedan atrás). */
@@ -192,7 +238,7 @@ export function SheetModel({
   root: PanelSpec;
   lift?: number;
 }) {
-  const map = useGalvanized();
+  const map = useStainless();
   const firsts = firstOfEachPart(root);
   return (
     <group scale={S} position={[0, lift, 0]}>
@@ -309,27 +355,26 @@ export function boxSpec(o: {
       [1, -1],
       [-1, -1],
     ])
-      children.push({
-        at: [(sx * a) / 2, (sz * b) / 2],
-        phi:
-          sx === sz
-            ? sx === 1
-              ? 0
-              : Math.PI
-            : sx === 1
-              ? -Math.PI / 2
-              : Math.PI / 2,
-        angle: 0,
-        panel: {
-          part: "recortes",
-          scrap: true,
-          poly: [
-            [0, 0],
-            [h + f, h + f],
-            [0, h + f],
-          ],
-        },
-      });
+      {
+        // el recorte es la mitad de la esquina que no es oreja: se calcula directo sobre el fondo
+        const cx = (sx * a) / 2;
+        const cz = (sz * b) / 2;
+        const hf = h + f;
+        children.push({
+          at: [0, 0],
+          phi: 0,
+          angle: 0,
+          panel: {
+            part: "recortes",
+            scrap: true,
+            poly: [
+              [cx, cz],
+              [cx + sx * hf, cz + sz * hf],
+              [cx, cz + sz * hf],
+            ],
+          },
+        });
+      }
   return {
     part: "fondo",
     poly: [

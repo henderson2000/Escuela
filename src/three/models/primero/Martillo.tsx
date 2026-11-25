@@ -61,14 +61,51 @@ function bodyGeometry(withHole: boolean) {
   return new THREE.ExtrudeGeometry(sh, { depth: S, bevelEnabled: false, curveSegments: 20 }).rotateX(Math.PI / 2).translate(0, S, 0)
 }
 
-function Dim({ a, b, text }: { a: [number, number, number]; b: [number, number, number]; text: string }) {
-  const geo = useMemo(() => new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...a), new THREE.Vector3(...b)]), [a, b])
-  const mid: [number, number, number] = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2]
+type P3 = [number, number, number]
+const DIM_COLOR = '#facc15'
+const ARROW = new THREE.ConeGeometry(0.07, 0.24, 12).translate(0, -0.12, 0)
+const DIM_MAT = new THREE.MeshBasicMaterial({ color: DIM_COLOR })
+
+/**
+ * Cota como en el plano: líneas auxiliares que salen de la pieza (a → la, b → lb, con un poquito de
+ * sobrante), línea de cota con flechas entre la y lb, y el número en el medio, del lado de afuera.
+ */
+function Dim({ a, b, la, lb, text, push = [0, 0, 0] }: { a: P3; b: P3; la: P3; lb: P3; text: string; push?: P3 }) {
+  const { lines, arrows, mid } = useMemo(() => {
+    const A = new THREE.Vector3(...a)
+    const B = new THREE.Vector3(...b)
+    const LA = new THREE.Vector3(...la)
+    const LB = new THREE.Vector3(...lb)
+    // las auxiliares pasan 1,5 mm de la línea de cota
+    const ext = (from: THREE.Vector3, to: THREE.Vector3) => {
+      const d = to.clone().sub(from)
+      const len = d.length()
+      return len < 1e-6 ? to.clone() : to.clone().add(d.multiplyScalar(0.15 / len))
+    }
+    const pts = [A, ext(A, LA), B, ext(B, LB), LA, LB]
+    const dir = LB.clone().sub(LA).normalize()
+    const q1 = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().negate())
+    const q2 = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir)
+    const m = LA.clone().add(LB).multiplyScalar(0.5).add(new THREE.Vector3(...push))
+    return {
+      lines: new THREE.BufferGeometry().setFromPoints(pts),
+      arrows: [
+        { p: LA, q: q1 },
+        { p: LB, q: q2 },
+      ],
+      mid: [m.x, m.y, m.z] as P3,
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [a.join(), b.join(), la.join(), lb.join(), push.join()])
   return (
     <group>
-      <lineSegments geometry={geo}>
-        <lineBasicMaterial color="#facc15" />
+      <lineSegments geometry={lines}>
+        <lineBasicMaterial color={DIM_COLOR} />
       </lineSegments>
+      {/* las flechas apuntan hacia afuera, contra las líneas auxiliares */}
+      {arrows.map((ar, i) => (
+        <mesh key={i} geometry={ARROW} material={DIM_MAT} position={ar.p} quaternion={ar.q} />
+      ))}
       <Label position={mid} center style={{ pointerEvents: 'none' }}>
         <div className="dim-tag">{text}</div>
       </Label>
@@ -200,13 +237,18 @@ export function MartilloModel({ etapa, cotas, caras }: MartilloParams) {
       )}
       {cotas && (
         <group>
-          <Dim a={[0, -0.6, S / 2 + 0.4]} b={[LEN, -0.6, S / 2 + 0.4]} text="95" />
-          <Dim a={[0, S + 0.6, S / 2]} b={[PENA, S + 0.6, S / 2]} text="35" />
-          <Dim a={[-0.5, 0, S / 2]} b={[-0.5, TIP, S / 2]} text="5" />
-          <Dim a={[LEN + 0.5, 0, S / 2]} b={[LEN + 0.5, S, S / 2]} text="□22" />
-          <Dim a={[0, S + 0.2, -S / 2 - 0.6]} b={[C1, S + 0.2, -S / 2 - 0.6]} text="45" />
-          <Dim a={[0, S + 0.2, -S / 2 - 1.3]} b={[C2, S + 0.2, -S / 2 - 1.3]} text="55" />
-          <Dim a={[C2 + 1.2, S + 0.2, -R]} b={[C2 + 1.2, S + 0.2, R]} text="10" />
+          {/* largo total, abajo del frente */}
+          <Dim a={[0, 0, S / 2]} b={[LEN, 0, S / 2]} la={[0, -0.9, S / 2]} lb={[LEN, -0.9, S / 2]} text="95" push={[0, -0.35, 0]} />
+          {/* largo de la peña, arriba del frente */}
+          <Dim a={[0, TIP, S / 2]} b={[PENA, S, S / 2]} la={[0, S + 0.9, S / 2]} lb={[PENA, S + 0.9, S / 2]} text="35" push={[0, 0.35, 0]} />
+          {/* alto de la punta y lado de la barra */}
+          <Dim a={[0, 0, S / 2]} b={[0, TIP, S / 2]} la={[-0.9, 0, S / 2]} lb={[-0.9, TIP, S / 2]} text="5" push={[-0.45, 0, 0]} />
+          <Dim a={[LEN, 0, S / 2]} b={[LEN, S, S / 2]} la={[LEN + 0.9, 0, S / 2]} lb={[LEN + 0.9, S, S / 2]} text="□22" push={[0.55, 0, 0]} />
+          {/* centros del ojo, medidos desde la punta, sobre la cara de arriba */}
+          <Dim a={[0, TIP, -S / 2]} b={[C1, S, 0]} la={[0, S, -S / 2 - 0.9]} lb={[C1, S, -S / 2 - 0.9]} text="45" push={[0, 0, -0.35]} />
+          <Dim a={[0, TIP, -S / 2]} b={[C2, S, 0]} la={[0, S, -S / 2 - 1.8]} lb={[C2, S, -S / 2 - 1.8]} text="55" push={[0, 0, -0.35]} />
+          {/* ancho del ojo, llevado afuera por la derecha */}
+          <Dim a={[C2, S, -R]} b={[C2, S, R]} la={[LEN + 1.9, S, -R]} lb={[LEN + 1.9, S, R]} text="10" push={[0.5, 0, 0]} />
         </group>
       )}
     </group>

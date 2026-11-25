@@ -173,15 +173,15 @@ function Floor({ size, map, color = '#ffffff', roughness = 0.9, metalness = 0, y
 }
 
 /** Dos paredes en esquina, detrás del modelo (sólo se ven desde adelante). */
-function Walls({ dist, height, map, color = '#ffffff' }: { dist: number; height: number; map?: THREE.Texture; color?: string }) {
-  const len = dist * 6
+function Walls({ dist, height, map, color = '#ffffff', left }: { dist: number; height: number; map?: THREE.Texture; color?: string; left?: number }) {
+  const len = Math.max(dist, left ?? 0) * 6
   return (
     <group>
       <mesh position={[0, height / 2, -dist]} receiveShadow>
         <planeGeometry args={[len, height]} />
         <meshStandardMaterial map={map} color={color} roughness={0.92} side={THREE.FrontSide} envMapIntensity={0.3} />
       </mesh>
-      <mesh position={[-dist, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
+      <mesh position={[-(left ?? dist), height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[len, height]} />
         <meshStandardMaterial map={map} color={color} roughness={0.92} side={THREE.FrontSide} envMapIntensity={0.3} />
       </mesh>
@@ -285,15 +285,24 @@ function Banco({ size }: { size: number }) {
     (ctx, w, h) => {
       ctx.fillStyle = '#8c939b'
       ctx.fillRect(0, 0, w, h)
-      // cepillado
-      for (let y = 0; y < h; y++) {
-        ctx.fillStyle = `rgba(${Math.random() < 0.5 ? '255,255,255' : '0,0,0'},${Math.random() * 0.06})`
-        ctx.fillRect(0, y, w, 1)
+      // cepillado suave: trazos largos de poco contraste y desenfocados (las rayas finas de 1 px
+      // hacían moiré al alejarse)
+      ctx.filter = 'blur(1.5px)'
+      for (let i = 0; i < 900; i++) {
+        const y = Math.random() * h
+        ctx.strokeStyle = `rgba(${Math.random() < 0.5 ? '255,255,255' : '20,24,30'},${0.015 + Math.random() * 0.03})`
+        ctx.lineWidth = 2 + Math.random() * 5
+        ctx.beginPath()
+        const x = Math.random() * w
+        ctx.moveTo(x - 200 - Math.random() * 400, y)
+        ctx.lineTo(x + 200 + Math.random() * 400, y)
+        ctx.stroke()
       }
+      ctx.filter = 'none'
       // rayones y marcas de uso
-      ctx.strokeStyle = 'rgba(40,44,50,0.25)'
-      for (let i = 0; i < 70; i++) {
-        ctx.lineWidth = Math.random() * 2
+      ctx.strokeStyle = 'rgba(40,44,50,0.16)'
+      for (let i = 0; i < 50; i++) {
+        ctx.lineWidth = 0.6 + Math.random() * 1.2
         ctx.beginPath()
         const x = Math.random() * w
         const y = Math.random() * h
@@ -314,7 +323,8 @@ function Banco({ size }: { size: number }) {
     <group>
       {/* tapa del banco de acero con su canto */}
       <Floor size={top} map={steel} roughness={0.45} metalness={0.6} />
-      <mesh position={[0, -size * 0.1, 0]} receiveShadow castShadow>
+      {/* el canto queda apenas debajo de la chapa: si coinciden las dos caras se pelean y se ven rayas */}
+      <mesh position={[0, -size * 0.1 - 0.02 * size, 0]} receiveShadow castShadow>
         <boxGeometry args={[top, size * 0.2, top]} />
         <meshStandardMaterial color="#5f656c" metalness={0.6} roughness={0.5} />
       </mesh>
@@ -371,30 +381,12 @@ function Soldadura({ size }: { size: number }) {
     },
     [4, 3],
   )
-  const curtain = useTex(
-    256,
-    256,
-    (ctx, w, h) => {
-      // tiras de cortina de soldar con pliegues
-      for (let x = 0; x < w; x++) {
-        const k = 0.55 + 0.25 * Math.sin((x / w) * Math.PI * 8) + 0.1 * Math.sin((x / w) * Math.PI * 23)
-        ctx.fillStyle = `rgba(${Math.round(230 * k)},${Math.round(90 * k)},${Math.round(20 * k)},1)`
-        ctx.fillRect(x, 0, 1, h)
-      }
-    },
-    [1, 1],
-  )
   const d = size * 2.4
   const h = size * 3.2
   return (
     <group>
       <Floor size={size * 30} map={plate} roughness={0.55} metalness={0.5} />
       <Walls dist={d} height={h} map={brick} />
-      {/* cortinas de soldar a los costados */}
-      <mesh position={[d * 1.05, h * 0.42, -d * 0.1]} rotation={[0, -Math.PI / 2, 0]}>
-        <planeGeometry args={[d * 2, h * 0.84]} />
-        <meshStandardMaterial map={curtain} transparent opacity={0.72} side={THREE.DoubleSide} roughness={0.5} depthWrite={false} />
-      </mesh>
       <Sign position={[size * 0.6, h * 0.62, -d + 0.01]} w={size * 1.2} text="¡PELIGRO!" sub={'Arco eléctrico\nUsá la máscara'} color="#dc2626" />
     </group>
   )
@@ -432,7 +424,7 @@ function Computacion({ size }: { size: number }) {
   return (
     <group>
       <Floor size={top} map={wood} roughness={0.55} />
-      <mesh position={[0, -size * 0.12, 0]} receiveShadow>
+      <mesh position={[0, -size * 0.12 - 0.02 * size, 0]} receiveShadow>
         <boxGeometry args={[top, size * 0.24, top]} />
         <meshStandardMaterial color="#7a5434" roughness={0.6} />
       </mesh>
@@ -446,7 +438,7 @@ function Computacion({ size }: { size: number }) {
   )
 }
 
-function Electricidad({ size }: { size: number }) {
+function Electricidad({ size, wall }: { size: number; wall?: WallFit | null }) {
   const tiles = useTex(
     512,
     512,
@@ -473,24 +465,32 @@ function Electricidad({ size }: { size: number }) {
     },
     [12, 12],
   )
-  const wall = useWall('#e4e2dc', '#9aa3ad', 0.12)
-  const d = size * 2.3
+  const wallTex = useWall('#e4e2dc', '#9aa3ad', 0.12)
+  // colgado en la pared: la pared del fondo queda justo detrás del tablero
+  const d = wall ? -wall.back + 0.01 : size * 2.3
+  const left = wall ? Math.max(-wall.left + size * 0.5, size * 1.2) : d
   const h = size * 3
   return (
     <group>
       <Floor size={size * 40} map={tiles} roughness={0.6} />
-      <Walls dist={d} height={h} map={wall} />
+      <Walls dist={d} height={h} map={wallTex} left={left} />
       {/* bandeja portacables a lo largo de la pared */}
       <mesh position={[0, h * 0.82, -d + size * 0.08]}>
         <boxGeometry args={[d * 6, size * 0.12, size * 0.16]} />
         <meshStandardMaterial color="#b9bec4" metalness={0.8} roughness={0.35} />
       </mesh>
-      {/* caño de bajada hasta la bandeja */}
-      <mesh position={[-size * 0.6, h * 0.41, -d + size * 0.06]}>
-        <cylinderGeometry args={[size * 0.035, size * 0.035, h * 0.82, 16]} />
-        <meshStandardMaterial color="#d6d3cc" roughness={0.6} />
-      </mesh>
-      <Sign position={[size * 0.8, h * 0.55, -d + 0.01]} w={size * 1.1} text="RIESGO ELÉCTRICO" sub={'Cortá la energía\nantes de trabajar'} color="#ca8a04" />
+      {!wall && (
+        /* caño de bajada hasta la bandeja */
+        <mesh position={[-size * 0.6, h * 0.41, -d + size * 0.06]}>
+          <cylinderGeometry args={[size * 0.035, size * 0.035, h * 0.82, 16]} />
+          <meshStandardMaterial color="#d6d3cc" roughness={0.6} />
+        </mesh>
+      )}
+      {wall ? (
+        <Sign position={[-left + 0.01, h * 0.45, size * 0.3]} rotation={[0, Math.PI / 2, 0]} w={size * 0.9} text="RIESGO ELÉCTRICO" sub={'Cortá la energía\nantes de trabajar'} color="#ca8a04" />
+      ) : (
+        <Sign position={[size * 0.8, h * 0.55, -d + 0.01]} w={size * 1.1} text="RIESGO ELÉCTRICO" sub={'Cortá la energía\nantes de trabajar'} color="#ca8a04" />
+      )}
     </group>
   )
 }
@@ -537,7 +537,14 @@ function Electronica() {
   )
 }
 
-export function Environment({ name, size }: { name: EnvName; size: number }) {
+export interface WallFit {
+  /** z del fondo del modelo (donde va la pared) */
+  back: number
+  /** x del costado izquierdo del modelo */
+  left: number
+}
+
+export function Environment({ name, size, wall }: { name: EnvName; size: number; wall?: WallFit | null }) {
   // se redondea para no regenerar todo por cambios mínimos de tamaño
   const s = Math.max(0.5, Math.round(size * 4) / 4)
   switch (name) {
@@ -550,7 +557,7 @@ export function Environment({ name, size }: { name: EnvName; size: number }) {
     case 'computacion':
       return <Computacion size={s} />
     case 'electricidad':
-      return <Electricidad size={s} />
+      return <Electricidad size={s} wall={wall} />
     default:
       return <Electronica />
   }
