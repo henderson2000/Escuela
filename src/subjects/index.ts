@@ -20,14 +20,13 @@ export const SUBJECT_NAV: Record<string, NavItem[]> = {
     { to: '/laboratorio', label: 'Laboratorio', end: true },
     { to: '/laboratorio/mesa', label: 'Mesa de trabajo' },
     { to: '/laboratorio/misiones', label: 'Misiones' },
-    { to: '/componentes', label: 'Componentes 3D' },
     { to: '/teoria', label: 'Teoría' },
     { to: '/actividades', label: 'Actividades' },
     { to: '/juegos', label: 'Juegos' },
   ],
   '3/electricidad': [
     { to: '', label: 'Inicio del taller', end: true },
-    { to: '/componentes', label: 'LOGO! 3D' },
+    { to: '/laboratorio', label: 'LOGO! 3D' },
     { to: '/teoria', label: 'Teoría' },
     { to: '/simulador', label: 'Simulador' },
     { to: '/guia', label: 'Guía' },
@@ -42,7 +41,7 @@ export const SUBJECT_NAV: Record<string, NavItem[]> = {
   ],
   '3/torno': [
     { to: '', label: 'Inicio del taller', end: true },
-    { to: '/componentes', label: 'Torno 3D' },
+    { to: '/laboratorio', label: 'Torno 3D' },
     { to: '/teoria', label: 'Teoría' },
     { to: '/ejercicios', label: 'Guía' },
     { to: '/juegos', label: 'Juegos' },
@@ -52,7 +51,7 @@ export const SUBJECT_NAV: Record<string, NavItem[]> = {
 // 1er año
 SUBJECT_NAV['1/electricidad'] = [
   { to: '', label: 'Inicio del taller', end: true },
-  { to: '/componentes', label: 'En 3D' },
+  { to: '/laboratorio', label: 'En 3D' },
   { to: '/teoria', label: 'Teoría' },
   { to: '/ejercicios', label: 'Guía' },
   { to: '/juegos', label: 'Juegos' },
@@ -60,7 +59,7 @@ SUBJECT_NAV['1/electricidad'] = [
 
 SUBJECT_NAV['1/computacion'] = [
   { to: '', label: 'Inicio del taller', end: true },
-  { to: '/componentes', label: 'En 3D' },
+  { to: '/laboratorio', label: 'En 3D' },
   { to: '/teoria', label: 'Teoría' },
   { to: '/bloques', label: 'Bloques' },
   { to: '/juegos', label: 'Juegos' },
@@ -68,7 +67,7 @@ SUBJECT_NAV['1/computacion'] = [
 
 SUBJECT_NAV['1/ajuste'] = [
   { to: '', label: 'Inicio del taller', end: true },
-  { to: '/componentes', label: 'En 3D' },
+  { to: '/laboratorio', label: 'En 3D' },
   { to: '/teoria', label: 'Teoría' },
   { to: '/ejercicios', label: 'Guía' },
   { to: '/juegos', label: 'Juegos' },
@@ -76,7 +75,7 @@ SUBJECT_NAV['1/ajuste'] = [
 
 SUBJECT_NAV['1/hojalateria'] = [
   { to: '', label: 'Inicio del taller', end: true },
-  { to: '/componentes', label: 'En 3D' },
+  { to: '/laboratorio', label: 'En 3D' },
   { to: '/teoria', label: 'Teoría' },
   { to: '/ejercicios', label: 'Guía' },
   { to: '/juegos', label: 'Juegos' },
@@ -85,7 +84,7 @@ SUBJECT_NAV['1/hojalateria'] = [
 // 2do año
 SUBJECT_NAV['2/electricidad'] = [
   { to: '', label: 'Inicio del taller', end: true },
-  { to: '/componentes', label: 'En 3D' },
+  { to: '/laboratorio', label: 'En 3D' },
   { to: '/teoria', label: 'Teoría' },
   { to: '/ejercicios', label: 'Guía' },
   { to: '/juegos', label: 'Juegos' },
@@ -93,7 +92,7 @@ SUBJECT_NAV['2/electricidad'] = [
 
 SUBJECT_NAV['2/computacion'] = [
   { to: '', label: 'Inicio del taller', end: true },
-  { to: '/componentes', label: 'En 3D' },
+  { to: '/laboratorio', label: 'En 3D' },
   { to: '/teoria', label: 'Teoría' },
   { to: '/pseudocodigo', label: 'Pseudocódigo' },
   { to: '/juegos', label: 'Juegos' },
@@ -101,7 +100,7 @@ SUBJECT_NAV['2/computacion'] = [
 
 SUBJECT_NAV['2/soldadura'] = [
   { to: '', label: 'Inicio del taller', end: true },
-  { to: '/componentes', label: 'En 3D' },
+  { to: '/laboratorio', label: 'En 3D' },
   { to: '/teoria', label: 'Teoría' },
   { to: '/ejercicios', label: 'Guía' },
   { to: '/juegos', label: 'Juegos' },

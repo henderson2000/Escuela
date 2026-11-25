@@ -31,6 +31,7 @@ function Home() {
 }
 
 const entry: Omit<SubjectEntry, 'nav'> = {
+  environment: 'banco',
   Home,
   catalog: AJUSTE1_CATALOG,
   topics: AJUSTE1_TOPICS,

@@ -13,6 +13,7 @@ const ExercisePage = lazyNamed(() => import('../logo/pages/ExercisePage'), 'Exer
 const exerciseActivityId = (id: string) => `logo-${id}`
 
 const entry: Omit<SubjectEntry, 'nav'> = {
+  environment: 'electricidad',
   Home: LogoHome,
   catalog: LOGO_CATALOG,
   topics: LOGO_TOPICS,

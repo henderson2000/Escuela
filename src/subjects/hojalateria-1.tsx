@@ -31,6 +31,7 @@ function Home() {
 }
 
 const entry: Omit<SubjectEntry, 'nav'> = {
+  environment: 'banco',
   Home,
   catalog: HOJALATERIA1_CATALOG,
   topics: HOJALATERIA1_TOPICS,

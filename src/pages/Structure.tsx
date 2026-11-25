@@ -16,6 +16,7 @@ const ActivitiesPage = lazyNamed(() => import('./ActivitiesPage'), 'ActivitiesPa
 const GamesPage = lazyNamed(() => import('./GamesPage'), 'GamesPage')
 const GameRoute = lazyNamed(() => import('./GameRoute'), 'GameRoute')
 const GuidePage = lazyNamed(() => import('./GuidePage'), 'GuidePage')
+const LabPage = lazyNamed(() => import('../lab/LabPage'), 'LabPage')
 
 function prefetchSubject(anio: string, materia: string) {
   if (hasSubjectContent(anio, materia)) loadSubject(subjectKey(anio, materia)).catch(() => undefined)
@@ -175,7 +176,11 @@ function SubjectRoutes({ subjectKey: key, base }: { subjectKey: string; base: st
             <Route index element={<Home />} />
             {content.catalog.length > 0 && (
               <>
-                <Route path="componentes" element={<ComponentsPage />} />
+                {/* todo lo 3D de cada taller se explora en el laboratorio (biblioteca + mesa + panel) */}
+                <Route path="componentes" element={<Navigate to={`${base}/laboratorio`} replace />} />
+                <Route path="componentes/todos" element={<ComponentsPage />} />
+                <Route path="laboratorio" element={<LabPage />} />
+                <Route path="laboratorio/:id" element={<LabPage />} />
                 <Route path="componentes/:id" element={<ComponentDetail />} />
               </>
             )}

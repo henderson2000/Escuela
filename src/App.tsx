@@ -21,19 +21,25 @@ const inFrame = (() => {
 })()
 const Router = inFrame ? MemoryRouter : HashRouter
 
-/** al cambiar de página, volver arriba */
+/**
+ * Al cambiar de página, volver arriba. Elegir otro componente dentro del laboratorio no cuenta
+ * como cambiar de página: la pantalla se queda donde estaba.
+ */
+const scrollKey = (p: string) => p.replace(/\/laboratorio\/(?!mesa$|misiones)[^/]+$/, '/laboratorio')
 function ScrollToTop() {
   const { pathname } = useLocation()
+  const key = scrollKey(pathname)
   useEffect(() => {
     window.scrollTo(0, 0)
-  }, [pathname])
+  }, [key])
   return null
 }
 
 /** si una página falla, sólo esa página muestra el error (y se limpia al cambiar de página) */
 function RouteBoundary({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation()
-  return <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
+  // elegir otro componente del laboratorio no es otra página: no se vuelve a armar todo
+  return <ErrorBoundary key={scrollKey(pathname)}>{children}</ErrorBoundary>
 }
 
 export default function App() {

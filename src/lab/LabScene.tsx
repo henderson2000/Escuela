@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { Suspense, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { ContactShadows, OrbitControls } from '@react-three/drei'
@@ -7,6 +7,7 @@ import { LocalEnvironment, hasWebGL } from '../three/Viewer'
 import { PartsContext, type PartsState } from '../three/Part'
 import { HtmlLayerContext } from '../three/Label'
 import { ErrorBoundary } from '../components/ErrorBoundary'
+import { ENV_BG, Environment, type EnvName } from './environments'
 
 export type ViewName = 'iso' | 'top' | 'front' | 'side' | 'fit'
 
@@ -22,80 +23,6 @@ const DIRS: Record<Exclude<ViewName, 'fit'>, THREE.Vector3> = {
   top: new THREE.Vector3(0, 1, 0.0001).normalize(),
   front: new THREE.Vector3(0, 0.38, 1).normalize(),
   side: new THREE.Vector3(1, 0.38, 0).normalize(),
-}
-
-/* ------------------------------------------------------------------ mesa de trabajo */
-
-/** Base de corte autocicatrizante (la típica plancha verde de taller), con cuadrícula de 1 cm y regla. */
-function Bench() {
-  const tex = useMemo(() => {
-    const S = 1024
-    const c = document.createElement('canvas')
-    c.width = S
-    c.height = S
-    const ctx = c.getContext('2d')!
-    ctx.fillStyle = '#1f423c'
-    ctx.fillRect(0, 0, S, S)
-    // grano muy suave del material
-    const img = ctx.getImageData(0, 0, S, S)
-    for (let i = 0; i < img.data.length; i += 4) {
-      const n = (Math.random() - 0.5) * 7
-      img.data[i] += n
-      img.data[i + 1] += n
-      img.data[i + 2] += n
-    }
-    ctx.putImageData(img, 0, 0)
-    // 10 cm de plancha por textura: líneas cada 1 cm y más marcadas cada 5 cm
-    const step = S / 10
-    for (let i = 0; i <= 10; i++) {
-      const strong = i % 5 === 0
-      ctx.strokeStyle = strong ? 'rgba(220,240,230,0.42)' : 'rgba(220,240,230,0.2)'
-      ctx.lineWidth = strong ? 3 : 1.6
-      ctx.beginPath()
-      ctx.moveTo(i * step, 0)
-      ctx.lineTo(i * step, S)
-      ctx.moveTo(0, i * step)
-      ctx.lineTo(S, i * step)
-      ctx.stroke()
-      // marcas de medio centímetro
-      ctx.strokeStyle = 'rgba(220,240,230,0.12)'
-      ctx.lineWidth = 1
-      for (let k = 0; k < 10; k++) {
-        ctx.beginPath()
-        ctx.moveTo(i * step + step / 2, k * step + step * 0.42)
-        ctx.lineTo(i * step + step / 2, k * step + step * 0.58)
-        ctx.moveTo(k * step + step * 0.42, i * step + step / 2)
-        ctx.lineTo(k * step + step * 0.58, i * step + step / 2)
-        ctx.stroke()
-      }
-    }
-    const t = new THREE.CanvasTexture(c)
-    t.colorSpace = THREE.SRGBColorSpace
-    t.wrapS = t.wrapT = THREE.RepeatWrapping
-    t.repeat.set(4, 4)
-    t.anisotropy = 8
-    return t
-  }, [])
-  useEffect(() => () => tex.dispose(), [tex])
-  return (
-    <group>
-      {/* plancha de 40 × 40 cm (1 unidad = 1 cm) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.001, 0]} receiveShadow>
-        <planeGeometry args={[40, 40]} />
-        <meshStandardMaterial map={tex} roughness={0.95} metalness={0} envMapIntensity={0.35} />
-      </mesh>
-      {/* canto de la plancha */}
-      <mesh position={[0, -0.16, 0]} receiveShadow>
-        <boxGeometry args={[40, 0.3, 40]} />
-        <meshStandardMaterial color="#244a45" roughness={0.9} />
-      </mesh>
-      {/* mesa de madera clara alrededor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.32, 0]} receiveShadow>
-        <planeGeometry args={[160, 160]} />
-        <meshStandardMaterial color="#6d5a45" roughness={0.8} />
-      </mesh>
-    </group>
-  )
 }
 
 /* ------------------------------------------------------------------ apoyar el modelo sobre la mesa */
@@ -135,30 +62,44 @@ function Grounded({ children, onBox, k }: { children: ReactNode; onBox: (b: THRE
   const inner = useRef<THREE.Group>(null)
   const frames = useRef(0)
   const invalidate = useThree((s) => s.invalidate)
-  const place = () => {
+  const last = useRef<THREE.Box3 | null>(null)
+  const place = (force = false) => {
     const g = inner.current
     const outer = ref.current
     if (!g || !outer) return
+    const prevPos = outer.position.clone()
     outer.position.set(0, 0, 0)
     outer.updateMatrixWorld(true)
     const box = measure(g)
-    if (box.isEmpty() || !Number.isFinite(box.min.y)) return
+    if (box.isEmpty() || !Number.isFinite(box.min.y)) {
+      outer.position.copy(prevPos)
+      outer.updateMatrixWorld(true)
+      return
+    }
+    // sólo se vuelve a encuadrar si el modelo cambió de tamaño de verdad (terminó de cargarse, por ejemplo)
+    const size = box.getSize(new THREE.Vector3()).length()
+    const prev = last.current?.getSize(new THREE.Vector3()).length() ?? 0
     const c = box.getCenter(new THREE.Vector3())
     outer.position.set(-c.x, -box.min.y, -c.z)
     outer.updateMatrixWorld(true)
-    onBox(measure(g))
+    if (force || Math.abs(size - prev) > prev * 0.03) {
+      last.current = box
+      onBox(measure(g))
+    }
   }
   useLayoutEffect(() => {
     frames.current = 0
-    place()
+    last.current = null
+    place(true)
     invalidate()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [k])
-  // algunos modelos terminan de armarse (instancias, texturas) en los primeros cuadros: se vuelve a medir
+  // algunos modelos terminan de armarse en los primeros cuadros o segundos (instancias, texturas, partes que
+  // se descargan aparte): se vuelve a medir durante un rato
   useFrame(() => {
-    if (frames.current > 3) return
+    if (frames.current > 150) return
     frames.current++
-    if (frames.current === 3) place()
+    if (frames.current === 3 || frames.current % 15 === 0) place()
     invalidate()
   })
   return (
@@ -239,6 +180,8 @@ function CameraRig({
 /* ------------------------------------------------------------------ escena */
 
 export interface LabSceneProps {
+  /** dónde se apoyan los modelos (plancha de electrónica, taller, cabina de soldadura…) */
+  environment?: EnvName
   children: ReactNode
   /** cambia al cambiar de componente: vuelve a apoyar y encuadrar */
   modelKey: string
@@ -249,7 +192,8 @@ export interface LabSceneProps {
   onBackgroundClick?: () => void
 }
 
-export function LabScene({ children, modelKey, parts, camera, overlay, onBackgroundClick }: LabSceneProps) {
+export function LabScene({ children, modelKey, parts, camera, overlay, onBackgroundClick, environment = 'electronica' }: LabSceneProps) {
+  const [size, setSize] = useState(4)
   const layer = useRef<HTMLDivElement>(null)
   const registry = useRef(new Map<string, THREE.Group>())
   const box = useRef<THREE.Box3 | null>(null)
@@ -275,27 +219,14 @@ export function LabScene({ children, modelKey, parts, camera, overlay, onBackgro
           gl={{ antialias: true, powerPreference: 'high-performance', toneMappingExposure: 0.88 }}
           onPointerMissed={onBackgroundClick}
         >
-          <color attach="background" args={['#1a2230']} />
-          <fog attach="fog" args={['#1a2230', 45, 120]} />
+          <color attach="background" args={[ENV_BG[environment]]} />
+          <fog attach="fog" args={[ENV_BG[environment], size * 14, size * 45]} />
           <LocalEnvironment />
           <hemisphereLight args={['#f4f7ff', '#3b3227', 0.55]} />
-          <directionalLight
-            position={[6, 14, 8]}
-            intensity={1.7}
-            castShadow
-            shadow-mapSize={[2048, 2048]}
-            shadow-bias={-0.0004}
-            shadow-normalBias={0.02}
-            shadow-camera-left={-12}
-            shadow-camera-right={12}
-            shadow-camera-top={12}
-            shadow-camera-bottom={-12}
-            shadow-camera-near={1}
-            shadow-camera-far={40}
-            shadow-radius={4}
-          />
+          <SunLight size={size} />
           <directionalLight position={[-8, 6, -6]} intensity={0.5} color="#a9c4ff" />
-          <Bench />
+          <Environment name={environment} size={size} />
+          <WakeFor deps={[modelKey, size, environment]} ms={3000} />
           <Suspense fallback={null}>
             <HtmlLayerContext.Provider value={layer}>
               <PartsContext.Provider value={ctx}>
@@ -303,6 +234,8 @@ export function LabScene({ children, modelKey, parts, camera, overlay, onBackgro
                   k={modelKey}
                   onBox={(b) => {
                     box.current = b
+                    const r = b.getBoundingSphere(new THREE.Sphere()).radius
+                    if (Number.isFinite(r) && Math.abs(r - size) > 0.05) setSize(r)
                     setFirst()
                   }}
                 >
@@ -311,14 +244,54 @@ export function LabScene({ children, modelKey, parts, camera, overlay, onBackgro
                 </Grounded>
               </PartsContext.Provider>
             </HtmlLayerContext.Provider>
-            <ContactShadows position={[0, 0.002, 0]} opacity={0.5} scale={30} blur={2.2} far={4} resolution={1024} />
+            <ContactShadows position={[0, 0.003, 0]} opacity={0.5} scale={size * 7} blur={2.2} far={size * 1.2} resolution={1024} />
           </Suspense>
-          <OrbitControls makeDefault enableDamping dampingFactor={0.12} minDistance={0.6} maxDistance={60} maxPolarAngle={Math.PI / 2 - 0.03} />
+          <OrbitControls makeDefault enableDamping dampingFactor={0.12} minDistance={size * 0.12} maxDistance={size * 12} maxPolarAngle={Math.PI / 2 - 0.03} />
           <CameraRig request={{ ...camera, n: camera.n * 1000 + first }} box={box} registry={registry} />
         </Canvas>
       </ErrorBoundary>
     </div>
   )
+}
+
+/**
+ * El visor dibuja sólo cuando algo cambia. Después de cambiar de modelo o de entorno se sigue dibujando un rato,
+ * para que terminen de aparecer las texturas, las sombras y las piezas que se arman en los primeros cuadros.
+ */
+function WakeFor({ deps, ms }: { deps: unknown[]; ms: number }) {
+  const invalidate = useThree((s) => s.invalidate)
+  const until = useRef(0)
+  useEffect(() => {
+    until.current = performance.now() + ms
+    invalidate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps)
+  useFrame(() => {
+    if (performance.now() < until.current) invalidate()
+  })
+  return null
+}
+
+/** Luz principal con la sombra ajustada al tamaño del modelo (un torno y un LED no miden lo mismo). */
+function SunLight({ size }: { size: number }) {
+  const ref = useRef<THREE.DirectionalLight>(null)
+  useLayoutEffect(() => {
+    const l = ref.current
+    if (!l) return
+    const s = size * 2.2
+    l.position.set(size * 0.9, size * 2.4, size * 1.3)
+    const cam = l.shadow.camera
+    cam.left = -s
+    cam.right = s
+    cam.top = s
+    cam.bottom = -s
+    cam.near = size * 0.1
+    cam.far = size * 8
+    cam.updateProjectionMatrix()
+    l.shadow.normalBias = size * 0.004
+    l.shadow.needsUpdate = true
+  }, [size])
+  return <directionalLight ref={ref} intensity={1.7} castShadow shadow-mapSize={[2048, 2048]} shadow-bias={-0.0004} shadow-radius={4} />
 }
 
 /** Contador que se incrementa (para volver a encuadrar cuando el modelo ya se midió). */

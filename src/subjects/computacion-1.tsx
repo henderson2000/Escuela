@@ -35,6 +35,7 @@ function Home() {
 }
 
 const entry: Omit<SubjectEntry, 'nav'> = {
+  environment: 'computacion',
   Home,
   catalog: COMPU1_CATALOG,
   topics: COMPU1_TOPICS,

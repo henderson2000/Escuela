@@ -7,6 +7,7 @@ import { PartsGame } from '../games/PartsGame'
 import { TORNO_GUIDE } from '../torno/guide'
 
 const entry: Omit<SubjectEntry, 'nav'> = {
+  environment: 'taller',
   Home: TornoHome,
   catalog: TORNO_CATALOG,
   topics: TORNO_TOPICS,

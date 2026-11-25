@@ -23,8 +23,12 @@
   margin: 10px;
   width: calc(100% - 20px);
 }
-.labx-lib-list {
+/* la barra entera se desplaza (el buscador o los ejemplos se van para arriba con la lista) */
+.labx-lib {
   overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.labx-lib-list {
   padding: 0 8px 10px;
 }
 .labx-lib-list h4 {

@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
+// (el entorno 3D de cada taller viene del contenido del taller: subject.environment)
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { partsOf, type ComponentDef } from '../catalog'
 import { useSubject } from '../lib/subject'
@@ -23,14 +24,56 @@ export function LabPage() {
   const { catalog } = useSubject()
   const first = catalog.find((c) => c.category === 'Placas') ?? catalog[0]
   const def = catalog.find((c) => c.id === id) ?? first
-  // la key reinicia el estado al cambiar de componente
-  return <Lab key={def.id} def={def} />
+  // la biblioteca queda fija (no pierde su desplazamiento); la key reinicia sólo la mesa y el panel
+  return (
+    <div className="labx">
+      <Library current={def.id} />
+      <Lab key={def.id} def={def} />
+    </div>
+  )
+}
+
+/** Biblioteca de componentes, agrupada por categoría y con buscador. */
+function Library({ current }: { current: string }) {
+  const sub = useSub()
+  const navigate = useNavigate()
+  const { catalog } = useSubject()
+  const [query, setQuery] = useState('')
+  const groups = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    const list = catalog.filter((c) => !q || `${c.name} ${c.short} ${c.category}`.toLowerCase().includes(q))
+    const m = new Map<string, ComponentDef[]>()
+    for (const c of list) m.set(c.category, [...(m.get(c.category) ?? []), c])
+    return [...m.entries()]
+  }, [catalog, query])
+  return (
+    <aside className="labx-lib">
+      <input className="input labx-search" type="search" placeholder="Buscar…" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Buscar en la biblioteca" />
+      <div className="labx-lib-list">
+        {groups.map(([cat, items]) => (
+          <section key={cat}>
+            <h4>{cat}</h4>
+            {items.map((c) => (
+              <button key={c.id} type="button" className={`labx-item ${c.id === current ? 'active' : ''}`} onClick={() => navigate(sub(`/laboratorio/${c.id}`), { replace: true })}>
+                <span className="labx-item-icon">{c.icon}</span>
+                <span>
+                  <b>{c.name}</b>
+                  <small>{c.short}</small>
+                </span>
+              </button>
+            ))}
+          </section>
+        ))}
+        {groups.length === 0 && <p className="hint">No hay nada con ese nombre.</p>}
+      </div>
+    </aside>
+  )
 }
 
 function Lab({ def }: { def: ComponentDef }) {
   const sub = useSub()
-  const navigate = useNavigate()
-  const { catalog } = useSubject()
+  const { nav, environment } = useSubject()
+  const hasBench = nav.some((n) => n.to === '/laboratorio/mesa')
   const [params, setParams] = useState(def.defaultParams)
   const [explode, setExplode] = useState(0)
   const [labels, setLabels] = useState(false)
@@ -38,7 +81,6 @@ function Lab({ def }: { def: ComponentDef }) {
   const [selected, setSelected] = useState<string | null>(null)
   const [cam, setCam] = useState<CameraRequest>({ view: 'iso', n: 1 })
   const [tab, setTab] = useState<Tab>('partes')
-  const [query, setQuery] = useState('')
   const [pinsOn, setPinsOn] = useState(false)
   const [hoverPin, setHoverPin] = useState<string | null>(null)
   const stage = useRef<HTMLDivElement>(null)
@@ -58,15 +100,6 @@ function Lab({ def }: { def: ComponentDef }) {
     setCam((c) => ({ view: v, n: c.n + 1 }))
   }
 
-  // biblioteca agrupada por categoría, con buscador
-  const groups = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    const list = catalog.filter((c) => !q || `${c.name} ${c.short} ${c.category}`.toLowerCase().includes(q))
-    const m = new Map<string, ComponentDef[]>()
-    for (const c of list) m.set(c.category, [...(m.get(c.category) ?? []), c])
-    return [...m.entries()]
-  }, [catalog, query])
-
   const sel = parts.find((p) => p.id === selected)
   const pin = hoverPin && board ? board.info(hoverPin) : null
 
@@ -78,29 +111,7 @@ function Lab({ def }: { def: ComponentDef }) {
   }
 
   return (
-    <div className="labx">
-      {/* ---------------- biblioteca */}
-      <aside className="labx-lib">
-        <input className="input labx-search" type="search" placeholder="Buscar: LED, sensor, Arduino…" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Buscar componentes" />
-        <div className="labx-lib-list">
-          {groups.map(([cat, items]) => (
-            <section key={cat}>
-              <h4>{cat}</h4>
-              {items.map((c) => (
-                <button key={c.id} type="button" className={`labx-item ${c.id === def.id ? 'active' : ''}`} onClick={() => navigate(sub(`/laboratorio/${c.id}`))}>
-                  <span className="labx-item-icon">{c.icon}</span>
-                  <span>
-                    <b>{c.name}</b>
-                    <small>{c.short}</small>
-                  </span>
-                </button>
-              ))}
-            </section>
-          ))}
-          {groups.length === 0 && <p className="hint">No hay componentes con ese nombre.</p>}
-        </div>
-      </aside>
-
+    <>
       {/* ---------------- mesa 3D */}
       <div className="labx-stage" ref={stage}>
         <div className="labx-toolbar">
@@ -130,6 +141,7 @@ function Lab({ def }: { def: ComponentDef }) {
         </div>
 
         <LabScene
+          environment={environment}
           modelKey={def.id}
           camera={cam}
           parts={{ explode, labels, hidden, selected, names, onSelect: (pid) => pick(pid === selected ? null : pid) }}
@@ -256,14 +268,16 @@ function Lab({ def }: { def: ComponentDef }) {
         )}
 
         <div className="labx-more row wrap">
-          <Link className="btn small primary" to={sub('/laboratorio/mesa')}>
-            🛠 Usarlo en la mesa de trabajo
-          </Link>
+          {hasBench && (
+            <Link className="btn small primary" to={sub('/laboratorio/mesa')}>
+              🛠 Usarlo en la mesa de trabajo
+            </Link>
+          )}
           <Link className="btn small" to={sub(`/componentes/${def.id}`)}>
             Teoría y actividades →
           </Link>
         </div>
       </aside>
-    </div>
+    </>
   )
 }

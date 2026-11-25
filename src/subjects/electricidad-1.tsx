@@ -30,6 +30,7 @@ function Home() {
 }
 
 const entry: Omit<SubjectEntry, 'nav'> = {
+  environment: 'electricidad',
   Home,
   catalog: ELECTRICIDAD1_CATALOG,
   topics: ELECTRICIDAD1_TOPICS,

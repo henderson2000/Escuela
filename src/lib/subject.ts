@@ -23,7 +23,11 @@ export interface SubjectContent {
   nav: { to: string; label: string; end?: boolean }[]
   /** títulos de las páginas comunes */
   labels?: { components?: string; componentsLead?: string; componentsBack?: string; guideLead?: string }
+  /** entorno 3D del laboratorio (dónde se apoyan los modelos) */
+  environment?: EnvName
 }
+
+export type EnvName = 'electronica' | 'taller' | 'soldadura' | 'computacion' | 'electricidad' | 'banco'
 
 export const SubjectContext = createContext<SubjectContent | null>(null)
 

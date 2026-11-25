@@ -30,6 +30,7 @@ function Home() {
 }
 
 const entry: Omit<SubjectEntry, 'nav'> = {
+  environment: 'soldadura',
   Home,
   catalog: SOLDADURA2_CATALOG,
   topics: SOLDADURA2_TOPICS,
