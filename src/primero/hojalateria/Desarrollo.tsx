@@ -113,7 +113,7 @@ export function Desarrollo({ initial = 'caja' as Proj, fixed }: { initial?: Proj
         </svg>
         <div>
           <p>
-            <b>{d.name}</b> · chapa galvanizada Nº 30 · desarrollo {W} × {H} mm
+            <b>{d.name}</b> · {proj === 'budinera' ? 'chapa de acero inoxidable' : 'chapa galvanizada'} Nº 30 · desarrollo {W} × {H} mm
           </p>
           <label className="field">
             <span className="field-label">

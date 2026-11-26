@@ -39,7 +39,7 @@ export const TAPA_OPS: Op[] = [
 ]
 
 export const BUDINERA_OPS: Op[] = [
-  { n: 10, text: 'Recepción de la materia prima y control dimensional: chapa galvanizada Nº 30 de 200 × 333 mm.', tools: 'Regla metálica', p: 0 },
+  { n: 10, text: 'Recepción de la materia prima y control dimensional: chapa de acero inoxidable Nº 30 de 200 × 333 mm.', tools: 'Regla metálica', p: 0 },
   { n: 20, text: 'Trazado de paralelas a los bordes con el gramil: a 8 mm y a 63 mm, en las dos caras.', tools: 'Gramil, regla metálica', p: 0 },
   { n: 30, text: 'Pieza vertical: marcar un punto sobre la recta de 8 mm a 18 mm de la línea de 63 mm y unirlo con la intersección de las líneas de 63 mm.', tools: 'Punta de trazar, regla', p: 0 },
   { n: 40, text: 'Pieza horizontal: punto sobre la recta de 8 mm a 15 mm de la línea de 63 mm, y diagonal hasta la intersección.', tools: 'Punta de trazar, regla', p: 0 },

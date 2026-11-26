@@ -16,7 +16,7 @@ export const HOJALATERIA1_GUIDE: GuideSection[] = [
       { id: 'h1g-p7', type: 'num', q: 'Budinera (Ej. 03): ¿a cuántos mm del borde va el dobladillo?', answer: 8, tolerance: 0, unit: 'mm', explain: 'Líneas a 8 mm y a 63 mm.' },
       { id: 'h1g-p8', type: 'num', q: 'Budinera: ¿cuánto mide el fondo de ancho? (200 − 2 × 63, en mm)', answer: 74, tolerance: 0, unit: 'mm', explain: '200 − 126 = 74 mm.' },
       { id: 'h1g-p9', type: 'mc', q: 'En el plano, ¿qué indica una línea de trazos?', options: ['Una línea de plegado', 'Un corte', 'Una medida', 'Un agujero'], answer: 0, explain: 'Las líneas llenas gruesas son el contorno y los cortes.' },
-      { id: 'h1g-p10', type: 'mc', q: '¿Qué material y espesor llevan los tres proyectos?', options: ['Chapa galvanizada Nº 30', 'Hojalata de 3 mm', 'Acero IRAM 1010 de 22 mm', 'Aluminio de 1 mm'], answer: 0, explain: 'Chapa fina, se corta con tijera.' },
+      { id: 'h1g-p10', type: 'mc', q: '¿Qué material y espesor llevan la caja y la tapa?', options: ['Chapa galvanizada Nº 30', 'Hojalata de 3 mm', 'Acero IRAM 1010 de 22 mm', 'Aluminio de 1 mm'], answer: 0, explain: 'Chapa fina, se corta con tijera.' },
     ],
   },
   {

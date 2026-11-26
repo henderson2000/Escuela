@@ -13,7 +13,7 @@ function Home() {
           Hojalatería: <span className="accent">trabajar la chapa</span>
         </>
       }
-      lead="Chapas, hojalata y galvanizado; las herramientas para medir, trazar, cortar y plegar; y los tres proyectos del taller (caja, tapa y budinera) plegándose en 3D con las medidas de los planos."
+      lead="Chapas, hojalata, galvanizado e inoxidable; las herramientas para medir, trazar, cortar y plegar; y los tres proyectos del taller (caja, tapa y budinera) plegándose en 3D con las medidas de los planos."
       heroModel="caja"
       heroParams={{ op: 9 }}
       actions={[
@@ -22,7 +22,7 @@ function Home() {
       ]}
       sections={[
         { to: '/componentes', icon: '🧊', title: 'En 3D', text: 'La caja, la tapa y la budinera operación por operación, las herramientas, la plegadora y el engrafado.' },
-        { to: '/teoria', icon: '📘', title: 'Teoría', text: 'Chapas, calibre, hojalata, galvanizado, herramientas, plegado, uniones, soldadura por punto y máquinas de corte.' },
+        { to: '/teoria', icon: '📘', title: 'Teoría', text: 'Chapas, calibre, hojalata, galvanizado, inoxidable, herramientas, plegado, uniones, soldadura por punto y máquinas de corte.' },
         { to: '/ejercicios', icon: '📝', title: 'Guía de ejercicios', text: 'Lectura de planos, desarrollos y ciclos de fabricación de los tres proyectos.' },
         { to: '/juegos', icon: '🎮', title: 'Juegos', text: '¿Qué herramienta uso?, el orden de las operaciones y los planos. ¡Suman puntos!' },
       ]}

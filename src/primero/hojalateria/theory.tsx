@@ -114,9 +114,9 @@ export const HOJALATERIA1_TOPICS: Topic[] = [
   },
   {
     id: 'h1-hojalata',
-    title: 'Hojalata y chapa galvanizada',
+    title: 'Hojalata, galvanizada e inoxidable',
     icon: '🥫',
-    summary: 'El acero para envasar y la chapa con zinc de los techos y canaletas.',
+    summary: 'El acero para envasar, la chapa con zinc de la caja y la tapa, y el acero inoxidable de la budinera.',
     content: (
       <>
         <h4>La hojalata</h4>
@@ -128,8 +128,15 @@ export const HOJALATERIA1_TOPICS: Topic[] = [
         <h4>La chapa galvanizada</h4>
         <p>
           Es chapa de acero laminada recubierta en las dos caras con una capa de <b>zinc</b>. Se nota por la cristalización del zinc en forma
-          de pequeñas hojas (la "flor"). Con ella se hacen chapas onduladas o trapezoidales para techos, cañerías, canaletas y recipientes. Los
-          proyectos del taller son de <b>chapa galvanizada Nº 30</b>.
+          de pequeñas hojas (la "flor"). Con ella se hacen chapas onduladas o trapezoidales para techos, cañerías, canaletas y recipientes. La{' '}
+          <b>caja</b> y la <b>tapa</b> del taller son de <b>chapa galvanizada Nº 30</b>.
+        </p>
+        <h4>La chapa de acero inoxidable</h4>
+        <p>
+          Es acero aleado con <b>cromo</b> (y a veces níquel): el cromo forma sobre la superficie una película finísima que la protege, así
+          que no se oxida aunque se raye y no necesita recubrimiento. Tiene un brillo plateado parejo, sin "flor". Se usa en piletas de
+          cocina, utensilios, budineras y equipos gastronómicos, porque está en contacto con alimentos. La <b>budinera</b> del taller es de{' '}
+          <b>chapa de acero inoxidable Nº 30</b>.
         </p>
       </>
     ),
@@ -138,6 +145,7 @@ export const HOJALATERIA1_TOPICS: Topic[] = [
       { id: 'h1-t2-2', type: 'mc', q: '¿Con qué está recubierta la chapa galvanizada?', options: ['Con zinc', 'Con estaño', 'Con pintura', 'Con cobre'], answer: 0, explain: 'En las dos caras.' },
       { id: 'h1-t2-3', type: 'mc', q: '¿Cuál de estos productos se hace con chapa galvanizada?', options: ['Una canaleta', 'Una lata de tomates', 'Un aerosol', 'Una lata de leche en polvo'], answer: 0, explain: 'Techos, cañerías, canaletas y recipientes.' },
       { id: 'h1-t2-4', type: 'num', q: '¿En qué año apareció la hojalata?', answer: 1810, tolerance: 0, unit: '', explain: 'Desde 1810 se usa para envasar.' },
+      { id: 'h1-t2-5', type: 'mc', q: '¿Por qué el acero inoxidable no se oxida?', options: ['Porque tiene cromo, que forma una película protectora', 'Porque está pintado', 'Porque está recubierto de zinc', 'Porque es de aluminio'], answer: 0, explain: 'La película de óxido de cromo se regenera sola aunque se raye.' },
     ],
   },
   {
