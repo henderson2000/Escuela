@@ -1,28 +1,14 @@
+import { lazyModel } from '../../three/lazy3d'
 import type { ComponentDef } from '../../catalog/types'
 import { Field, Readout, Segmented, Slider, Toggle } from '../../components/ui'
-import {
-  CORDON_PARTS,
-  CordonModel,
-  ELECTRODO_PARTS,
-  EPP_PARTS,
-  EQUIPO_PARTS,
-  ElectrodoModel,
-  EppModel,
-  EquipoModel,
-  UNION_PARTS,
-  UnionModel,
-  designacion,
-  diagnosticar,
-  filtroDin,
-  recomendada,
-  type CordonParams,
-  type ElectrodoParams,
-  type EppParams,
-  type EquipoParams,
-  type Posicion,
-  type Union,
-  type UnionParams,
-} from '../../three/models/segundo/Soldadura'
+import { CORDON_PARTS, ELECTRODO_PARTS, EPP_PARTS, EQUIPO_PARTS, UNION_PARTS, designacion, diagnosticar, filtroDin, recomendada } from '../../three/models/segundo/Soldadura.data'
+import type { CordonParams, ElectrodoParams, EppParams, EquipoParams, Posicion, Union, UnionParams } from '../../three/models/segundo/Soldadura'
+
+const CordonModel = lazyModel(() => import('../../three/models/segundo/Soldadura'), 'CordonModel')
+const ElectrodoModel = lazyModel(() => import('../../three/models/segundo/Soldadura'), 'ElectrodoModel')
+const EppModel = lazyModel(() => import('../../three/models/segundo/Soldadura'), 'EppModel')
+const EquipoModel = lazyModel(() => import('../../three/models/segundo/Soldadura'), 'EquipoModel')
+const UnionModel = lazyModel(() => import('../../three/models/segundo/Soldadura'), 'UnionModel')
 
 const DIAMS = [2, 2.5, 3.25, 4, 5]
 const fmtD = (d: number) => String(d).replace('.', ',')

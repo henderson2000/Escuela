@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Viewer } from '../../three/Viewer'
+import { Viewer } from '../../three/lazy3d'
 import { useSub } from '../../lib/nav'
 import { useSubject } from '../../lib/subject'
 

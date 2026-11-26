@@ -1,8 +1,16 @@
+import { lazyModel } from '../../three/lazy3d'
 import { useEffect, useState } from 'react'
 import type { ComponentDef } from '../../catalog/types'
 import { Field, Readout, Segmented, Slider, Toggle } from '../../components/ui'
-import { InstalacionModel, estado, instalacionParts, type Circuito2, type Falla, type InstalacionParams } from '../../three/models/segundo/Instalacion'
-import { DIF_PARTS, DiferencialModel, MULTI_PARTS, MultimetroModel, PIA_PARTS, PiaModel, TIEMPO_DISPARO, lectura, type DiferencialParams, type ModoMulti, type MultimetroParams, type PiaParams, type Situacion } from '../../three/models/segundo/Protecciones'
+import { estado, instalacionParts } from '../../three/models/segundo/Instalacion.data'
+import type { Circuito2, Falla, InstalacionParams } from '../../three/models/segundo/Instalacion'
+import { DIF_PARTS, MULTI_PARTS, PIA_PARTS, TIEMPO_DISPARO, lectura } from '../../three/models/segundo/Protecciones.data'
+import type { DiferencialParams, ModoMulti, MultimetroParams, PiaParams, Situacion } from '../../three/models/segundo/Protecciones'
+
+const InstalacionModel = lazyModel(() => import('../../three/models/segundo/Instalacion'), 'InstalacionModel')
+const DiferencialModel = lazyModel(() => import('../../three/models/segundo/Protecciones'), 'DiferencialModel')
+const MultimetroModel = lazyModel(() => import('../../three/models/segundo/Protecciones'), 'MultimetroModel')
+const PiaModel = lazyModel(() => import('../../three/models/segundo/Protecciones'), 'PiaModel')
 
 const fmt = (n: number, d = 2) => (Number.isFinite(n) ? Number(n.toFixed(d)).toString().replace('.', ',') : '—')
 

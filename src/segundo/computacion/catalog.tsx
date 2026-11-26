@@ -1,7 +1,13 @@
+import { lazyModel } from '../../three/lazy3d'
 import type { ComponentDef } from '../../catalog/types'
 import './c2.css'
 import { Field, Readout, Segmented, Slider, Toggle } from '../../components/ui'
-import { NODOS, PANTALLA_PARTS, PantallaModel, RED_PARTS, RedModel, VN_PARTS, VN_PASOS, VonNeumannModel, type PantallaParams, type RedParams, type Topologia, type VonNeumannParams } from '../../three/models/segundo/Compu2'
+import { NODOS, PANTALLA_PARTS, RED_PARTS, VN_PARTS, VN_PASOS } from '../../three/models/segundo/Compu2.data'
+import type { PantallaParams, RedParams, Topologia, VonNeumannParams } from '../../three/models/segundo/Compu2'
+
+const PantallaModel = lazyModel(() => import('../../three/models/segundo/Compu2'), 'PantallaModel')
+const RedModel = lazyModel(() => import('../../three/models/segundo/Compu2'), 'RedModel')
+const VonNeumannModel = lazyModel(() => import('../../three/models/segundo/Compu2'), 'VonNeumannModel')
 
 /* ------------------------------------------------------------------ Von Neumann */
 

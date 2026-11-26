@@ -1,9 +1,17 @@
+import { lazyModel } from '../../three/lazy3d'
 import type { ComponentDef } from '../../catalog/types'
 import { Field, Formula, Readout, Segmented, Slider, Toggle } from '../../components/ui'
-import { AtomoModel, atomParts, type AtomoParams } from '../../three/models/primero/Atomo'
-import { CableModel, cableParts, FUNCION_INFO, TPR_COLORS, type CableParams, type Funcion } from '../../three/models/primero/Cable'
-import { CircuitoModel, circuitoParts, solve, type CircuitoParams } from '../../three/models/primero/Circuito'
+import { atomParts } from '../../three/models/primero/Atomo.data'
+import type { AtomoParams } from '../../three/models/primero/Atomo'
+import { cableParts, FUNCION_INFO, TPR_COLORS } from '../../three/models/primero/Cable.data'
+import type { CableParams, Funcion } from '../../three/models/primero/Cable'
+import { circuitoParts, solve } from '../../three/models/primero/Circuito.data'
+import type { CircuitoParams } from '../../three/models/primero/Circuito'
 import { ELEMENTS, KIND_NAMES, SHELL_NAMES, shellsWithCharge } from './atoms'
+
+const AtomoModel = lazyModel(() => import('../../three/models/primero/Atomo'), 'AtomoModel')
+const CableModel = lazyModel(() => import('../../three/models/primero/Cable'), 'CableModel')
+const CircuitoModel = lazyModel(() => import('../../three/models/primero/Circuito'), 'CircuitoModel')
 
 const fmt = (n: number, d = 2) => (Number.isFinite(n) ? Number(n.toFixed(d)).toString().replace('.', ',') : '—')
 

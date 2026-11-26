@@ -1,7 +1,10 @@
+import { lazyModel } from '../three/lazy3d'
 import { Link } from 'react-router-dom'
-import { Viewer } from '../three/Viewer'
-import { ArduinoModel } from '../three/models/Arduino'
+import { Viewer } from '../three/lazy3d'
+
 import { useSub } from '../lib/nav'
+
+const ArduinoModel = lazyModel(() => import('../three/models/Arduino'), 'ArduinoModel')
 
 const SECTIONS = [
   { to: '/laboratorio/mesa', icon: '🛠', title: 'Mesa de trabajo', text: 'Armá circuitos con el Arduino en la protoboard, programalo en C como en el IDE y simulalo: LEDs, pulsadores, potenciómetros y monitor serie.' },

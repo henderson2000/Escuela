@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { partsOf } from '../catalog'
+import { partsOf } from '../catalog/types'
 import { useSubject } from '../lib/subject'
 import { Viewer } from '../three/Viewer'
 import { ActivityList } from '../components/ActivityList'

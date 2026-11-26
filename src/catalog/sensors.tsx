@@ -1,7 +1,14 @@
+import { lazyModel } from '../three/lazy3d'
 import type { ComponentDef } from './types'
-import { ButtonModel, Dht11Model, LdrModel, PotentiometerModel, UltrasonicModel, ldrResistance } from '../three/models/Sensors'
+import { ldrResistance } from '../three/models/Sensors.data'
 import { Formula, Readout, Slider, Toggle } from '../components/ui'
 import { formatOhms } from '../lib/resistor'
+
+const ButtonModel = lazyModel(() => import('../three/models/Sensors'), 'ButtonModel')
+const Dht11Model = lazyModel(() => import('../three/models/Sensors'), 'Dht11Model')
+const LdrModel = lazyModel(() => import('../three/models/Sensors'), 'LdrModel')
+const PotentiometerModel = lazyModel(() => import('../three/models/Sensors'), 'PotentiometerModel')
+const UltrasonicModel = lazyModel(() => import('../three/models/Sensors'), 'UltrasonicModel')
 
 const fmt = (n: number, d = 2) => n.toFixed(d).replace('.', ',')
 

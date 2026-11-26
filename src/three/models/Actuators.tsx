@@ -6,6 +6,8 @@ import { Label } from '../Label'
 import { Screw, Wire, darkPlastic, latheGeometry, metal, tinned, useCanvasTexture } from '../helpers'
 import { RoundedBox } from '@react-three/drei'
 import { useKeepRendering } from '../keepRendering'
+import { TRANSISTORS } from './Actuators.data'
+export { TRANSISTORS } from './Actuators.data'
 
 /** Engranaje recto extruido (dientes trapezoidales). */
 function useGear(teeth: number, r: number, depth: number, hole = 0.04) {
@@ -379,14 +381,6 @@ export function BuzzerModel({ playing, active }: { playing: boolean; active: boo
   )
 }
 
-/* ------------------------------------------------------------------ */
-/* Transistor NPN en encapsulado TO-92                                 */
-/* ------------------------------------------------------------------ */
-
-export const TRANSISTORS = {
-  BC547: { pins: ['C', 'B', 'E'], beta: 200, icMax: 100, label: 'BC547' },
-  '2N2222': { pins: ['E', 'B', 'C'], beta: 150, icMax: 600, label: '2N2222' },
-} as const
 export type TransistorName = keyof typeof TRANSISTORS
 
 const PIN_NAMES: Record<string, string> = { C: 'Colector', B: 'Base', E: 'Emisor' }

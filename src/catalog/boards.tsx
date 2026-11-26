@@ -1,8 +1,13 @@
+import { lazyModel } from '../three/lazy3d'
 import type { ComponentDef } from './types'
-import { BreadboardModel } from '../three/models/Breadboard'
-import { ArduinoModel } from '../three/models/Arduino'
-import { NANO_PARTS, NanoModel } from '../three/models/Nano'
+
+
+import { NANO_PARTS } from '../three/models/Nano.data'
 import { Field, Segmented, Toggle } from '../components/ui'
+
+const BreadboardModel = lazyModel(() => import('../three/models/Breadboard'), 'BreadboardModel')
+const ArduinoModel = lazyModel(() => import('../three/models/Arduino'), 'ArduinoModel')
+const NanoModel = lazyModel(() => import('../three/models/Nano'), 'NanoModel')
 
 export const breadboard: ComponentDef = {
   id: 'protoboard',

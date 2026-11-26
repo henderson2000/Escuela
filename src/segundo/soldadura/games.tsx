@@ -1,7 +1,7 @@
 import type { GameDef } from '../../games/registry'
 import { QuizGame, pickOne, shuffle, type QuizRound } from '../../games/QuizGame'
 import { PartsGame } from '../../games/PartsGame'
-import { filtroDin } from '../../three/models/segundo/Soldadura'
+import { filtroDin } from '../../three/models/segundo/Soldadura.data'
 
 const mk = (prompt: string, emoji: string, ok: string, wrong: string[], explain?: string): QuizRound => ({
   prompt,

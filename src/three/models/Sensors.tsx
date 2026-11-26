@@ -5,6 +5,7 @@ import { Label } from '../Label'
 import { Part } from '../Part'
 import { Soic, Wire, darkPlastic, gearGeometry, latheGeometry, metal, pcbGeometries, tinned, useCanvasTexture } from '../helpers'
 import { useKeepRendering } from '../keepRendering'
+export { ldrResistance } from './Sensors.data'
 
 /* ------------------------------------------------------------------ */
 /* Sensor ultrasónico HC-SR04 (1 unidad = 10 mm)                       */
@@ -233,16 +234,6 @@ export function UltrasonicModel({ distanceCm, showWaves }: { distanceCm: number;
       </mesh>
     </group>
   )
-}
-
-/* ------------------------------------------------------------------ */
-/* LDR GL5528 (1 unidad = 5 mm): disco cerámico Ø5 × 2 mm               */
-/* ------------------------------------------------------------------ */
-
-export function ldrResistance(lightPct: number): number {
-  // aproximación logarítmica: ~1 MΩ en oscuridad, ~200 Ω a pleno sol
-  const lg = Math.log10(1e6) - (lightPct / 100) * (Math.log10(1e6) - Math.log10(200))
-  return Math.round(10 ** lg)
 }
 
 /** Dibuja los dos "peines" de electrodos que se entrelazan; devuelve el área de la pista. */

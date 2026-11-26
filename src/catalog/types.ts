@@ -80,3 +80,8 @@ export interface ComponentDef {
 }
 
 import type { EnvName } from '../lib/subject'
+
+/** Las partes de un componente (algunas cambian según los parámetros). Vive acá para no arrastrar los catálogos. */
+export function partsOf(c: ComponentDef, p: Params = c.defaultParams): PartInfo[] {
+  return typeof c.parts === 'function' ? c.parts(p) : c.parts
+}

@@ -1,6 +1,12 @@
+import { lazyModel } from '../../three/lazy3d'
 import type { ComponentDef } from '../../catalog/types'
 import { Field, Readout, Segmented, Toggle } from '../../components/ui'
-import { DiscoModel, discoParts, PC_PARTS, PcModel, PERIF_PARTS, PerifericosModel, type DiscoParams, type PcParams, type PerifParams } from '../../three/models/primero/Computadora'
+import { discoParts, PC_PARTS, PERIF_PARTS } from '../../three/models/primero/Computadora.data'
+import type { DiscoParams, PcParams, PerifParams } from '../../three/models/primero/Computadora'
+
+const DiscoModel = lazyModel(() => import('../../three/models/primero/Computadora'), 'DiscoModel')
+const PcModel = lazyModel(() => import('../../three/models/primero/Computadora'), 'PcModel')
+const PerifericosModel = lazyModel(() => import('../../three/models/primero/Computadora'), 'PerifericosModel')
 
 const pc: ComponentDef = {
   id: 'pc',

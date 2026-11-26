@@ -1,7 +1,13 @@
+import { lazyModel } from '../three/lazy3d'
 import { useEffect, useRef } from 'react'
 import type { ComponentDef } from './types'
-import { BuzzerModel, ServoModel, TRANSISTORS, TransistorModel, type TransistorName } from '../three/models/Actuators'
+import { TRANSISTORS } from '../three/models/Actuators.data'
+import type { TransistorName } from '../three/models/Actuators'
 import { Field, Formula, Readout, Segmented, Slider, Toggle } from '../components/ui'
+
+const BuzzerModel = lazyModel(() => import('../three/models/Actuators'), 'BuzzerModel')
+const ServoModel = lazyModel(() => import('../three/models/Actuators'), 'ServoModel')
+const TransistorModel = lazyModel(() => import('../three/models/Actuators'), 'TransistorModel')
 
 const fmt = (n: number, d = 2) => n.toFixed(d).replace('.', ',')
 

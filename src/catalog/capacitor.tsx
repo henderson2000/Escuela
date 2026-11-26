@@ -1,6 +1,10 @@
+import { lazyModel } from '../three/lazy3d'
 import type { ComponentDef, PartInfo } from './types'
-import { CapacitorModel, ceramicCode, formatCap, type CapType } from '../three/models/Capacitor'
+import { ceramicCode, formatCap } from '../three/models/Capacitor.data'
+import type { CapType } from '../three/models/Capacitor'
 import { Field, Formula, Readout, Segmented, Slider } from '../components/ui'
+
+const CapacitorModel = lazyModel(() => import('../three/models/Capacitor'), 'CapacitorModel')
 
 const ELECTRO_VALUES = [1, 10, 47, 100, 470, 1000, 2200]
 const CERAMIC_VALUES = [0.000022, 0.0001, 0.001, 0.01, 0.1]

@@ -1,7 +1,11 @@
+import { lazyModel } from '../three/lazy3d'
 import type { ComponentDef } from './types'
-import { LED_COLORS, LedModel, type LedColor } from '../three/models/Led'
+import { LED_COLORS } from '../three/models/Led.data'
+import type { LedColor } from '../three/models/Led'
 import { Field, Formula, Readout, Segmented, Slider, Toggle } from '../components/ui'
 import { E12, formatOhms } from '../lib/resistor'
+
+const LedModel = lazyModel(() => import('../three/models/Led'), 'LedModel')
 
 function nextE12(r: number) {
   for (let exp = 0; exp < 7; exp++) for (const b of E12) if (b * 10 ** exp >= r) return Math.round(b * 10 ** exp)

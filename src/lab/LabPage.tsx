@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 // (el entorno 3D de cada taller viene del contenido del taller: subject.environment)
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { partsOf, type ComponentDef } from '../catalog'
+import { partsOf, type ComponentDef } from '../catalog/types'
 import { useSubject } from '../lib/subject'
 import { useSub } from '../lib/nav'
 import { LabScene, type CameraRequest, type ViewName } from './LabScene'

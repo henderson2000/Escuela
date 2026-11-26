@@ -1,7 +1,11 @@
+import { lazyModel } from '../three/lazy3d'
 import { useEffect, useRef, type ReactNode } from 'react'
 import type { ComponentDef, Params, PartInfo } from '../catalog/types'
 import { Formula, Readout, Segmented, Slider, Toggle } from '../components/ui'
-import { MecanizadosModel, OP_DURATION, opReadouts, type MecParams, type OpId } from '../three/models/TornoMecanizados'
+import { OP_DURATION, opReadouts } from '../three/models/TornoMecanizados.data'
+import type { MecParams, OpId } from '../three/models/TornoMecanizados'
+
+const MecanizadosModel = lazyModel(() => import('../three/models/TornoMecanizados'), 'MecanizadosModel')
 
 /** Como Field, pero sin <label> (un label con botones adentro "aprieta" el primero al tocar el título). */
 function Group({ label, children }: { label: string; children: ReactNode }) {

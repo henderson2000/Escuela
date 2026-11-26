@@ -1,8 +1,17 @@
+import { lazyModel } from '../../three/lazy3d'
 import type { ComponentDef } from '../../catalog/types'
 import { Field, Readout, Segmented, Slider, Toggle } from '../../components/ui'
-import { FORMA_INFO, GRADO_INFO, LimaModel, limaParts, type Forma, type Grado, type LimaParams, type Picado } from '../../three/models/primero/Lima'
-import { ETAPAS, MartilloModel, martilloParts, type MartilloParams } from '../../three/models/primero/Martillo'
-import { INSTRUMENTOS_PARTS, InstrumentosModel, MORSA_PARTS, MorsaModel, type MorsaParams } from '../../three/models/primero/Taller'
+import { FORMA_INFO, GRADO_INFO, limaParts } from '../../three/models/primero/Lima.data'
+import type { Forma, Grado, LimaParams, Picado } from '../../three/models/primero/Lima'
+import { ETAPAS, martilloParts } from '../../three/models/primero/Martillo.data'
+import type { MartilloParams } from '../../three/models/primero/Martillo'
+import { INSTRUMENTOS_PARTS, MORSA_PARTS } from '../../three/models/primero/Taller.data'
+import type { MorsaParams } from '../../three/models/primero/Taller'
+
+const LimaModel = lazyModel(() => import('../../three/models/primero/Lima'), 'LimaModel')
+const MartilloModel = lazyModel(() => import('../../three/models/primero/Martillo'), 'MartilloModel')
+const InstrumentosModel = lazyModel(() => import('../../three/models/primero/Taller'), 'InstrumentosModel')
+const MorsaModel = lazyModel(() => import('../../three/models/primero/Taller'), 'MorsaModel')
 
 const PICADO_INFO: Record<Picado, string> = {
   simple: 'Una sola fila de surcos paralelos. Para metales blandos (aluminio, plomo, estaño) y para afilar.',

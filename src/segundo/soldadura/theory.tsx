@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { Topic } from '../../data/theory'
 import { Field, Formula, Readout, Segmented, Slider } from '../../components/ui'
 import { SubLink } from '../../lib/nav'
-import { filtroDin, recomendada } from '../../three/models/segundo/Soldadura'
+import { filtroDin, recomendada } from '../../three/models/segundo/Soldadura.data'
 import './s2.css'
 
 const fmt = (n: number, d = 2) => (Number.isFinite(n) ? Number(n.toFixed(d)).toString().replace('.', ',') : '—')

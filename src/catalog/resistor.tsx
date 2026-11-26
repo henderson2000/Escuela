@@ -1,6 +1,7 @@
+import { lazyModel } from '../three/lazy3d'
 import { useEffect, useState } from 'react'
 import type { ComponentDef } from './types'
-import { ResistorModel } from '../three/models/Resistor'
+
 import {
   COLORS,
   DIGIT_COLORS,
@@ -14,6 +15,8 @@ import {
 } from '../lib/resistor'
 import { Field, Readout, Segmented, Formula } from '../components/ui'
 import { ColorCodeTable } from '../components/ColorCodeTable'
+
+const ResistorModel = lazyModel(() => import('../three/models/Resistor'), 'ResistorModel')
 
 function BandPicker({ index, total, value, onChange }: { index: number; total: number; value: ColorName; onChange: (c: ColorName) => void }) {
   const isTol = index === total - 1

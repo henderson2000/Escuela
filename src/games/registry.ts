@@ -1,9 +1,12 @@
 import type { ComponentType } from 'react'
-import { ColorGame } from './ColorGame'
 import { PartsGame } from './PartsGame'
 import { SchematicGame, SCHEMATIC_LEVELS } from './SchematicGame'
-import { BreadboardGame } from './BreadboardGame'
 import { BB_LEVELS } from './breadboardLevels'
+import { lazyNamed } from '../lib/lazy'
+
+// los juegos en 3D se descargan recién al abrirlos (junto con three.js)
+const ColorGame = lazyNamed(() => import('./ColorGame'), 'ColorGame')
+const BreadboardGame = lazyNamed(() => import('./BreadboardGame'), 'BreadboardGame')
 
 export interface GameDef {
   id: string

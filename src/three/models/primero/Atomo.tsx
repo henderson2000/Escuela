@@ -4,6 +4,9 @@ import { useFrame } from '@react-three/fiber'
 import { Part } from '../../Part'
 import { useKeepRendering } from '../../keepRendering'
 import { ELEMENTS, SHELL_NAMES, shellsWithCharge } from '../../../primero/electricidad/atoms'
+import type { AtomoParams } from './Atomo.data'
+export { atomParts } from './Atomo.data'
+export type { AtomoParams } from './Atomo.data'
 
 const R_P = 0.16 // radio de protones y neutrones
 const R_E = 0.09
@@ -108,28 +111,6 @@ function Shell({ index, electrons, valence, spin }: { index: number; electrons: 
       </group>
     </group>
   )
-}
-
-export interface AtomoParams {
-  sym: string
-  charge: number
-  spin: boolean
-}
-
-export function atomParts(p: AtomoParams) {
-  const el = ELEMENTS.find((e) => e.sym === p.sym) ?? ELEMENTS[0]
-  const shells = shellsWithCharge(el, p.charge)
-  return [
-    { id: 'nucleo', name: 'Núcleo', desc: `Protones (rojos, carga +) y neutrones (grises, sin carga). ${el.name}: ${el.z} protones y ${el.n} neutrones.` },
-    ...shells.map((n, i) => ({
-      id: `capa-${SHELL_NAMES[i]}`,
-      name: `Capa ${SHELL_NAMES[i]}${i === shells.length - 1 ? ' (valencia)' : ''}`,
-      desc:
-        i === shells.length - 1
-          ? `La capa más externa: tiene ${n} electrón${n === 1 ? '' : 'es'} de valencia (amarillos). Son los que participan en los enlaces y definen cómo conduce el material.`
-          : `Capa ${SHELL_NAMES[i]} con ${n} electrones (carga −). Admite hasta ${[2, 8, 18, 32][i]}.`,
-    })),
-  ]
 }
 
 export function AtomoModel(p: AtomoParams) {

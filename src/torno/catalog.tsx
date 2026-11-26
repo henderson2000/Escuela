@@ -1,9 +1,16 @@
+import { lazyModel } from '../three/lazy3d'
 import type { ReactNode } from 'react'
 import type { ComponentDef, Params, PartInfo } from '../catalog/types'
 import { Field, Formula, Readout, Segmented, Slider, Toggle } from '../components/ui'
-import { RPMS, TornoModel, tornoLayout, type Avance, type Montaje, type TornoParams } from '../three/models/Torno'
-import { HerramientasModel, PlatosModel, PuntosModel, type PlatoKind, type PuntoKind, type ToolKind } from '../three/models/TornoAccesorios'
+import { RPMS, tornoLayout } from '../three/models/Torno.data'
+import type { Avance, Montaje, TornoParams } from '../three/models/Torno'
+import type { PlatoKind, PuntoKind, ToolKind } from '../three/models/TornoAccesorios'
 import { mecanizados } from './mecanizados'
+
+const TornoModel = lazyModel(() => import('../three/models/Torno'), 'TornoModel')
+const HerramientasModel = lazyModel(() => import('../three/models/TornoAccesorios'), 'HerramientasModel')
+const PlatosModel = lazyModel(() => import('../three/models/TornoAccesorios'), 'PlatosModel')
+const PuntosModel = lazyModel(() => import('../three/models/TornoAccesorios'), 'PuntosModel')
 
 /** Como Field, pero sin <label> (un label con botones adentro "aprieta" el primero al tocar el título). */
 function Group({ label, children }: { label: string; children: ReactNode }) {

@@ -1,6 +1,9 @@
+import { lazyModel } from '../three/lazy3d'
 import type { ComponentDef } from './types'
-import { MotorModel } from '../three/models/Motor'
+
 import { Field, Formula, Readout, Segmented, Slider, Toggle } from '../components/ui'
+
+const MotorModel = lazyModel(() => import('../three/models/Motor'), 'MotorModel')
 
 const fmt = (n: number, d = 2) => n.toFixed(d).replace('.', ',')
 

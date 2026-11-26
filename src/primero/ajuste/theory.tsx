@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import type { Topic } from '../../data/theory'
 import { Readout, Segmented, Slider } from '../../components/ui'
 import { useSub } from '../../lib/nav'
-import { sectionShape, FORMA_INFO, type Forma } from '../../three/models/primero/Lima'
-import { ETAPAS } from '../../three/models/primero/Martillo'
+import { sectionShape, FORMA_INFO } from '../../three/models/primero/Lima.data'
+import type { Forma } from '../../three/models/primero/Lima'
+import { ETAPAS } from '../../three/models/primero/Martillo.data'
 import './a1.css'
 
 /* ------------------------------------------------------------------ simuladores chicos */

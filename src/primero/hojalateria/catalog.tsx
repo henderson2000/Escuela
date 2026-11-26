@@ -1,8 +1,15 @@
+import { lazyModel } from '../../three/lazy3d'
 import { useCallback } from 'react'
 import type { ComponentDef } from '../../catalog/types'
 import { Field, Readout, Segmented, Toggle } from '../../components/ui'
-import { FoldingSheet, boxSpec, budineraSpec } from '../../three/models/primero/Plegado'
-import { ENGRAFADO_PARTS, EngrafadoModel, HERRAMIENTAS_PARTS, HerramientasModel, PLEGADORA_PARTS, PlegadoraModel, type EngrafadoParams } from '../../three/models/primero/Hojalateria'
+import { boxSpec, budineraSpec } from '../../three/models/primero/Plegado.data'
+import { ENGRAFADO_PARTS, HERRAMIENTAS_PARTS, PLEGADORA_PARTS } from '../../three/models/primero/Hojalateria.data'
+import type { EngrafadoParams } from '../../three/models/primero/Hojalateria'
+
+const FoldingSheet = lazyModel(() => import('../../three/models/primero/Plegado'), 'FoldingSheet')
+const EngrafadoModel = lazyModel(() => import('../../three/models/primero/Hojalateria'), 'EngrafadoModel')
+const HerramientasModel = lazyModel(() => import('../../three/models/primero/Hojalateria'), 'HerramientasModel')
+const PlegadoraModel = lazyModel(() => import('../../three/models/primero/Hojalateria'), 'PlegadoraModel')
 
 export interface Op {
   n: number

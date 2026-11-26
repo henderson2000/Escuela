@@ -1,26 +1,14 @@
+import { lazyModel } from '../../three/lazy3d'
 import type { ComponentDef } from '../../catalog/types'
 import { Field, Readout, Segmented, Slider, Toggle } from '../../components/ui'
-import {
-  FUENTE_ETAPAS,
-  FUENTE_PARTS,
-  FuenteModel,
-  PCB_ETAPAS,
-  PUNTO_PARTS,
-  PcbModel,
-  PuntoModel,
-  SOLDADOR_PARTS,
-  SoldadorModel,
-  diagnosticarPunto,
-  fuenteValores,
-  pcbParts,
-  type Estano,
-  type Etapa,
-  type FuenteParams,
-  type PcbParams,
-  type PuntoParams,
-  type SoldadorParams,
-} from '../../three/models/segundo/Electronica2'
+import { FUENTE_ETAPAS, FUENTE_PARTS, PCB_ETAPAS, PUNTO_PARTS, SOLDADOR_PARTS, diagnosticarPunto, fuenteValores, pcbParts } from '../../three/models/segundo/Electronica2.data'
+import type { Estano, Etapa, FuenteParams, PcbParams, PuntoParams, SoldadorParams } from '../../three/models/segundo/Electronica2'
 import './el2.css'
+
+const FuenteModel = lazyModel(() => import('../../three/models/segundo/Electronica2'), 'FuenteModel')
+const PcbModel = lazyModel(() => import('../../three/models/segundo/Electronica2'), 'PcbModel')
+const PuntoModel = lazyModel(() => import('../../three/models/segundo/Electronica2'), 'PuntoModel')
+const SoldadorModel = lazyModel(() => import('../../three/models/segundo/Electronica2'), 'SoldadorModel')
 
 const f = (n: number, d = 1) => Number(n.toFixed(d)).toString().replace('.', ',')
 

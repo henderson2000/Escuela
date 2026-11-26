@@ -1,22 +1,14 @@
+import { lazyModel } from '../three/lazy3d'
 import type { ReactNode } from 'react'
 import type { ComponentDef, Params, PartInfo } from '../catalog/types'
 import { Field, Readout, Segmented, Slider, Toggle } from '../components/ui'
-import {
-  ContactorModel,
-  LAMP_COLOR_OPTIONS,
-  MotorBreakerModel,
-  LOGO_PROGRAMS,
-  LogoModel,
-  PushbuttonsModel,
-  logoIO,
-  logoInputs,
-  logoOutputs,
-  useLogoIO,
-  type BreakerState,
-  type LampColor,
-  type TripCause,
-  type LogoProgram,
-} from '../three/models/Logo'
+import { LAMP_COLOR_OPTIONS, LOGO_PROGRAMS, logoIO, logoInputs, logoOutputs, useLogoIO } from '../three/models/Logo.data'
+import type { BreakerState, LampColor, TripCause, LogoProgram } from '../three/models/Logo'
+
+const ContactorModel = lazyModel(() => import('../three/models/Logo'), 'ContactorModel')
+const MotorBreakerModel = lazyModel(() => import('../three/models/Logo'), 'MotorBreakerModel')
+const LogoModel = lazyModel(() => import('../three/models/Logo'), 'LogoModel')
+const PushbuttonsModel = lazyModel(() => import('../three/models/Logo'), 'PushbuttonsModel')
 
 /** Como Field, pero sin <label> (un label con botones adentro "aprieta" el primero al tocar el título). */
 function Group({ label, children }: { label: string; children: ReactNode }) {
