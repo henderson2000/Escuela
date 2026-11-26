@@ -82,6 +82,14 @@ SUBJECT_NAV['1/hojalateria'] = [
 ]
 
 // 2do año
+SUBJECT_NAV['2/electronica'] = [
+  { to: '', label: 'Inicio del taller', end: true },
+  { to: '/laboratorio', label: 'En 3D' },
+  { to: '/teoria', label: 'Teoría' },
+  { to: '/ejercicios', label: 'Guía' },
+  { to: '/juegos', label: 'Juegos' },
+]
+
 SUBJECT_NAV['2/electricidad'] = [
   { to: '', label: 'Inicio del taller', end: true },
   { to: '/laboratorio', label: 'En 3D' },
@@ -111,6 +119,7 @@ const LOADERS: Record<string, () => Promise<{ default: Omit<SubjectEntry, 'nav'>
   '1/computacion': () => import('./computacion-1'),
   '1/ajuste': () => import('./ajuste-1'),
   '1/hojalateria': () => import('./hojalateria-1'),
+  '2/electronica': () => import('./electronica-2'),
   '2/electricidad': () => import('./electricidad-2'),
   '2/computacion': () => import('./computacion-2'),
   '2/soldadura': () => import('./soldadura-2'),

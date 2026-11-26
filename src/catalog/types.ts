@@ -59,6 +59,9 @@ export interface ComponentDef {
     | 'Seguridad'
     | 'Uniones y posiciones'
     | 'Redes'
+    | 'Soldadura con estaño'
+    | 'Circuito impreso'
+    | 'Fuentes de alimentación'
   icon: string
   short: string
   parts: PartInfo[] | ((p: Params) => PartInfo[])

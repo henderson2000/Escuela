@@ -53,7 +53,7 @@ export const YEARS: Year[] = [
     short: '2do',
     name: '2do año',
     rotations: [
-      { n: 1, subject: 'electronica' },
+      { n: 1, subject: 'electronica', ready: true, desc: 'Soldadura con estaño, simulador del punto de soldadura, fabricación de circuitos impresos, componentes y fuente de alimentación con osciloscopio.' },
       { n: 2, subject: 'computacion', ready: true, desc: 'Von Neumann, redes, imagen digital, algoritmos y pseudocódigo con un intérprete que corrige solo.' },
       { n: 3, subject: 'electricidad', ready: true, desc: 'Instalaciones domiciliarias: protecciones, esquemas, los circuitos del taller en 3D y cálculo de circuitos.' },
       { n: 4, subject: 'soldadura', ready: true, desc: 'Soldadura por arco con electrodo revestido: seguridad, equipo, técnica y un simulador del cordón.' },

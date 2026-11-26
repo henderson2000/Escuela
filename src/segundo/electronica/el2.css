@@ -1,0 +1,49 @@
+.el2-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 0.88rem;
+}
+.el2-table caption {
+  text-align: left;
+  font-weight: 600;
+  padding: 4px 0;
+}
+.el2-table th,
+.el2-table td {
+  border: 1px solid var(--line);
+  padding: 4px 6px;
+  text-align: center;
+}
+.el2-steps {
+  padding-left: 1.2em;
+}
+.el2-steps li {
+  margin: 4px 0;
+}
+.el2-verdict {
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 8px;
+  border: 1px solid var(--line);
+}
+.el2-verdict p {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+}
+.el2-verdict.ok {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.5);
+}
+.el2-verdict.bad {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+.el2-ok {
+  color: #22c55e;
+  font-weight: 700;
+}
+.el2-bad {
+  color: #ef4444;
+  font-weight: 700;
+}
