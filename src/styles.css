@@ -1587,11 +1587,182 @@ th {
 .year-btn.soon .year-num {
   opacity: 0.55;
 }
-.year-btn:hover,
 .year-btn:focus-visible {
-  transform: translateY(-3px);
   border-color: var(--accent);
-  box-shadow: 0 10px 30px rgba(54, 194, 255, 0.15);
+}
+
+/* ---- lupa con las 4 rotaciones del año ---- */
+@property --r {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+.year-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  --mx: 50%;
+  --my: 50%;
+  --r: 0px;
+  transition: --r 0.22s ease-out, border-color 0.15s;
+}
+.year-btn.lens-on {
+  --r: 66px;
+  border-color: #3a4a63;
+  /* la lupa reemplaza al puntero */
+  cursor: none;
+}
+.year-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.year-mosaic {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  background: #0d131d;
+  clip-path: circle(calc(var(--r) / 1.7) at var(--mx) var(--my));
+  /* agranda lo que queda debajo del cursor */
+  transform: scale(1.7);
+  transform-origin: var(--mx) var(--my);
+}
+.year-tile {
+  position: relative;
+  overflow: hidden;
+  background: #121a26;
+}
+.year-tile img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.year-ring {
+  position: absolute;
+  left: var(--mx);
+  top: var(--my);
+  width: calc(var(--r) * 2);
+  height: calc(var(--r) * 2);
+  translate: -50% -50%;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.55), inset 0 0 18px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transition: opacity 0.18s;
+}
+.year-btn.lens-on .year-ring {
+  opacity: 1;
+}
+.year-ring-label {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  translate: -50% 0;
+  white-space: nowrap;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(8, 12, 19, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+/* lista de las rotaciones del año (la que está bajo la lupa se resalta) */
+.year-rots {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.year-rots li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px 2px 3px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.84rem;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.year-rots b {
+  display: inline-grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--card2);
+  color: var(--text);
+  font-size: 0.72rem;
+}
+.year-rots li.on {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* sin mouse (celular, tablet): las 4 rotaciones en miniatura */
+.year-thumbs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+}
+.year-thumb {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.68rem;
+  color: var(--muted);
+  line-height: 1.2;
+}
+.year-thumb img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #121a26;
+}
+.year-thumb {
+  position: relative;
+}
+/* en una tablet parada las tarjetas son angostas: miniaturas de a dos */
+.year-btn {
+  container-type: inline-size;
+}
+@container (max-width: 300px) {
+  .year-thumbs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.year-thumb b {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(8, 12, 19, 0.85);
+  color: #fff;
+  font-size: 0.7rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .year-btn {
+    transition: none;
+  }
 }
 
 .year-num {

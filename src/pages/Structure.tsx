@@ -2,6 +2,7 @@ import { Suspense, use, useEffect, useRef } from 'react'
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { SUBJECTS, YEARS, getRotation, getYear } from '../data/curriculum'
 import { BaseContext } from '../lib/nav'
+import { YearCard, useArmImages } from './YearCard'
 import { SubjectContext } from '../lib/subject'
 import { lazyNamed } from '../lib/lazy'
 import { ErrorBoundary } from '../components/ErrorBoundary'
@@ -35,6 +36,7 @@ export function PageLoading() {
 /* ------------------------------------------------------------------ inicio: elegir año */
 
 export function YearsHome() {
+  const [armed, arm] = useArmImages()
   return (
     <div className="page years-home">
       <section className="years-hero">
@@ -43,20 +45,10 @@ export function YearsHome() {
         </h1>
         <p className="lead">Elegí tu año para ver los talleres.</p>
       </section>
-      <div className="year-buttons">
+      <div className="year-buttons" onPointerEnter={arm}>
         {YEARS.map((y) => {
-          const subjects = y.rotations.map((r) => r.subject).filter(Boolean) as string[]
           const ready = y.rotations.filter((r) => r.ready && hasSubjectContent(y.id, r.subject ?? '')).length
-          return (
-            <Link key={y.id} to={`/${y.id}`} className={`year-btn ${ready ? '' : 'soon'}`}>
-              <span className="year-num">{y.short}</span>
-              <span className="year-name">{y.name}</span>
-              <span className="year-detail">
-                {subjects.length ? subjects.map((s) => SUBJECTS[s].name).join(' · ') : 'Próximamente'}
-              </span>
-              <span className={`pill ${ready ? 'ok' : ''}`}>{ready ? `${ready} ${ready === 1 ? 'taller disponible' : 'talleres disponibles'}` : 'Próximamente'}</span>
-            </Link>
-          )
+          return <YearCard key={y.id} year={y} ready={ready} armed={armed} />
         })}
       </div>
       <div className="home-footer-links">
