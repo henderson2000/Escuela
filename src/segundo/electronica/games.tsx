@@ -22,7 +22,9 @@ const SOLDADURAS: [string, string, string, string[], string][] = [
   ['Estaño que une dos pads vecinos.', '🌉', 'Puente (cortocircuito)', ['Buena soldadura', 'Poco estaño', 'Soldadura fría'], 'Se saca con malla desoldante.'],
   ['El pad está despegado y la placa alrededor quedó marrón oscuro.', '🔥', 'Sobrecalentada (pad levantado)', ['Soldadura fría', 'Poco estaño', 'Buena soldadura'], 'Demasiado tiempo o temperatura.'],
   ['La soldadura quedó opaca porque se movió el componente mientras se enfriaba.', '🫨', 'Soldadura fría', ['Buena soldadura', 'Puente', 'Exceso de estaño'], 'No mover nada hasta que solidifique.'],
-  ['El estaño quedó pegado a la pata pero no al pad: hay un anillo oscuro entre los dos.', '⭕', 'Soldadura fría', ['Buena soldadura', 'Exceso', 'Puente'], 'El pad no llegó a calentarse.'],
+  ['El estaño quedó pegado a la pata pero no al pad: hay un anillo oscuro entre los dos.', '⭕', 'Soldadura fría', ['Buena soldadura', 'Exceso de estaño', 'Puente (cortocircuito)'], 'El pad no llegó a calentarse.'],
+  ['El estaño subió bien por la pata, cubre todo el pad y se ve liso y brillante, aunque un poco chato.', '✨', 'Buena soldadura', ['Soldadura fría', 'Poco estaño', 'Puente (cortocircuito)'], 'Lo importante es que mojó bien: liso, brillante y sin bordes levantados.'],
+  ['Una gotita de estaño quedó pegada sobre una pista, lejos del pad.', '💧', 'Salpicadura de estaño: hay que sacarla', ['Buena soldadura', 'Soldadura fría', 'Pad levantado'], 'Puede hacer un cortocircuito si toca otra pista.'],
 ]
 
 /* ------------------------------------------------------------------ componentes */
@@ -102,39 +104,39 @@ const SEGURIDAD: [string, string, boolean, string][] = [
 
 export const ELECTRONICA2_GAMES: GameDef[] = [
   {
-    id: 'e2-partes',
+    id: 'en2-partes',
     title: '¿Qué parte es?',
     icon: '🔍',
     desc: 'La estación de soldado, el punto de soldadura, la placa y la fuente en 3D: identificá la parte marcada.',
     max: '200',
-    component: () => <PartsGame game="e2-partes" />,
+    component: () => <PartsGame game="en2-partes" />,
   },
   {
-    id: 'e2-soldaduras',
+    id: 'en2-soldaduras',
     title: '¿Buena o mala soldadura?',
     icon: '🌋',
     desc: 'Te describen cómo quedó el punto: decí qué es.',
     max: '200',
     component: () => (
       <QuizGame
-        game="e2-soldaduras"
+        game="en2-soldaduras"
         title="¿Buena o mala soldadura?"
         icon="🌋"
-        info="8 soldaduras para revisar."
+        info="10 soldaduras para revisar."
         intro={<p>Buena, fría, exceso, poco estaño, puente o pad levantado.</p>}
         makeRounds={() => shuffle(SOLDADURAS).map(([p, e, ok, w, ex]) => mk(p, e, ok, w, ex))}
       />
     ),
   },
   {
-    id: 'e2-componentes',
+    id: 'en2-componentes',
     title: 'Componentes y cálculos',
     icon: '🧮',
     desc: 'Códigos de capacitores, reguladores, polaridades y cálculos de LED, transformador y ripple. Números distintos cada vez.',
     max: '200',
     component: () => (
       <QuizGame
-        game="e2-componentes"
+        game="en2-componentes"
         title="Componentes y cálculos"
         icon="🧮"
         info="10 preguntas rápidas."
@@ -144,14 +146,14 @@ export const ELECTRONICA2_GAMES: GameDef[] = [
     ),
   },
   {
-    id: 'e2-seguridad',
+    id: 'en2-seguridad',
     title: '¿Seguro o peligroso?',
     icon: '⚠️',
     desc: 'Situaciones del taller de electrónica: ¿está bien o mal?',
     max: '200',
     component: () => (
       <QuizGame
-        game="e2-seguridad"
+        game="en2-seguridad"
         title="¿Seguro o peligroso?"
         icon="⚠️"
         info="10 situaciones: decidí si está bien o mal."

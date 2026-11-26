@@ -3,13 +3,15 @@ import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import { Part } from '../../Part'
 import { canvasTex } from '../segundo/soldaduraShared'
+import { BRUSHED_N } from '../compuShared'
 import { Bigornia, CenterPunch, Dividers, FlatSquare, Scriber, TinSnips, TinsmithHammer } from './herramientas'
 
 // Herramientas y máquinas de hojalatería. 1 unidad = 1 cm.
 
 const STEEL = { color: '#c9ced5', metalness: 0.95, roughness: 0.25 }
 const DARK = { color: '#3b4049', metalness: 0.7, roughness: 0.45 }
-const GALV = { color: '#c3c9d1', metalness: 0.7, roughness: 0.35 }
+// chapa de acero inoxidable cepillado (como la de los proyectos del taller)
+const GALV = { color: '#c4c9cf', metalness: 0.85, roughness: 0.3, normalMap: BRUSHED_N ?? undefined, normalScale: new THREE.Vector2(0.25, 0.25) }
 
 export const HERRAMIENTAS_PARTS = [
   { id: 'tijera', name: 'Tijera de hojalatero', desc: 'Corta chapas de hasta 1 mm de espesor. La de corte recto es la más usada: cortes rectos o apenas curvos.' },

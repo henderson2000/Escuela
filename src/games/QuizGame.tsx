@@ -40,7 +40,9 @@ export function QuizGame({
   rounds?: number
 }) {
   const g = useRankedGame(game)
-  const [rounds, setRounds] = useState<QuizRound[]>(makeRounds)
+  // las preguntas con números al azar pueden repetir una opción: se deja una sola de cada
+  const build = () => makeRounds().map(cleanRound)
+  const [rounds, setRounds] = useState<QuizRound[]>(build)
   const [i, setI] = useState(0)
   const [score, setScore] = useState(0)
   const [hits, setHits] = useState(0)
@@ -50,7 +52,7 @@ export function QuizGame({
 
   useEffect(() => {
     if (!g.playing) return
-    setRounds(makeRounds())
+    setRounds(build())
     setI(0)
     setScore(0)
     setHits(0)
@@ -144,4 +146,11 @@ export function QuizGame({
       )}
     </GameShell>
   )
+}
+
+/** Saca opciones repetidas (mismo id) sin perder la respuesta correcta. */
+export function cleanRound(r: QuizRound): QuizRound {
+  const seen = new Set<string>()
+  const options = r.options.filter((o) => (seen.has(o.id) ? false : (seen.add(o.id), true)))
+  return options.length === r.options.length ? r : { ...r, options }
 }

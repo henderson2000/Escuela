@@ -42,7 +42,7 @@ export const breadboard: ComponentDef = {
   theory: (
     <>
       <p>
-        La <strong>protoboard</strong> (o <em>breadboard</em>) permite armar y probar circuitos <strong>sin soldar</strong>.
+        La <strong>protoboard</strong> (o <em>breadboard</em>) permite armar y probar circuitos <strong>sin soldar</strong>.{' '}
         Adentro tiene tiras metálicas que conectan grupos de orificios.
       </p>
       <ul>

@@ -13,6 +13,9 @@ const mk = (prompt: string, emoji: string, ok: string, wrong: string[], explain?
 
 const f = (n: number) => Number(n.toFixed(2)).toString().replace('.', ',')
 
+/** Tres opciones incorrectas distintas entre sí y distintas de la correcta. */
+const distinct = (ok: number, cands: number[]) => [...new Set(cands.map((x) => Number(x.toFixed(2))))].filter((x) => x !== Number(ok.toFixed(2)) && x > 0).slice(0, 3)
+
 /* ------------------------------------------------------------------ símbolos */
 
 function simboloRound(): QuizRound {
@@ -55,13 +58,13 @@ function calcRound(): QuizRound {
     const i = pickOne([0.5, 1, 2, 4, 5])
     const r = pickOne([10, 20, 44, 55])
     const ok = i * r
-    return mk(`Por ${r} Ω circulan ${f(i)} A. ¿Tensión?`, '🔋', `${f(ok)} V`, [`${f(r / i)} V`, `${f(ok * 2)} V`, `${f(ok + r)} V`], `U = I × R.`)
+    return mk(`Por ${r} Ω circulan ${f(i)} A. ¿Tensión?`, '🔋', `${f(ok)} V`, distinct(ok, [r / i, ok * 2, ok + r, ok / 2, ok + 10, ok * 3]).map((x) => `${f(x)} V`), `U = I × R.`)
   }
   const a = pickOne([1, 2, 3, 4])
   const b = pickOne([1, 2, 3])
   const c = pickOne([1, 2])
   const ok = a + b - c
-  return mk(`A un nodo entran ${a} A y ${b} A, y salen ${c} A por un cable. ¿Cuánto sale por el otro?`, '🔀', `${ok} A`, [`${a + b + c} A`, `${Math.abs(a - b)} A`, `${ok + 1} A`], 'Lo que entra es igual a lo que sale (Kirchhoff).')
+  return mk(`A un nodo entran ${a} A y ${b} A, y salen ${c} A por un cable. ¿Cuánto sale por el otro?`, '🔀', `${ok} A`, distinct(ok, [a + b + c, Math.abs(a - b), ok + 1, ok + 2, a + b, ok + 3]).map((x) => `${x} A`), 'Lo que entra es igual a lo que sale (Kirchhoff).')
 }
 
 /* ------------------------------------------------------------------ protecciones y seguridad */

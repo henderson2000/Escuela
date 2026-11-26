@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { Part } from '../../Part'
+import { Label } from '../../Label'
 import { latheGeometry, useCanvasTexture } from '../../helpers'
 
 // 1 unidad = 1 cm. La lima va a lo largo del eje X: punta en x = 0, cuerpo hacia +x, espiga y mango al final.
@@ -219,6 +220,9 @@ export function LimaModel(p: LimaParams) {
               <cylinderGeometry args={[0.025, 0.025, 2.8, 6]} />
               <meshBasicMaterial color="#f97316" />
             </mesh>
+            <Label position={[0, 1.6, 0]} center style={{ pointerEvents: 'none' }}>
+              <div className="dim-tag">sección (×2)</div>
+            </Label>
           </group>
         )}
       </Part>

@@ -224,6 +224,11 @@ export function SoldadorModel({ encendido, temperatura }: SoldadorParams) {
   const SX = 3
   const ironPos: V3 = [SX - 0.6, 3.2, 0.2]
   const ironRot: V3 = [0, 0.15, 0.55]
+  // punto del eje del soldador (x = distancia desde la punta) en coordenadas de la escena: ahí sale el cable del mango
+  const onIron = (x: number): V3 => {
+    const v = new THREE.Vector3(x, 0, 0).applyEuler(new THREE.Euler(...ironRot)).add(new THREE.Vector3(...ironPos))
+    return [v.x, v.y, v.z]
+  }
   const spoolWire = useMemo(() => {
     const pts: THREE.Vector3[] = []
     for (let i = 0; i <= 60; i++) {
@@ -275,7 +280,7 @@ export function SoldadorModel({ encendido, temperatura }: SoldadorParams) {
           ))}
         </group>
         {/* cable del soldador, del zócalo al mango */}
-        <Cable r={0.16} pts={[[-5.25, 1.0, 6.3], [-4.6, 0.25, 8.5], [0, 0.2, 9.5], [9, 0.3, 6], [13, 2.2, 3], [ironPos[0] + 10.4, ironPos[1] + 5.6, ironPos[2] + 1.5]]} />
+        <Cable r={0.16} pts={[[-5.25, 1.0, 6.3], [-4.6, 0.2, 8.4], [2, 0.2, 9.4], [13, 0.2, 7], [onIron(23.5)[0], 0.4, onIron(23.5)[2] + 1.2], onIron(21.2), onIron(19.2), onIron(18.5)]} />
       </Part>
 
       {/* ---------------------------------------- soporte con esponja */}

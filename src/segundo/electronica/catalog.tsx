@@ -66,9 +66,9 @@ const soldador: ComponentDef = {
     </>
   ),
   activities: [
-    { id: 'e2-sol-1', type: 'mc', q: '¿Dónde se deja el soldador caliente mientras no se usa?', options: ['En su soporte', 'Apoyado en la mesa', 'Sobre la placa', 'En la esponja'], answer: 0, explain: 'Así no quema la mesa, los cables ni a nadie.' },
-    { id: 'e2-sol-2', type: 'mc', q: '¿Para qué sirve la esponja húmeda?', options: ['Para limpiar la punta', 'Para enfriar la placa', 'Para apagar el soldador', 'Para guardar el estaño'], answer: 0, explain: 'Húmeda, no empapada: si tiene mucha agua enfría la punta.' },
-    { id: 'e2-sol-3', type: 'num', q: '¿A qué temperatura aproximada funde el estaño 60/40? (°C)', answer: 190, tolerance: 0.05, unit: '°C', explain: 'Entre 183 y 190 °C; la punta se usa más caliente para que el calor pase rápido.' },
+    { id: 'en2-sol-1', type: 'mc', q: '¿Dónde se deja el soldador caliente mientras no se usa?', options: ['En su soporte', 'Apoyado en la mesa', 'Sobre la placa', 'En la esponja'], answer: 0, explain: 'Así no quema la mesa, los cables ni a nadie.' },
+    { id: 'en2-sol-2', type: 'mc', q: '¿Para qué sirve la esponja húmeda?', options: ['Para limpiar la punta', 'Para enfriar la placa', 'Para apagar el soldador', 'Para guardar el estaño'], answer: 0, explain: 'Húmeda, no empapada: si tiene mucha agua enfría la punta.' },
+    { id: 'en2-sol-3', type: 'num', q: '¿A qué temperatura aproximada funde el estaño 60/40? (°C)', answer: 190, tolerance: 0.05, unit: '°C', explain: 'Entre 183 y 190 °C; la punta se usa más caliente para que el calor pase rápido.' },
   ],
 }
 
@@ -126,9 +126,9 @@ const punto: ComponentDef = {
     </>
   ),
   activities: [
-    { id: 'e2-pt-1', type: 'mc', q: '¿Cómo se ve una buena soldadura de un componente THT?', options: ['Cóncava, lisa y brillante, como un volcán', 'Una bola grande que tapa la pata', 'Opaca y granulada', 'Con el cobre del pad a la vista'], answer: 0, explain: 'El estaño moja todo el pad y sube por la pata.' },
-    { id: 'e2-pt-2', type: 'mc', q: '¿Qué se calienta con la punta antes de poner el estaño?', options: ['El pad y la pata a la vez', 'Sólo el estaño', 'Sólo el componente', 'La placa del lado de los componentes'], answer: 0, explain: 'El estaño tiene que fundirse al tocar la pieza caliente.' },
-    { id: 'e2-pt-3', type: 'mc', q: 'Quedó una soldadura opaca y granulada. ¿Qué pasó?', options: ['Faltó calor (soldadura fría)', 'Sobró calor', 'Era estaño sin plomo', 'Está perfecta'], answer: 0, explain: 'Se vuelve a calentar con la punta limpia y un poquito de estaño nuevo (con flux).' },
+    { id: 'en2-pt-1', type: 'mc', q: '¿Cómo se ve una buena soldadura de un componente THT?', options: ['Cóncava, lisa y brillante, como un volcán', 'Una bola grande que tapa la pata', 'Opaca y granulada', 'Con el cobre del pad a la vista'], answer: 0, explain: 'El estaño moja todo el pad y sube por la pata.' },
+    { id: 'en2-pt-2', type: 'mc', q: '¿Qué se calienta con la punta antes de poner el estaño?', options: ['El pad y la pata a la vez', 'Sólo el estaño', 'Sólo el componente', 'La placa del lado de los componentes'], answer: 0, explain: 'El estaño tiene que fundirse al tocar la pieza caliente.' },
+    { id: 'en2-pt-3', type: 'mc', q: 'Quedó una soldadura opaca y granulada. ¿Qué pasó?', options: ['Faltó calor (soldadura fría)', 'Sobró calor', 'Era estaño sin plomo', 'Está perfecta'], answer: 0, explain: 'Se vuelve a calentar con la punta limpia y un poquito de estaño nuevo (con flux).' },
   ],
 }
 
@@ -179,9 +179,9 @@ const pcb: ComponentDef = {
     </>
   ),
   activities: [
-    { id: 'e2-pcb-1', type: 'mc', q: '¿Qué hace el percloruro férrico?', options: ['Disuelve el cobre que no está protegido', 'Pega el tóner', 'Perfora la placa', 'Suelda los componentes'], answer: 0, explain: 'Por eso el diseño tiene que tapar las pistas y los pads.' },
-    { id: 'e2-pcb-2', type: 'mc', q: 'En una placa simple faz, ¿de qué lado van los componentes THT?', options: ['Del lado sin cobre; se sueldan del lado del cobre', 'Del lado del cobre', 'Adentro de la placa', 'Es indistinto'], answer: 0, explain: 'Las patas atraviesan los agujeros y se sueldan sobre los pads.' },
-    { id: 'e2-pcb-3', type: 'mc', q: '¿Por qué el diseño se imprime espejado?', options: ['Porque se lo mira desde el lado del cobre, que queda del otro lado', 'Para ahorrar tóner', 'Porque la impresora lo pide', 'No se imprime espejado'], answer: 0, explain: 'Al planchar la hoja boca abajo, el dibujo queda derecho mirando el cobre.' },
+    { id: 'en2-pcb-1', type: 'mc', q: '¿Qué hace el percloruro férrico?', options: ['Disuelve el cobre que no está protegido', 'Pega el tóner', 'Perfora la placa', 'Suelda los componentes'], answer: 0, explain: 'Por eso el diseño tiene que tapar las pistas y los pads.' },
+    { id: 'en2-pcb-2', type: 'mc', q: 'En una placa simple faz, ¿de qué lado van los componentes THT?', options: ['Del lado sin cobre; se sueldan del lado del cobre', 'Del lado del cobre', 'Adentro de la placa', 'Es indistinto'], answer: 0, explain: 'Las patas atraviesan los agujeros y se sueldan sobre los pads.' },
+    { id: 'en2-pcb-3', type: 'mc', q: '¿Por qué el diseño se imprime espejado?', options: ['Porque se lo mira desde el lado del cobre, que queda del otro lado', 'Para ahorrar tóner', 'Porque la impresora lo pide', 'No se imprime espejado'], answer: 0, explain: 'Al planchar la hoja boca abajo, el dibujo queda derecho mirando el cobre.' },
   ],
 }
 
@@ -230,9 +230,9 @@ const fuente: ComponentDef = {
     </>
   ),
   activities: [
-    { id: 'e2-fu-1', type: 'num', q: 'Un secundario de 12 V eficaces, ¿qué tensión pico tiene? (V)', answer: 16.97, tolerance: 0.02, unit: 'V', explain: 'Vp = Vef × √2 = 12 × 1,414.' },
-    { id: 'e2-fu-2', type: 'mc', q: '¿Qué hace el puente rectificador?', options: ['Convierte la alterna en continua pulsante', 'Baja la tensión', 'Elimina el ripple', 'Fija la salida en 12 V'], answer: 0, explain: 'Con 4 diodos, aprovecha los dos semiciclos (onda completa).' },
-    { id: 'e2-fu-3', type: 'mc', q: '¿Qué pasa con el ripple si la carga pide más corriente?', options: ['Aumenta', 'Disminuye', 'No cambia', 'Desaparece'], answer: 0, explain: 'Vr ≈ I ÷ (f × C): más corriente, más ondulación.' },
+    { id: 'en2-fu-1', type: 'num', q: 'Un secundario de 12 V eficaces, ¿qué tensión pico tiene? (V)', answer: 16.97, tolerance: 0.02, unit: 'V', explain: 'Vp = Vef × √2 = 12 × 1,414.' },
+    { id: 'en2-fu-2', type: 'mc', q: '¿Qué hace el puente rectificador?', options: ['Convierte la alterna en continua pulsante', 'Baja la tensión', 'Elimina el ripple', 'Fija la salida en 12 V'], answer: 0, explain: 'Con 4 diodos, aprovecha los dos semiciclos (onda completa).' },
+    { id: 'en2-fu-3', type: 'mc', q: '¿Qué pasa con el ripple si la carga pide más corriente?', options: ['Aumenta', 'Disminuye', 'No cambia', 'Desaparece'], answer: 0, explain: 'Vr ≈ I ÷ (f × C): más corriente, más ondulación.' },
   ],
 }
 

@@ -51,7 +51,7 @@ function pseudoRound(): QuizRound {
   return {
     prompt: '¿Qué muestra este pseudocódigo?',
     visual: <pre className="c2-code-q">{src}</pre>,
-    options: shuffle([ok, ...shuffle(wrong.filter((w) => w !== ok)).slice(0, 3)]).map((x) => ({ id: x, label: x })),
+    options: shuffle([ok, ...shuffle([...new Set(wrong.filter((w) => w !== ok))]).slice(0, 3)]).map((x) => ({ id: x, label: x })),
     answer: ok,
     explain: 'Seguilo línea por línea anotando el valor de cada variable (prueba de escritorio).',
   }

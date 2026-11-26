@@ -4,7 +4,7 @@ import { useSub } from '../../../lib/nav'
 import { useStore } from '../../../lib/scores'
 import { prefetchWhenIdle } from '../../../lib/lazy'
 import { LEVELS, levelActivityId, parseMap } from './world'
-import { WorldView } from './World'
+import { WorldView } from './WorldView'
 import './bloques.css'
 
 /** Lista de niveles de programación con bloques. */

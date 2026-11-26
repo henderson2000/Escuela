@@ -107,7 +107,30 @@ function useOnScreen(ref: React.RefObject<HTMLElement | null>) {
   return on
 }
 
-const reducedMotion = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
+/**
+ * Las cámaras de cada modelo están pensadas para el visor ancho de la computadora. En una pantalla angosta
+ * (celular parado) se ve mucho menos a los costados, así que la cámara se aleja lo justo para que entre todo.
+ */
+const DESIGN_ASPECT = 1.45
+function AspectFit({ camera, target }: { camera: Vec3; target: Vec3 }) {
+  const width = useThree((s) => s.size.width)
+  const height = useThree((s) => s.size.height)
+  const cam = useThree((s) => s.camera)
+  const invalidate = useThree((s) => s.invalidate)
+  useEffect(() => {
+    if (!width || !height) return
+    const k = Math.min(Math.max(DESIGN_ASPECT / (width / height), 1), 1.9)
+    const t = new THREE.Vector3(...target)
+    cam.position.copy(new THREE.Vector3(...camera).sub(t).multiplyScalar(k).add(t))
+    cam.updateMatrixWorld()
+    invalidate()
+    // sólo cuando cambia el ancho (al rotar el teléfono), no al girar el modelo
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [width])
+  return null
+}
+
+const reducedMotion =typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
 
 let webglSupport: boolean | null = null
 export function hasWebGL(): boolean {
@@ -236,6 +259,7 @@ export function Viewer({
           >
             <color attach="background" args={['#10151f']} />
             <ContextWatcher onLost={() => setLost(true)} />
+            <AspectFit camera={camera} target={target} />
             <Settle until={until} onReady={onReady} />
             <GeometryCollector />
             <KeepAlive active={spin} />

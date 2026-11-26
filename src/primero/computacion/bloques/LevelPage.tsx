@@ -7,7 +7,7 @@ import { NotFound } from '../../../components/ui'
 import { Blockly, darkTheme, setupBlocks, toolboxFor } from './blocks'
 import { checkGoal, countBlocks, run, type Program } from './interpreter'
 import { LEVELS, getLevel, levelActivityId, parseMap, type Level, type MapState } from './world'
-import { WorldView } from './World'
+import { WorldView } from './WorldView'
 import './bloques.css'
 
 const START: Program = { blocks: { blocks: [{ type: 'al_empezar', id: 'inicio', x: 24, y: 24 } as never] } }

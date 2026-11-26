@@ -89,7 +89,7 @@ export const capacitor: ComponentDef = {
   theory: (
     <>
       <p>
-        Un <strong>capacitor</strong> (o condensador) son <strong>dos placas conductoras separadas por un aislante</strong>
+        Un <strong>capacitor</strong> (o condensador) son <strong>dos placas conductoras separadas por un aislante</strong>{' '}
         (dieléctrico). Al conectarlo a una tensión, se acumulan cargas positivas en una placa y negativas en la otra:
         guarda energía como una “pequeña batería” muy rápida.
       </p>
@@ -100,7 +100,7 @@ export const capacitor: ComponentDef = {
       <Formula>Q = C × V &nbsp;&nbsp; E = ½ × C × V²</Formula>
       <h4>Carga y descarga</h4>
       <p>
-        Si se carga a través de una resistencia, tarda un tiempo que depende de la <strong>constante de tiempo τ = R × C</strong>.
+        Si se carga a través de una resistencia, tarda un tiempo que depende de la <strong>constante de tiempo τ = R × C</strong>.{' '}
         En 1 τ llega al 63 % y en 5 τ está prácticamente cargado.
       </p>
       <h4>Tipos</h4>

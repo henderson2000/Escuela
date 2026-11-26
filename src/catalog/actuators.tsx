@@ -175,7 +175,7 @@ export const buzzer: ComponentDef = {
   theory: (
     <>
       <p>
-        El <strong>buzzer</strong> convierte una señal eléctrica en sonido usando el <strong>efecto piezoeléctrico</strong>:
+        El <strong>buzzer</strong> convierte una señal eléctrica en sonido usando el <strong>efecto piezoeléctrico</strong>:{' '}
         ciertos cristales se deforman cuando se les aplica tensión. Si la tensión cambia rápido, el disco vibra y mueve el aire.
       </p>
       <ul>

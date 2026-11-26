@@ -168,7 +168,7 @@ function tapa(): ComponentDef {
     theory: (
       <>
         <p>
-          Plano Ej. Nº 02-01. Desarrollo de <b>102 × 262 mm</b> con líneas a <b>5</b> y <b>20 mm</b>. El fondo queda de <b>62 × 222 mm</b>:
+          Plano Ej. Nº 02-01. Desarrollo de <b>102 × 262 mm</b> con líneas a <b>5</b> y <b>20 mm</b>. El fondo queda de <b>62 × 222 mm</b>:{' '}
           2 mm más que la caja en cada sentido, así la tapa entra justo por encima.
         </p>
       </>

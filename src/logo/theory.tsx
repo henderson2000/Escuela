@@ -1912,7 +1912,7 @@ export const LOGO_TOPICS: Topic[] = [
         <GateRefTable />
         <h4>Álgebra de Boole</h4>
         <p>
-          El conjunto de reglas para operar con variables que sólo valen <strong>0 o 1</strong> se llama <strong>álgebra de Boole</strong>,
+          El conjunto de reglas para operar con variables que sólo valen <strong>0 o 1</strong> se llama <strong>álgebra de Boole</strong>,{' '}
           porque fue <strong>George Boole</strong> (matemático inglés, siglo XIX) quien armó las bases de la lógica matemática. Se definen
           tres operaciones básicas:
         </p>

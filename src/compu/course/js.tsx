@@ -168,7 +168,7 @@ export const JS_TRACK: Track = {
           intro: (
             <>
               <p>
-                <b>JavaScript</b> es el lenguaje de programación de las páginas web. Para empezar vamos a usar la <b>consola</b>:
+                <b>JavaScript</b> es el lenguaje de programación de las páginas web. Para empezar vamos a usar la <b>consola</b>:{' '}
                 con <code>console.log</code> el programa escribe un mensaje.
               </p>
               <pre>

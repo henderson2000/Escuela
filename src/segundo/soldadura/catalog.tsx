@@ -61,7 +61,7 @@ const equipo: ComponentDef = {
   theory: (
     <>
       <p>
-        La máquina de soldar provee la corriente. Se conecta con un cable a la <b>pieza</b> (pinza de masa) y con otro a la <b>pinza porta electrodo</b>,
+        La máquina de soldar provee la corriente. Se conecta con un cable a la <b>pieza</b> (pinza de masa) y con otro a la <b>pinza porta electrodo</b>,{' '}
         donde se sujeta el electrodo.
       </p>
       <p>

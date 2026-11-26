@@ -119,7 +119,7 @@ function CeramicCalc() {
 
 export const ELECTRONICA2_TOPICS: Topic[] = [
   {
-    id: 'e2-seguridad',
+    id: 'en2-seguridad',
     title: 'Seguridad en el taller de electrónica',
     icon: '⚠️',
     summary: 'El soldador está a 350 °C, el flux larga humo y el estaño puede tener plomo: reglas para trabajar sin accidentes.',
@@ -148,13 +148,13 @@ export const ELECTRONICA2_TOPICS: Topic[] = [
       </>
     ),
     activities: [
-      { id: 'e2-t1-1', type: 'mc', q: 'Se te cae el soldador caliente de la mesa. ¿Qué hacés?', options: ['Lo dejo caer y lo levanto por el mango', 'Lo agarro en el aire', 'Lo atajo con el pie', 'Lo agarro de la punta'], answer: 0, explain: 'Una quemadura con 350 °C es grave: el soldador se reemplaza, la mano no.' },
-      { id: 'e2-t1-2', type: 'mc', q: '¿Por qué hay que lavarse las manos después de soldar?', options: ['El estaño puede tener plomo, que es tóxico', 'Porque el flux mancha', 'Para enfriarlas', 'No hace falta'], answer: 0, explain: 'Y no se come ni se toma en la mesa de trabajo.' },
-      { id: 'e2-t1-3', type: 'mc', q: '¿Para qué se usan anteojos al cortar las patas sobrantes?', options: ['Saltan pedacitos de alambre', 'Por la luz del soldador', 'Por el humo', 'No se usan'], answer: 0, explain: 'Conviene sostener la pata al cortarla.' },
+      { id: 'en2-t1-1', type: 'mc', q: 'Se te cae el soldador caliente de la mesa. ¿Qué hacés?', options: ['Lo dejo caer y lo levanto por el mango', 'Lo agarro en el aire', 'Lo atajo con el pie', 'Lo agarro de la punta'], answer: 0, explain: 'Una quemadura con 350 °C es grave: el soldador se reemplaza, la mano no.' },
+      { id: 'en2-t1-2', type: 'mc', q: '¿Por qué hay que lavarse las manos después de soldar?', options: ['El estaño puede tener plomo, que es tóxico', 'Porque el flux mancha', 'Para enfriarlas', 'No hace falta'], answer: 0, explain: 'Y no se come ni se toma en la mesa de trabajo.' },
+      { id: 'en2-t1-3', type: 'mc', q: '¿Para qué se usan anteojos al cortar las patas sobrantes?', options: ['Saltan pedacitos de alambre', 'Por la luz del soldador', 'Por el humo', 'No se usan'], answer: 0, explain: 'Conviene sostener la pata al cortarla.' },
     ],
   },
   {
-    id: 'e2-soldador',
+    id: 'en2-soldador',
     title: 'El soldador y el estaño',
     icon: '🔥',
     summary: 'Tipos de soldador, puntas, temperatura, aleaciones de estaño (60/40, 63/37, sin plomo) y para qué sirve el flux.',
@@ -205,13 +205,13 @@ export const ELECTRONICA2_TOPICS: Topic[] = [
       </>
     ),
     activities: [
-      { id: 'e2-t2-1', type: 'mc', q: '¿Para qué sirve el flux?', options: ['Limpia el óxido para que el estaño moje el cobre', 'Enfría la soldadura', 'Colorea el estaño', 'Hace que el estaño funda más caliente'], answer: 0, explain: 'Por eso el alambre de estaño trae resina adentro.' },
-      { id: 'e2-t2-2', type: 'num', q: '¿Qué potencia tiene un soldador de lápiz típico para electrónica? (W, el máximo recomendado)', answer: 40, tolerance: 0.1, unit: 'W', explain: 'De 25 a 40 W.' },
-      { id: 'e2-t2-3', type: 'mc', q: '¿Por qué el estaño sin plomo necesita la punta más caliente?', options: ['Funde a más temperatura (unos 217 °C)', 'Porque es más grueso', 'Porque no tiene flux', 'No la necesita'], answer: 0, explain: 'Funde más de 30 °C por encima del 60/40.' },
+      { id: 'en2-t2-1', type: 'mc', q: '¿Para qué sirve el flux?', options: ['Limpia el óxido para que el estaño moje el cobre', 'Enfría la soldadura', 'Colorea el estaño', 'Hace que el estaño funda más caliente'], answer: 0, explain: 'Por eso el alambre de estaño trae resina adentro.' },
+      { id: 'en2-t2-2', type: 'num', q: '¿Qué potencia tiene un soldador de lápiz típico para electrónica? (W, el máximo recomendado)', answer: 40, tolerance: 0.1, unit: 'W', explain: 'De 25 a 40 W.' },
+      { id: 'en2-t2-3', type: 'mc', q: '¿Por qué el estaño sin plomo necesita la punta más caliente?', options: ['Funde a más temperatura (unos 217 °C)', 'Porque es más grueso', 'Porque no tiene flux', 'No la necesita'], answer: 0, explain: 'Funde más de 30 °C por encima del 60/40.' },
     ],
   },
   {
-    id: 'e2-punto',
+    id: 'en2-punto',
     title: 'Cómo hacer un buen punto de soldadura',
     icon: '🌋',
     summary: 'Los 5 pasos, el tiempo justo y cómo reconocer una soldadura fría, con exceso, con poco estaño o con puente.',
@@ -275,13 +275,13 @@ export const ELECTRONICA2_TOPICS: Topic[] = [
       </>
     ),
     activities: [
-      { id: 'e2-t3-1', type: 'mc', q: '¿Quién tiene que fundir el estaño?', options: ['El pad y la pata calientes', 'La punta del soldador directamente', 'El flux', 'Da igual'], answer: 0, explain: 'Si se funde en la punta, cae sobre una pieza fría y queda una soldadura fría.' },
-      { id: 'e2-t3-2', type: 'num', q: '¿Cuántos segundos dura, como máximo, un punto de soldadura normal?', answer: 4, tolerance: 0.25, unit: 's', explain: 'De 2 a 4 segundos. Más tiempo puede despegar el pad o dañar el componente.' },
-      { id: 'e2-t3-3', type: 'mc', q: 'Dos pads vecinos quedaron unidos por estaño. ¿Qué es y qué provoca?', options: ['Un puente: un cortocircuito', 'Una soldadura fría: un circuito abierto', 'Nada, está bien', 'Un pad levantado'], answer: 0, explain: 'Se saca con malla desoldante.' },
+      { id: 'en2-t3-1', type: 'mc', q: '¿Quién tiene que fundir el estaño?', options: ['El pad y la pata calientes', 'La punta del soldador directamente', 'El flux', 'Da igual'], answer: 0, explain: 'Si se funde en la punta, cae sobre una pieza fría y queda una soldadura fría.' },
+      { id: 'en2-t3-2', type: 'num', q: '¿Cuántos segundos dura, como máximo, un punto de soldadura normal?', answer: 4, tolerance: 0.25, unit: 's', explain: 'De 2 a 4 segundos. Más tiempo puede despegar el pad o dañar el componente.' },
+      { id: 'en2-t3-3', type: 'mc', q: 'Dos pads vecinos quedaron unidos por estaño. ¿Qué es y qué provoca?', options: ['Un puente: un cortocircuito', 'Una soldadura fría: un circuito abierto', 'Nada, está bien', 'Un pad levantado'], answer: 0, explain: 'Se saca con malla desoldante.' },
     ],
   },
   {
-    id: 'e2-desoldar',
+    id: 'en2-desoldar',
     title: 'Desoldar y reparar',
     icon: '🧽',
     summary: 'Malla desoldante, bomba de vacío y cómo sacar un componente sin levantar los pads.',
@@ -301,12 +301,12 @@ export const ELECTRONICA2_TOPICS: Topic[] = [
       </>
     ),
     activities: [
-      { id: 'e2-t4-1', type: 'mc', q: '¿Cómo saca el estaño la malla desoldante?', options: ['Por capilaridad: el estaño fundido sube por la trenza', 'Lo aspira con aire', 'Lo disuelve', 'Lo enfría'], answer: 0, explain: 'Por eso se usa con la punta encima de la malla.' },
-      { id: 'e2-t4-2', type: 'mc', q: 'Una soldadura vieja no se funde bien para desoldarla. ¿Qué conviene hacer?', options: ['Agregar un poco de estaño nuevo, que trae flux', 'Subir el soldador al máximo', 'Tirar del componente', 'Raspar con un cutter'], answer: 0, explain: 'El flux fresco ayuda a que el calor pase.' },
+      { id: 'en2-t4-1', type: 'mc', q: '¿Cómo saca el estaño la malla desoldante?', options: ['Por capilaridad: el estaño fundido sube por la trenza', 'Lo aspira con aire', 'Lo disuelve', 'Lo enfría'], answer: 0, explain: 'Por eso se usa con la punta encima de la malla.' },
+      { id: 'en2-t4-2', type: 'mc', q: 'Una soldadura vieja no se funde bien para desoldarla. ¿Qué conviene hacer?', options: ['Agregar un poco de estaño nuevo, que trae flux', 'Subir el soldador al máximo', 'Tirar del componente', 'Raspar con un cutter'], answer: 0, explain: 'El flux fresco ayuda a que el calor pase.' },
     ],
   },
   {
-    id: 'e2-pasivos',
+    id: 'en2-pasivos',
     title: 'Componentes pasivos',
     icon: '🟫',
     summary: 'Resistencias (código de colores y potencia), capacitores (electrolíticos con polaridad y cerámicos con código) e inductores.',
@@ -328,13 +328,13 @@ export const ELECTRONICA2_TOPICS: Topic[] = [
       </>
     ),
     activities: [
-      { id: 'e2-t5-1', type: 'mc', q: '¿Cómo se reconoce la pata negativa de un capacitor electrolítico?', options: ['Por la franja con signos −, y es la pata más corta', 'Es la pata más larga', 'Por el color del capacitor', 'No tiene polaridad'], answer: 0, explain: 'Conectarlo al revés puede hacerlo explotar.' },
-      { id: 'e2-t5-2', type: 'num', q: 'Un capacitor cerámico dice 104. ¿Cuántos nF tiene?', answer: 100, tolerance: 0, unit: 'nF', explain: '10 × 10⁴ pF = 100 000 pF = 100 nF.' },
-      { id: 'e2-t5-3', type: 'num', q: '¿Qué potencia disipa una resistencia de 100 Ω con 0,1 A? (W)', answer: 1, tolerance: 0.01, unit: 'W', explain: 'P = I² × R = 0,01 × 100 = 1 W: necesita una de 1 W o más.' },
+      { id: 'en2-t5-1', type: 'mc', q: '¿Cómo se reconoce la pata negativa de un capacitor electrolítico?', options: ['Por la franja con signos −, y es la pata más corta', 'Es la pata más larga', 'Por el color del capacitor', 'No tiene polaridad'], answer: 0, explain: 'Conectarlo al revés puede hacerlo explotar.' },
+      { id: 'en2-t5-2', type: 'num', q: 'Un capacitor cerámico dice 104. ¿Cuántos nF tiene?', answer: 100, tolerance: 0, unit: 'nF', explain: '10 × 10⁴ pF = 100 000 pF = 100 nF.' },
+      { id: 'en2-t5-3', type: 'num', q: '¿Qué potencia disipa una resistencia de 100 Ω con 0,1 A? (W)', answer: 1, tolerance: 0.01, unit: 'W', explain: 'P = I² × R = 0,01 × 100 = 1 W: necesita una de 1 W o más.' },
     ],
   },
   {
-    id: 'e2-semi',
+    id: 'en2-semi',
     title: 'Diodos, LEDs y transistores',
     icon: '🔺',
     summary: 'El diodo deja pasar la corriente en un solo sentido, el LED emite luz y el transistor funciona como llave controlada.',
@@ -356,13 +356,13 @@ export const ELECTRONICA2_TOPICS: Topic[] = [
       </>
     ),
     activities: [
-      { id: 'e2-t6-1', type: 'num', q: 'LED rojo (2 V) a 5 V con 15 mA. ¿Qué resistencia hace falta? (Ω)', answer: 200, tolerance: 0.01, unit: 'Ω', explain: '(5 − 2) ÷ 0,015 = 200 Ω → se usa 220 Ω, el valor comercial siguiente.' },
-      { id: 'e2-t6-2', type: 'mc', q: '¿Qué marca la franja de un diodo?', options: ['El cátodo', 'El ánodo', 'La potencia', 'La tensión'], answer: 0, explain: 'La corriente circula de ánodo a cátodo.' },
-      { id: 'e2-t6-3', type: 'num', q: 'Un transistor con ganancia 100 recibe 2 mA en la base. ¿Cuánta corriente puede pasar por el colector? (mA)', answer: 200, tolerance: 0.01, unit: 'mA', explain: 'Ic = β × Ib = 100 × 2 mA.' },
+      { id: 'en2-t6-1', type: 'num', q: 'LED rojo (2 V) a 5 V con 15 mA. ¿Qué resistencia hace falta? (Ω)', answer: 200, tolerance: 0.01, unit: 'Ω', explain: '(5 − 2) ÷ 0,015 = 200 Ω → se usa 220 Ω, el valor comercial siguiente.' },
+      { id: 'en2-t6-2', type: 'mc', q: '¿Qué marca la franja de un diodo?', options: ['El cátodo', 'El ánodo', 'La potencia', 'La tensión'], answer: 0, explain: 'La corriente circula de ánodo a cátodo.' },
+      { id: 'en2-t6-3', type: 'num', q: 'Un transistor con ganancia 100 recibe 2 mA en la base. ¿Cuánta corriente puede pasar por el colector? (mA)', answer: 200, tolerance: 0.01, unit: 'mA', explain: 'Ic = β × Ib = 100 × 2 mA.' },
     ],
   },
   {
-    id: 'e2-pcb',
+    id: 'en2-pcb',
     title: 'El circuito impreso',
     icon: '🟩',
     summary: 'Partes de un PCB, THT y SMD, simple y doble faz, y cómo se hace en el taller con el método del planchado.',
@@ -390,13 +390,13 @@ export const ELECTRONICA2_TOPICS: Topic[] = [
       </>
     ),
     activities: [
-      { id: 'e2-t7-1', type: 'mc', q: '¿Qué componentes se sueldan primero?', options: ['Los más bajos (resistencias, diodos)', 'Los más altos', 'Los más caros', 'Da igual'], answer: 0, explain: 'Así la placa apoya derecha mientras se sueldan.' },
-      { id: 'e2-t7-2', type: 'mc', q: '¿Qué diferencia a un componente SMD de uno THT?', options: ['El SMD se suelda sobre la superficie, sin agujeros', 'El SMD es más grande', 'El THT no lleva estaño', 'No hay diferencia'], answer: 0, explain: 'SMD = montaje superficial.' },
-      { id: 'e2-t7-3', type: 'mc', q: '¿Qué protección se usa para trabajar con percloruro férrico?', options: ['Guantes y anteojos: mancha y es corrosivo', 'Ninguna', 'Sólo barbijo', 'Protector auditivo'], answer: 0, explain: 'Y no se tira a la pileta: se guarda para reutilizar y se descarta como residuo peligroso.' },
+      { id: 'en2-t7-1', type: 'mc', q: '¿Qué componentes se sueldan primero?', options: ['Los más bajos (resistencias, diodos)', 'Los más altos', 'Los más caros', 'Da igual'], answer: 0, explain: 'Así la placa apoya derecha mientras se sueldan.' },
+      { id: 'en2-t7-2', type: 'mc', q: '¿Qué diferencia a un componente SMD de uno THT?', options: ['El SMD se suelda sobre la superficie, sin agujeros', 'El SMD es más grande', 'El THT no lleva estaño', 'No hay diferencia'], answer: 0, explain: 'SMD = montaje superficial.' },
+      { id: 'en2-t7-3', type: 'mc', q: '¿Qué protección se usa para trabajar con percloruro férrico?', options: ['Guantes y anteojos: mancha y es corrosivo', 'Ninguna', 'Sólo barbijo', 'Protector auditivo'], answer: 0, explain: 'Y no se tira a la pileta: se guarda para reutilizar y se descarta como residuo peligroso.' },
     ],
   },
   {
-    id: 'e2-fuente',
+    id: 'en2-fuente',
     title: 'La fuente de alimentación',
     icon: '🔋',
     summary: 'Transformador, rectificador, filtro y regulador: de 220 V de alterna a 5 o 12 V de continua.',
@@ -425,13 +425,13 @@ export const ELECTRONICA2_TOPICS: Topic[] = [
       </>
     ),
     activities: [
-      { id: 'e2-t8-1', type: 'num', q: 'Transformador de 220 V a 12 V. Si el primario tiene 1100 vueltas, ¿cuántas tiene el secundario?', answer: 60, tolerance: 0.01, unit: 'vueltas', explain: 'N2 = 1100 × 12 ÷ 220 = 60.' },
-      { id: 'e2-t8-2', type: 'num', q: 'Con 1 A y un capacitor de 4700 µF, ¿cuánto ripple hay? (V)', answer: 2.13, tolerance: 0.02, unit: 'V', explain: '1 ÷ (100 × 0,0047) = 2,13 V.' },
-      { id: 'e2-t8-3', type: 'mc', q: '¿Qué tensión mínima necesita en la entrada un 7805?', options: ['Unos 7 V', '5 V justos', '3,3 V', '220 V'], answer: 0, explain: '2 V más que la salida.' },
+      { id: 'en2-t8-1', type: 'num', q: 'Transformador de 220 V a 12 V. Si el primario tiene 1100 vueltas, ¿cuántas tiene el secundario?', answer: 60, tolerance: 0.01, unit: 'vueltas', explain: 'N2 = 1100 × 12 ÷ 220 = 60.' },
+      { id: 'en2-t8-2', type: 'num', q: 'Con 1 A y un capacitor de 4700 µF, ¿cuánto ripple hay? (V)', answer: 2.13, tolerance: 0.02, unit: 'V', explain: '1 ÷ (100 × 0,0047) = 2,13 V.' },
+      { id: 'en2-t8-3', type: 'mc', q: '¿Qué tensión mínima necesita en la entrada un 7805?', options: ['Unos 7 V', '5 V justos', '3,3 V', '220 V'], answer: 0, explain: '2 V más que la salida.' },
     ],
   },
   {
-    id: 'e2-medir',
+    id: 'en2-medir',
     title: 'Medir y comprobar',
     icon: '📟',
     summary: 'Continuidad para pistas y soldaduras, prueba de diodo, medición de tensiones y cómo buscar fallas en la placa.',
@@ -456,9 +456,9 @@ export const ELECTRONICA2_TOPICS: Topic[] = [
       </>
     ),
     activities: [
-      { id: 'e2-t9-1', type: 'mc', q: '¿Cómo se usa la prueba de continuidad?', options: ['Con la placa sin alimentar', 'Con la placa enchufada', 'Sólo con 220 V', 'Con el soldador caliente'], answer: 0, explain: 'Con tensión, la medición es falsa y se puede dañar el instrumento.' },
-      { id: 'e2-t9-2', type: 'mc', q: 'Un diodo marca 0 V en los dos sentidos. ¿Qué tiene?', options: ['Está en cortocircuito', 'Está bien', 'Está abierto', 'Está al revés'], answer: 0, explain: 'Uno sano marca ~0,6 V en directa y OL en inversa.' },
-      { id: 'e2-t9-3', type: 'mc', q: 'Antes de enchufar una placa recién armada conviene…', options: ['Revisar soldaduras, polaridades y que no haya corto entre + y GND', 'Enchufarla y ver qué pasa', 'Pasarle agua', 'Calentarla con el soldador'], answer: 0, explain: 'La mayoría de las fallas son soldaduras o componentes al revés.' },
+      { id: 'en2-t9-1', type: 'mc', q: '¿Cómo se usa la prueba de continuidad?', options: ['Con la placa sin alimentar', 'Con la placa enchufada', 'Sólo con 220 V', 'Con el soldador caliente'], answer: 0, explain: 'Con tensión, la medición es falsa y se puede dañar el instrumento.' },
+      { id: 'en2-t9-2', type: 'mc', q: 'Un diodo marca 0 V en los dos sentidos. ¿Qué tiene?', options: ['Está en cortocircuito', 'Está bien', 'Está abierto', 'Está al revés'], answer: 0, explain: 'Uno sano marca ~0,6 V en directa y OL en inversa.' },
+      { id: 'en2-t9-3', type: 'mc', q: 'Antes de enchufar una placa recién armada conviene…', options: ['Revisar soldaduras, polaridades y que no haya corto entre + y GND', 'Enchufarla y ver qué pasa', 'Pasarle agua', 'Calentarla con el soldador'], answer: 0, explain: 'La mayoría de las fallas son soldaduras o componentes al revés.' },
     ],
   },
 ]

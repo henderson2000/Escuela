@@ -103,7 +103,7 @@ export const ldr: ComponentDef = {
         <li>Mucha luz → resistencia <strong>baja</strong> (algunos cientos de Ω).</li>
       </ul>
       <p>
-        El Arduino no mide resistencias, mide <strong>tensiones</strong>. Por eso se arma un <strong>divisor de tensión</strong>
+        El Arduino no mide resistencias, mide <strong>tensiones</strong>. Por eso se arma un <strong>divisor de tensión</strong>{' '}
         con una resistencia fija (por ejemplo 10 kΩ) y se lee el punto medio con <code>analogRead()</code>.
       </p>
       <Formula>V<sub>out</sub> = V<sub>in</sub> × R<sub>2</sub> / (R<sub>1</sub> + R<sub>2</sub>)</Formula>
@@ -275,7 +275,7 @@ export const dht11: ComponentDef = {
         pequeño microcontrolador que envía los datos ya convertidos en forma <strong>digital</strong> por un único pin.
       </p>
       <p>
-        En Arduino se usa la librería <code>DHT</code>: <code>dht.readTemperature()</code> y <code>dht.readHumidity()</code>.
+        En Arduino se usa la librería <code>DHT</code>: <code>dht.readTemperature()</code> y <code>dht.readHumidity()</code>.{' '}
         Conviene leerlo como máximo una vez cada 1–2 segundos.
       </p>
       <p className="tip">Hermano mayor: el DHT22 (blanco) es más preciso y tiene más rango.</p>

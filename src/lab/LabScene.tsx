@@ -147,10 +147,11 @@ function CameraRig({
       goal.current = { pos: center.clone().addScaledVector(dir, Math.max(fit(r) * 1.25, 1.4)), target: center }
     } else {
       const sphere = b.getBoundingSphere(new THREE.Sphere())
-      const center = sphere.center.clone()
+      // se mira un poco por encima del centro: así el modelo queda más abajo y la barra de botones no lo tapa
+      const center = sphere.center.clone().add(new THREE.Vector3(0, sphere.radius * 0.1, 0))
       const v = request.view ?? 'iso'
       const dir = v === 'fit' ? camera.position.clone().sub(controls.target).normalize() : DIRS[v].clone()
-      goal.current = { pos: center.clone().addScaledVector(dir, fit(sphere.radius)), target: center }
+      goal.current = { pos: center.clone().addScaledVector(dir, fit(sphere.radius) * 1.08), target: center }
     }
     invalidate()
     // eslint-disable-next-line react-hooks/exhaustive-deps
