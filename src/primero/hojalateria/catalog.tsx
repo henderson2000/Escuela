@@ -90,12 +90,12 @@ function projectProgress(ops: Op[], op: number) {
 
 function CajaSheet({ op, recortes }: ProjParams) {
   const make = useCallback((p: number) => boxSpec({ a: 60, b: 220, h: 30, f: 5, p, mismoSentido: false, showScrap: recortes }), [recortes])
-  return <FoldingSheet lift={0.6} target={projectProgress(CAJA_OPS, op)} make={make} />
+  return <FoldingSheet lift={0.6} finish="galv" target={projectProgress(CAJA_OPS, op)} make={make} />
 }
 
 function TapaSheet({ op, recortes }: ProjParams) {
   const make = useCallback((p: number) => boxSpec({ a: 62, b: 222, h: 15, f: 5, p, mismoSentido: true, showScrap: recortes }), [recortes])
-  return <FoldingSheet lift={0.6} target={projectProgress(TAPA_OPS, op)} make={make} />
+  return <FoldingSheet lift={0.6} finish="galv" target={projectProgress(TAPA_OPS, op)} make={make} />
 }
 
 const PROJECT_PARTS = (extra: { id: string; name: string; desc: string }[]) => [

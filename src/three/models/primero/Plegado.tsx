@@ -30,12 +30,82 @@ export interface ChildSpec {
 const S = 0.1; // mm → unidades (cm)
 const T = 0.6; // espesor dibujado (mm), exagerado para que se vea
 
-/** Acero inoxidable cepillado: rayas finas y largas en un solo sentido, de poco contraste. */
-function useStainless() {
+export type SheetFinish = "inox" | "galv";
+
+/**
+ * Chapa galvanizada: la "flor" del zinc. Cristales irregulares de 1 cm más o menos, cada uno con su
+ * brillo según hacia dónde quedó orientado, con bordes finos más oscuros y una veta tipo pluma adentro.
+ */
+function drawSpangle(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  const N = 24;
+  const cell = w / N;
+  let seed = 11;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const pts: { x: number; y: number; base: number; c: number; s: number; slope: number }[] = [];
+  for (let j = 0; j < N; j++)
+    for (let i = 0; i < N; i++) {
+      const a = rnd() * Math.PI * 2;
+      pts.push({
+        x: (i + 0.15 + 0.7 * rnd()) * cell,
+        y: (j + 0.15 + 0.7 * rnd()) * cell,
+        base: 170 + rnd() * 44,
+        c: Math.cos(a),
+        s: Math.sin(a),
+        slope: (0.25 + rnd() * 0.45) * (rnd() < 0.5 ? -1 : 1),
+      });
+    }
+  const img = ctx.createImageData(w, h);
+  const d = img.data;
+  for (let py = 0; py < h; py++) {
+    const cj = Math.floor(py / cell);
+    for (let px = 0; px < w; px++) {
+      const ci = Math.floor(px / cell);
+      let b1 = Infinity;
+      let b2 = Infinity;
+      let best = pts[0];
+      let bx = 0;
+      let by = 0;
+      for (let dj = -1; dj <= 1; dj++)
+        for (let di = -1; di <= 1; di++) {
+          const ai = ci + di;
+          const aj = cj + dj;
+          const ii = (ai + N) % N;
+          const jj = (aj + N) % N;
+          const q = pts[jj * N + ii];
+          // repetir los cristales del otro lado para que la textura no tenga costuras
+          const sx = q.x + (ai - ii) * cell;
+          const sy = q.y + (aj - jj) * cell;
+          const dd = (px - sx) ** 2 + (py - sy) ** 2;
+          if (dd < b1) {
+            b2 = b1;
+            b1 = dd;
+            best = q;
+            bx = px - sx;
+            by = py - sy;
+          } else if (dd < b2) b2 = dd;
+        }
+      const along = bx * best.c + by * best.s;
+      const across = -bx * best.s + by * best.c;
+      let v = best.base + along * best.slope + 5 * Math.sin(across * 0.55 + Math.abs(along) * 0.35);
+      const edge = Math.sqrt(b2) - Math.sqrt(b1);
+      if (edge < 1.6) v -= 22 * (1 - edge / 1.6);
+      const k = (py * w + px) * 4;
+      d[k] = Math.max(0, Math.min(255, v - 4));
+      d[k + 1] = Math.max(0, Math.min(255, v - 1));
+      d[k + 2] = Math.max(0, Math.min(255, v + 4));
+      d[k + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+/** Textura de la chapa: acero inoxidable cepillado (rayas finas en un solo sentido) o galvanizada (flor de zinc). */
+function useSheetTexture(finish: SheetFinish) {
   const tex = useCanvasTexture(
     1024,
     1024,
     (ctx, w, h) => {
+      if (finish === "galv") return drawSpangle(ctx, w, h);
       ctx.fillStyle = "#c4c9cf";
       ctx.fillRect(0, 0, w, h);
       let seed = 7;
@@ -62,7 +132,7 @@ function useStainless() {
       }
       ctx.filter = "none";
     },
-    [],
+    [finish],
   );
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   tex.repeat.set(1 / 260, 1 / 260);
@@ -234,11 +304,13 @@ const centroid = (p: Poly): [number, number] => [
 export function SheetModel({
   root,
   lift = 0,
+  finish = "inox",
 }: {
   root: PanelSpec;
   lift?: number;
+  finish?: SheetFinish;
 }) {
-  const map = useStainless();
+  const map = useSheetTexture(finish);
   const firsts = firstOfEachPart(root);
   return (
     <group scale={S} position={[0, lift, 0]}>
@@ -466,10 +538,12 @@ export function FoldingSheet({
   target,
   make,
   lift = 0,
+  finish = "inox",
 }: {
   target: number;
   make: (p: number) => PanelSpec;
   lift?: number;
+  finish?: SheetFinish;
 }) {
   const [p, setP] = useState(target);
   const cur = useRef(target);
@@ -491,5 +565,5 @@ export function FoldingSheet({
     setP(cur.current);
   });
   const root = useMemo(() => make(p), [make, p]);
-  return <SheetModel root={root} lift={lift} />;
+  return <SheetModel root={root} lift={lift} finish={finish} />;
 }
