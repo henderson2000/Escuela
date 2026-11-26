@@ -268,6 +268,7 @@ const circuito: ComponentDef = {
   target: [0, 0.4, 0],
   shadowY: -0.32,
   defaultParams: { modo: 'serie', u: 9, r1: 40, r2: 40, cerrado: true },
+  environment: 'banco',
   render: (p) => <CircuitoModel {...(p as CircuitoParams)} />,
   Controls: CircuitoControls as ComponentDef['Controls'],
   theory: (

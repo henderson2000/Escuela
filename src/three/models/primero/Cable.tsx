@@ -180,6 +180,26 @@ export function CableModel(p: CableParams) {
   const colors = p.tipo === 'tpr' ? TPR_COLORS[n] ?? TPR_COLORS[3] : [{ color: FUNCION_INFO[p.funcion].color === 'vy' ? 'vy' : FUNCION_INFO[p.funcion].color, name: '' }]
   const rv = n === 1 ? ri + 1 : Math.max(...pos.map(([y, z]) => Math.hypot(y, z))) + ri + 1.1
   const bare = p.tipo === 'desnudo'
+  // leyenda impresa a lo largo de la vaina, como en los cables de verdad
+  const sec = String(p.seccion).replace('.', ',')
+  const print = useCanvasTexture(
+    256,
+    2048,
+    (ctx, w, h) => {
+      ctx.fillStyle = p.aislacion === 'silicona' ? '#b9bcc2' : '#232427'
+      ctx.fillRect(0, 0, w, h)
+      ctx.fillStyle = p.aislacion === 'silicona' ? '#2b2d31' : '#e8e8e4'
+      ctx.font = 'bold 34px Arial'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.save()
+      ctx.translate(w * 0.75, h / 2)
+      ctx.rotate(-Math.PI / 2)
+      ctx.fillText(`TPR ${p.conductores} x ${sec} mm²  ·  500 V  ·  IRAM NM 247-5`, 0, 0)
+      ctx.restore()
+    },
+    [p.conductores, sec, p.aislacion],
+  )
   const enamel = p.tipo === 'esmaltado'
   return (
     <group position={[-2, 0, 0]}>
@@ -187,7 +207,7 @@ export function CableModel(p: CableParams) {
         <Part id="vaina" offset={[0, rv * 2 + 6, 0]} labelAt={[X0 + 8, rv + 1.5, 0]}>
           <mesh position={[(X0 + X_VAINA) / 2, 0, 0]} rotation={[0, 0, Math.PI / 2]} castShadow receiveShadow>
             <cylinderGeometry args={[rv, rv, X_VAINA - X0, 48]} />
-            <meshStandardMaterial color={p.aislacion === 'silicona' ? '#b9bcc2' : '#232427'} roughness={0.7} />
+            <meshStandardMaterial map={print} roughness={0.7} />
           </mesh>
           {/* tapa del corte, para que se vea el relleno */}
           <mesh position={[X_VAINA + 0.01, 0, 0]} rotation={[0, Math.PI / 2, 0]}>

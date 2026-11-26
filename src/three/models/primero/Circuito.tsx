@@ -4,6 +4,8 @@ import { useFrame } from '@react-three/fiber'
 import { Part } from '../../Part'
 import { useCanvasTexture } from '../../helpers'
 import { useKeepRendering } from '../../keepRendering'
+import { RoundedBox } from '@react-three/drei'
+import { Bulb, EM, PLYWOOD, PorcelainHolder, ScrewHead } from '../electricShared'
 
 export type Modo = 'una' | 'serie' | 'paralelo'
 
@@ -123,102 +125,140 @@ function Electrons({ segs }: { segs: Seg[] }) {
   )
 }
 
+/** Lámpara en su portalámparas de porcelana (los bornes del portalámparas reciben los cables). */
 function Lamp({ position, glow, rotY = 0 }: { position: [number, number, number]; glow: number; rotY?: number }) {
+  const s = 1 / 60
   return (
     <group position={position} rotation={[0, rotY, 0]}>
-      {/* portalámpara */}
-      <mesh position={[0, 0.25, 0]} castShadow>
-        <cylinderGeometry args={[0.42, 0.48, 0.5, 24]} />
-        <meshStandardMaterial color="#e8e2d0" roughness={0.6} />
-      </mesh>
-      <mesh position={[0, 0.62, 0]}>
-        <cylinderGeometry args={[0.27, 0.27, 0.3, 20]} />
-        <meshStandardMaterial color="#b9bcc2" metalness={0.9} roughness={0.3} />
-      </mesh>
-      {/* ampolla */}
-      <mesh position={[0, 1.15, 0]}>
-        <sphereGeometry args={[0.5, 32, 24]} />
-        <meshPhysicalMaterial color="#fff8e1" emissive="#ffcc55" emissiveIntensity={glow * 2.4} transparent opacity={0.55 + glow * 0.4} roughness={0.1} transmission={0.4} />
-      </mesh>
-      {/* filamento */}
-      <mesh position={[0, 1.1, 0]}>
-        <torusGeometry args={[0.12, 0.018, 6, 20, Math.PI]} />
-        <meshStandardMaterial color="#333" emissive="#ffb000" emissiveIntensity={glow * 6} />
-      </mesh>
-      {glow > 0.02 && <pointLight position={[0, 1.2, 0]} color="#ffd27a" intensity={glow * 9} distance={6} />}
+      <PorcelainHolder scale={s} />
+      <group position={[0, (36 - 21) * s, 0]}>
+        <Bulb glow={glow} scale={s} />
+      </group>
     </group>
   )
 }
 
+/** Pila: la de 9 V es la rectangular con broche a presión; las otras, cilíndricas en su portapilas. */
 function Battery({ u }: { u: number }) {
-  // la etiqueta se dibuja a lo largo de la pila (la textura da la vuelta al cilindro)
+  const nine = u >= 9
   const label = useCanvasTexture(
     256,
     512,
     (ctx, w, h) => {
-      ctx.fillStyle = '#1e3a8a'
+      const g = ctx.createLinearGradient(0, 0, w, 0)
+      g.addColorStop(0, nine ? '#111827' : '#1e3a8a')
+      g.addColorStop(0.5, nine ? '#374151' : '#2747a8')
+      g.addColorStop(1, nine ? '#111827' : '#1e3a8a')
+      ctx.fillStyle = g
       ctx.fillRect(0, 0, w, h)
-      ctx.fillStyle = '#facc15'
-      ctx.fillRect(0, h * 0.72, w, h * 0.28)
+      ctx.fillStyle = '#d4a017'
+      ctx.fillRect(0, h * 0.7, w, h * 0.08)
       ctx.save()
-      ctx.translate(w * 0.5, h * 0.4)
+      ctx.translate(w * 0.5, h * 0.38)
       ctx.rotate(-Math.PI / 2)
       ctx.fillStyle = '#fff'
-      ctx.font = 'bold 92px system-ui'
+      ctx.font = 'bold 92px Arial'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(`${String(u).replace('.', ',')} V`, 0, 0)
-      ctx.restore()
-      ctx.save()
-      ctx.translate(w * 0.5, h * 0.86)
-      ctx.rotate(-Math.PI / 2)
-      ctx.fillStyle = '#1e3a8a'
-      ctx.font = 'bold 80px system-ui'
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillText('+', 0, 0)
+      ctx.font = 'bold 34px Arial'
+      ctx.fillText('ALCALINA', 0, 70)
       ctx.restore()
     },
-    [u],
+    [u, nine],
   )
+  const blackLead = useMemo(
+    () =>
+      new THREE.TubeGeometry(
+        new THREE.CatmullRomCurve3([new THREE.Vector3(XL + 0.25, 0.95, -1.85), new THREE.Vector3(XL + 0.9, 0.6, -1.4), new THREE.Vector3(XL + 1.0, 0.12, 0.2), new THREE.Vector3(XL + 0.5, 0.1, 1.6), new THREE.Vector3(XL, Y, 1.95)]),
+        40,
+        0.06,
+        8,
+        false,
+      ),
+    [],
+  )
+  const redLead = useMemo(() => new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(XL - 0.35, 0.95, -1.85), new THREE.Vector3(XL - 0.2, 0.6, -2.0), new THREE.Vector3(XL, Y, -1.95)]), 20, 0.06, 8, false), [])
+  if (nine)
+    return (
+      <group>
+        {/* pila de 9 V (48,5 × 26,5 × 17,5 mm) acostada, con los dos bornes del mismo lado */}
+        <group position={[XL - 0.05, 0.62, 0.1]}>
+          <RoundedBox args={[1.85, 1.2, 3.4]} radius={0.12} smoothness={3} castShadow>
+            <meshStandardMaterial map={label} roughness={0.35} metalness={0.3} />
+          </RoundedBox>
+        </group>
+        {/* broche a presión con sus cables rojo (+) y negro (−) */}
+        <group position={[XL - 0.05, 0.95, -1.75]}>
+          <RoundedBox args={[1.3, 0.35, 0.5]} radius={0.08} smoothness={2}>
+            <meshStandardMaterial color="#141414" roughness={0.6} />
+          </RoundedBox>
+        </group>
+        <mesh geometry={redLead}>
+          <meshStandardMaterial color="#d62828" roughness={0.5} />
+        </mesh>
+        <mesh geometry={blackLead}>
+          <meshStandardMaterial color="#1f1f22" roughness={0.5} />
+        </mesh>
+      </group>
+    )
   return (
-    <group position={[XL - 0.15, 0.62, 0]} rotation={[Math.PI / 2, 0, 0]}>
-      <mesh castShadow>
-        <cylinderGeometry args={[0.6, 0.6, 3.4, 40, 1, true]} />
-        <meshStandardMaterial map={label} roughness={0.4} />
+    <group>
+      {/* portapilas negro con sus resortes */}
+      <mesh position={[XL - 0.15, 0.25, 0]} castShadow>
+        <boxGeometry args={[1.5, 0.5, 3.9]} />
+        <meshStandardMaterial color="#1a1a1c" roughness={0.6} />
       </mesh>
-      <mesh position={[0, -1.71, 0]}>
-        <cylinderGeometry args={[0.6, 0.6, 0.04, 40]} />
-        <meshStandardMaterial color="#c0c4ca" metalness={0.9} roughness={0.3} />
-      </mesh>
-      <mesh position={[0, 1.71, 0]}>
-        <cylinderGeometry args={[0.6, 0.6, 0.04, 40]} />
-        <meshStandardMaterial color="#c0c4ca" metalness={0.9} roughness={0.3} />
-      </mesh>
-      {/* borne + (hacia el cable rojo) */}
-      <mesh position={[0, -1.82, 0]}>
-        <cylinderGeometry args={[0.2, 0.2, 0.2, 20]} />
-        <meshStandardMaterial color="#d0d3d8" metalness={0.9} roughness={0.25} />
-      </mesh>
+      <group position={[XL - 0.15, 0.72, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <mesh castShadow>
+          <cylinderGeometry args={[0.6, 0.6, 3.4, 40, 1, true]} />
+          <meshStandardMaterial map={label} roughness={0.35} metalness={0.3} />
+        </mesh>
+        {[-1.71, 1.71].map((y) => (
+          <mesh key={y} position={[0, y, 0]}>
+            <cylinderGeometry args={[0.6, 0.6, 0.04, 40]} />
+            <meshStandardMaterial color="#c0c4ca" metalness={0.9} roughness={0.3} />
+          </mesh>
+        ))}
+        {/* botón del borne + */}
+        <mesh position={[0, -1.8, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.16, 20]} />
+          <meshStandardMaterial color="#d0d3d8" metalness={0.9} roughness={0.25} />
+        </mesh>
+      </group>
     </group>
   )
 }
 
+/** Interruptor de cuchilla: base de baquelita, bisagra y mordaza de bronce, cuchilla de cobre con su mango. */
 function Switch({ closed }: { closed: boolean }) {
   return (
     <group position={[-1.6, 0, ZT]}>
-      <mesh position={[0.6, 0.12, 0]} castShadow>
-        <boxGeometry args={[1.6, 0.24, 0.7]} />
-        <meshStandardMaterial color="#2b2d33" roughness={0.6} />
-      </mesh>
-      <group position={[0, 0.3, 0]} rotation={[0, 0, closed ? -0.02 : 0.55]}>
-        <mesh position={[0.6, 0, 0]} castShadow>
-          <boxGeometry args={[1.3, 0.08, 0.22]} />
-          <meshStandardMaterial color="#c0c4ca" metalness={0.9} roughness={0.3} />
+      <RoundedBox args={[1.9, 0.22, 0.8]} radius={0.05} smoothness={2} position={[0.62, 0.11, 0]} castShadow>
+        <meshStandardMaterial color="#4a2c1a" roughness={0.45} />
+      </RoundedBox>
+      {/* bisagra y mordaza: dos chapitas de bronce cada una */}
+      {[0, 1.25].map((x) =>
+        [-0.09, 0.09].map((z) => (
+          <mesh key={`${x}${z}`} position={[x, 0.36, z]} material={EM.brass}>
+            <boxGeometry args={[0.2, 0.3, 0.04]} />
+          </mesh>
+        )),
+      )}
+      {[0, 1.25].map((x) => (
+        <ScrewHead key={x} r={0.09} position={[x - 0.28, 0.23, 0]} rotation={[-Math.PI / 2, 0, 0]} mat={EM.brass} />
+      ))}
+      <group position={[0, 0.42, 0]} rotation={[0, 0, closed ? -0.02 : 0.6]}>
+        <mesh position={[0.62, 0, 0]} castShadow material={EM.copper}>
+          <boxGeometry args={[1.35, 0.2, 0.05]} />
         </mesh>
-        <mesh position={[1.25, 0.12, 0]}>
-          <sphereGeometry args={[0.13, 14, 10]} />
-          <meshStandardMaterial color="#d62828" />
+        <mesh position={[1.42, 0.05, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.1, 0.12, 0.5, 16]} />
+          <meshStandardMaterial color="#141414" roughness={0.4} />
+        </mesh>
+        <mesh position={[1.42, 0.05, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.03, 0.03, 0.3, 8]} />
+          <meshStandardMaterial color="#c0c4ca" metalness={0.9} roughness={0.3} />
         </mesh>
       </group>
     </group>
@@ -251,7 +291,7 @@ export function CircuitoModel(p: CircuitoParams) {
       <Part id="tablero" offset={[0, -1.5, 0]} labelAt={[-3.5, 0, 3.7]}>
         <mesh position={[0, -0.15, 0]} receiveShadow castShadow>
           <boxGeometry args={[10.6, 0.3, 7.4]} />
-          <meshStandardMaterial color="#b07d4f" roughness={0.8} />
+          <meshStandardMaterial map={PLYWOOD ?? undefined} roughness={0.75} />
         </mesh>
       </Part>
       <Part id="cables" offset={[0, 0.9, 0]} labelAt={[0, 0.4, ZB]}>

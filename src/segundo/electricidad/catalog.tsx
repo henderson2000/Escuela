@@ -188,6 +188,7 @@ const termomagnetico: ComponentDef = {
   target: [0, 0.4, 0],
   shadowY: -4.2,
   defaultParams: { situacion: 'sobrecarga', rearme: 0, corte: false } satisfies PiaParams,
+  environment: 'banco',
   render: (p) => <PiaModel {...(p as PiaParams)} />,
   Controls: PiaControls as ComponentDef['Controls'],
   theory: (
@@ -257,6 +258,7 @@ const diferencial: ComponentDef = {
   target: [0, 0, 0],
   shadowY: -4,
   defaultParams: { fuga: 0, sensibilidad: 30, rearme: 0 } satisfies DiferencialParams,
+  environment: 'banco',
   render: (p) => <DiferencialModel {...(p as DiferencialParams)} />,
   Controls: DifControls as ComponentDef['Controls'],
   theory: (
@@ -322,10 +324,11 @@ const multimetro: ComponentDef = {
   icon: '📟',
   short: 'Medí tensión en paralelo y corriente en serie. ¿Qué pasa si lo conectás mal?',
   parts: MULTI_PARTS,
-  camera: [0, 1, 18],
-  target: [0, -2.2, 0],
-  shadowY: -6,
+  camera: [3, 8, 17],
+  target: [1.5, 2.6, 0.5],
+  shadowY: 0,
   defaultParams: { modo: 'V~', conexion: 'paralelo' } satisfies MultimetroParams,
+  environment: 'banco',
   render: (p) => <MultimetroModel {...(p as MultimetroParams)} />,
   Controls: MultiControls as ComponentDef['Controls'],
   theory: (

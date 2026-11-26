@@ -4,6 +4,7 @@ import { useFrame } from '@react-three/fiber'
 import { Part } from '../../Part'
 import { useCanvasTexture } from '../../helpers'
 import { useKeepRendering } from '../../keepRendering'
+import { Bulb, DinModule, PLYWOOD, PorcelainHolder, WallSwitch } from '../electricShared'
 
 export type Circuito2 = 'simple' | 'serie' | 'paralelo' | 'escalera'
 export type Falla = 'ninguna' | 'cortocircuito' | 'sobrecarga' | 'fuga'
@@ -162,123 +163,33 @@ function Flow({ list }: { list: { pts: [number, number][] }[] }) {
 /* ------------------------------------------------------------------ piezas */
 
 function DinDevice({ x, label, sub, on, kind }: { x: number; label: string; sub: string; on: boolean; kind: 'dif' | 'pia' }) {
-  const face = useCanvasTexture(
-    128,
-    256,
-    (ctx, w, h) => {
-      ctx.fillStyle = '#f4f4f2'
-      ctx.fillRect(0, 0, w, h)
-      ctx.fillStyle = '#222'
-      ctx.textAlign = 'center'
-      ctx.font = 'bold 26px system-ui'
-      ctx.fillText(label, w / 2, 40)
-      ctx.font = '18px system-ui'
-      sub.split('\n').forEach((l, i) => ctx.fillText(l, w / 2, 66 + i * 22))
-      ctx.fillStyle = on ? '#16a34a' : '#dc2626'
-      ctx.fillRect(w / 2 - 22, h - 46, 44, 18)
-      ctx.fillStyle = '#fff'
-      ctx.font = 'bold 14px system-ui'
-      ctx.fillText(on ? 'ON' : 'OFF', w / 2, h - 32)
-      if (kind === 'dif') {
-        ctx.fillStyle = '#facc15'
-        ctx.beginPath()
-        ctx.arc(w / 2, h - 80, 13, 0, Math.PI * 2)
-        ctx.fill()
-        ctx.fillStyle = '#222'
-        ctx.fillText('T', w / 2, h - 75)
-      }
-    },
-    [label, sub, on, kind],
-  )
   return (
-    <group position={[x, 1.5, 0.9]}>
-      <mesh castShadow>
-        <boxGeometry args={[0.86, 2.2, 1.4]} />
-        <meshStandardMaterial color="#f1f1ee" roughness={0.5} />
-      </mesh>
-      <mesh position={[0, 0, 0.71]}>
-        <planeGeometry args={[0.8, 1.6]} />
-        <meshStandardMaterial map={face} roughness={0.5} />
-      </mesh>
-      {/* palanca: arriba = cerrado, abajo = abierto (disparado) */}
-      <group position={[0, 0.2, 0.75]} rotation={[on ? -0.55 : 0.55, 0, 0]}>
-        <mesh position={[0, 0, 0.22]}>
-          <boxGeometry args={[0.36, 0.22, 0.44]} />
-          <meshStandardMaterial color={kind === 'dif' ? '#1d4ed8' : '#18181b'} roughness={0.4} />
-        </mesh>
-      </group>
-      {/* bornes */}
-      {[-0.2, 0.2].map((dx) => (
-        <group key={dx}>
-          <mesh position={[dx, 0.95, 0.5]}>
-            <cylinderGeometry args={[0.08, 0.08, 0.06, 12]} />
-            <meshStandardMaterial color="#c0c4ca" metalness={0.9} roughness={0.3} />
-          </mesh>
-          <mesh position={[dx, -0.95, 0.5]}>
-            <cylinderGeometry args={[0.08, 0.08, 0.06, 12]} />
-            <meshStandardMaterial color="#c0c4ca" metalness={0.9} roughness={0.3} />
-          </mesh>
-        </group>
-      ))}
+    <group position={[x, 1.5, 0.2]}>
+      <DinModule poles={2} label={label} sub={sub} on={on} kind={kind} scale={0.027} />
     </group>
   )
 }
 
+/** Caja octogonal de chapa, portalámparas de porcelana y lámpara de 60 W, mirando hacia afuera de la pared (+z). */
 function Lamp({ glow }: { glow: number }) {
   return (
     <group>
-      {/* caja octogonal y portalámparas */}
       <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.2]} castShadow>
-        <cylinderGeometry args={[0.55, 0.55, 0.4, 8]} />
+        <cylinderGeometry args={[0.6, 0.6, 0.4, 8]} />
         <meshStandardMaterial color="#8a8f96" metalness={0.6} roughness={0.45} />
       </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.6]} castShadow>
-        <cylinderGeometry args={[0.32, 0.36, 0.45, 20]} />
-        <meshStandardMaterial color="#efe9da" roughness={0.6} />
-      </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.92]}>
-        <cylinderGeometry args={[0.2, 0.2, 0.25, 18]} />
-        <meshStandardMaterial color="#c0c4ca" metalness={0.9} roughness={0.3} />
-      </mesh>
-      <mesh position={[0, 0, 1.38]}>
-        <sphereGeometry args={[0.42, 28, 20]} />
-        <meshPhysicalMaterial color="#fff8e1" emissive="#ffcc55" emissiveIntensity={glow * 2.6} transparent opacity={0.5 + glow * 0.45} roughness={0.1} />
-      </mesh>
-      <mesh position={[0, 0, 1.34]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.1, 0.016, 6, 18, Math.PI]} />
-        <meshStandardMaterial color="#333" emissive="#ffb000" emissiveIntensity={glow * 6} />
-      </mesh>
-      {glow > 0.02 && <pointLight position={[0, 0, 2]} color="#ffd27a" intensity={glow * 10} distance={7} />}
+      <group position={[0, 0, 0.4]} rotation={[Math.PI / 2, 0, 0]}>
+        <PorcelainHolder scale={0.014} />
+        <group position={[0, (36 - 21) * 0.014, 0]}>
+          <Bulb glow={glow} scale={0.014} />
+        </group>
+      </group>
     </group>
   )
 }
 
 function SwitchBox({ on, two }: { on: boolean; two?: boolean }) {
-  return (
-    <group>
-      <mesh position={[0, 0, 0.2]} castShadow>
-        <boxGeometry args={[1.0, 1.5, 0.4]} />
-        <meshStandardMaterial color="#8a8f96" metalness={0.6} roughness={0.45} />
-      </mesh>
-      <mesh position={[0, 0, 0.45]} castShadow>
-        <boxGeometry args={[1.1, 1.65, 0.1]} />
-        <meshStandardMaterial color="#f5f5f0" roughness={0.4} />
-      </mesh>
-      {/* tecla basculante */}
-      <group position={[0, 0, 0.52]} rotation={[on ? -0.18 : 0.18, 0, 0]}>
-        <mesh position={[0, 0, 0.06]}>
-          <boxGeometry args={[0.5, 0.8, 0.12]} />
-          <meshStandardMaterial color={two ? '#e7e5e4' : '#ffffff'} roughness={0.35} />
-        </mesh>
-      </group>
-      {two && (
-        <mesh position={[0, -0.6, 0.53]}>
-          <boxGeometry args={[0.3, 0.06, 0.02]} />
-          <meshStandardMaterial color="#64748b" />
-        </mesh>
-      )}
-    </group>
-  )
+  return <WallSwitch on={on} two={two} scale={0.014} />
 }
 
 function Spark() {
@@ -439,7 +350,7 @@ export function InstalacionModel(p: InstalacionParams) {
       <Part id="panel" offset={[0, 0, -2.5]} labelAt={[6.5, -4.8, 0.3]}>
         <mesh position={[0, 0, -0.2]} receiveShadow castShadow>
           <boxGeometry args={[18, 11, 0.4]} />
-          <meshStandardMaterial color="#b07d4f" roughness={0.85} />
+          <meshStandardMaterial map={PLYWOOD ?? undefined} roughness={0.8} />
         </mesh>
         <mesh position={[-6.5, 4.95, 0.01]}>
           <planeGeometry args={[3, 0.75]} />
