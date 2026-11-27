@@ -10,17 +10,16 @@ const rotationImg = (yearId: string, n: number) => `img/rotaciones/${yearId}-${n
 const canHover = () => typeof matchMedia !== 'undefined' && matchMedia('(hover: hover) and (pointer: fine)').matches
 
 /**
- * Tarjeta de un año. Con el mouse, una lupa redonda sigue al cursor y deja ver, agrandada, una hoja de plano
- * técnico (y el número del año resaltado, si pasa por encima). Sin mouse, se ven las 4 rotaciones en miniatura.
+ * Tarjeta de un año. Con el mouse, un circulito sigue al cursor y deja ver lo que hay "detrás": una hoja de
+ * plano técnico, con el año y sus rotaciones resaltados en blanco. Sin mouse, se ven las 4 rotaciones en miniatura.
  */
 export function YearCard({ year, ready }: { year: Year; ready: number }) {
   const ref = useRef<HTMLAnchorElement>(null)
-  const numRef = useRef<HTMLSpanElement>(null)
-  // dónde está el número del año dentro de la tarjeta (para dibujar su copia dentro de la lupa)
-  const [numAt, setNumAt] = useState<{ left: number; top: number } | null>(null)
   const [lens, setLens] = useState(false)
   const [hover] = useState(canHover)
   const rotations = year.rotations.filter((r) => r.subject)
+
+  const pillText = ready ? `${ready} ${ready === 1 ? 'taller disponible' : 'talleres disponibles'}` : 'Próximamente'
 
   const move = (e: React.PointerEvent) => {
     if (e.pointerType !== 'mouse' || !ref.current) return
@@ -28,11 +27,7 @@ export function YearCard({ year, ready }: { year: Year; ready: number }) {
     const s = ref.current.style
     s.setProperty('--mx', `${e.clientX - b.left}px`)
     s.setProperty('--my', `${e.clientY - b.top}px`)
-    if (!lens) {
-      setLens(true)
-      const n = numRef.current
-      if (n) setNumAt({ left: n.offsetLeft, top: n.offsetTop })
-    }
+    if (!lens) setLens(true)
   }
 
   return (
@@ -43,9 +38,7 @@ export function YearCard({ year, ready }: { year: Year; ready: number }) {
       onPointerMove={move}
       onPointerLeave={() => setLens(false)}
     >
-      <span ref={numRef} className="year-num">
-        {year.short}
-      </span>
+      <span className="year-num">{year.short}</span>
       {/* en celulares los nombres ya van debajo de cada miniatura */}
       {hover && (
         <ul className="year-rots" aria-label={`Rotaciones de ${year.name}`}>
@@ -55,21 +48,22 @@ export function YearCard({ year, ready }: { year: Year; ready: number }) {
         </ul>
       )}
       <span className={`pill ${ready ? 'ok' : ''}`}>
-        {ready ? `${ready} ${ready === 1 ? 'taller disponible' : 'talleres disponibles'}` : 'Próximamente'}
+        {pillText}
       </span>
 
       {hover ? (
-        // la lupa: el mismo plano del fondo, agrandado alrededor del cursor
+        // el circulito: deja ver el plano de atrás (quieto) y, encima, el año y las rotaciones resaltados
         <span className="year-reveal" aria-hidden>
           <span className="year-zoom" />
-          {/* el número del año, resaltado (en su tamaño de siempre) cuando la lupa pasa por encima */}
-          {numAt && (
-            <span className="year-zoom-text">
-              <span className="year-zoom-num" style={numAt}>
-                {year.short}
-              </span>
-            </span>
-          )}
+          <span className="year-zoom-text">
+            <span className="year-num">{year.short}</span>
+            <ul className="year-rots">
+              {rotations.map((r) => (
+                <li key={r.n}>{SUBJECTS[r.subject!].name}</li>
+              ))}
+            </ul>
+            <span className="pill">{pillText}</span>
+          </span>
           <span className="year-ring" />
         </span>
       ) : (

@@ -1630,32 +1630,43 @@ th {
   inset: 0;
   z-index: 2;
   pointer-events: none;
+  border-radius: inherit;
+  /* la ventanita: sólo se ve lo que cae dentro del círculo, quieto (no se agranda ni se mueve) */
+  clip-path: circle(var(--r) at var(--mx) var(--my));
 }
+/* el plano de atrás, fijo */
 .year-zoom {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  /* el mismo plano del fondo, más claro y nítido, como visto con lupa */
   background: #12305a var(--plano) center / cover;
   filter: brightness(1.45) contrast(1.15);
-  /* sólo se ve lo que cae dentro de la lupa, agrandado alrededor del cursor */
-  clip-path: circle(calc(var(--r) / 1.8) at var(--mx) var(--my));
-  transform: scale(1.8);
-  transform-origin: var(--mx) var(--my);
 }
-/* capa sin agrandar, recortada al círculo de la lupa */
+/* copia de los textos de la tarjeta, en el mismo lugar, pero en blanco para que resalten sobre el plano */
 .year-zoom-text {
   position: absolute;
   inset: 0;
-  clip-path: circle(var(--r) at var(--mx) var(--my));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: inherit;
 }
-.year-zoom-num {
-  position: absolute;
-  font-size: clamp(3.4rem, 9vw, 5rem);
-  font-weight: 900;
-  line-height: 1;
+.year-reveal {
+  padding: inherit;
+}
+.year-zoom-text .year-num {
+  background: none;
   color: #fff;
   text-shadow: 0 0 2px #0a1a33, 0 0 10px rgba(110, 190, 255, 0.9);
+}
+.year-zoom-text .year-rots li {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.85);
+  background: rgba(10, 26, 51, 0.6);
+}
+.year-zoom-text .pill {
+  visibility: hidden;
 }
 .year-ring {
   position: absolute;
