@@ -25,7 +25,7 @@ export function TornoHome() {
             aprendé a montar la pieza y a elegir la herramienta, y trabajá siempre seguro.
           </p>
           <div className="row">
-            <Link to={sub('/componentes/torno')} className="btn primary big">
+            <Link to={sub('/componentes')} className="btn primary big">
               Ver el torno en 3D
             </Link>
             <Link to={sub('/teoria')} className="btn big">
