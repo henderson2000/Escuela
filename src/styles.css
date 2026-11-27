@@ -1580,7 +1580,7 @@ th {
   transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
-/* fondo de cada tarjeta: una hoja de plano técnico (piezas, ejes, cotas) sobre papel azul */
+/* hoja de plano técnico de cada año (piezas, ejes, cotas): se ve dentro de la lupa */
 .year-btn.plano-1 {
   --plano: url('/img/planos/1.svg');
 }
@@ -1589,12 +1589,6 @@ th {
 }
 .year-btn.plano-3 {
   --plano: url('/img/planos/3.svg');
-}
-.year-btn[class*='plano-'] {
-  background-color: #0e2340;
-  background-image: radial-gradient(ellipse at 50% 42%, rgba(14, 35, 64, 0.75), transparent 62%), var(--plano);
-  background-size: cover, cover;
-  background-position: center;
 }
 
 .year-btn .pill {
@@ -1624,7 +1618,7 @@ th {
   transition: --r 0.22s ease-out, border-color 0.15s;
 }
 .year-btn.lens-on {
-  --r: 78px;
+  --r: 66px;
   /* la lupa puede salirse del borde: queda por encima de las otras tarjetas */
   z-index: 3;
   border-color: #3a4a63;
