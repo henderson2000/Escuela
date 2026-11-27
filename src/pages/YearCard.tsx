@@ -39,7 +39,7 @@ export function YearCard({ year, ready, armed }: { year: Year; ready: number; ar
     <Link
       ref={ref}
       to={`/${year.id}`}
-      className={`year-btn ${ready ? '' : 'soon'} ${active !== null ? 'lens-on' : ''}`}
+      className={`year-btn plano-${year.id} ${ready ? '' : 'soon'} ${active !== null ? 'lens-on' : ''}`}
       onPointerMove={move}
       onPointerLeave={() => setActive(null)}
     >

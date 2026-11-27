@@ -1580,6 +1580,22 @@ th {
   transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
+/* fondo de cada tarjeta: una hoja de plano técnico (piezas, ejes, cotas) sobre papel azul */
+.year-btn[class*='plano-'] {
+  background-color: #0e2340;
+  background-size: cover, cover;
+  background-position: center;
+}
+.year-btn.plano-1 {
+  background-image: radial-gradient(ellipse at 50% 42%, rgba(14, 35, 64, 0.75), transparent 62%), url('/img/planos/1.svg');
+}
+.year-btn.plano-2 {
+  background-image: radial-gradient(ellipse at 50% 42%, rgba(14, 35, 64, 0.75), transparent 62%), url('/img/planos/2.svg');
+}
+.year-btn.plano-3 {
+  background-image: radial-gradient(ellipse at 50% 42%, rgba(14, 35, 64, 0.75), transparent 62%), url('/img/planos/3.svg');
+}
+
 .year-btn .pill {
   align-self: center;
   margin-top: 6px;
