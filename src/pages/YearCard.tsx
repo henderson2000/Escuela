@@ -61,14 +61,15 @@ export function YearCard({ year, ready }: { year: Year; ready: number }) {
       {hover ? (
         // la lupa: el mismo plano del fondo, agrandado alrededor del cursor
         <span className="year-reveal" aria-hidden>
-          <span className="year-zoom">
-            {/* el número del año, resaltado, cuando la lupa pasa por encima */}
-            {numAt && (
+          <span className="year-zoom" />
+          {/* el número del año, resaltado (en su tamaño de siempre) cuando la lupa pasa por encima */}
+          {numAt && (
+            <span className="year-zoom-text">
               <span className="year-zoom-num" style={numAt}>
                 {year.short}
               </span>
-            )}
-          </span>
+            </span>
+          )}
           <span className="year-ring" />
         </span>
       ) : (

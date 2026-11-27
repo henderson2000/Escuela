@@ -1643,6 +1643,12 @@ th {
   transform: scale(1.8);
   transform-origin: var(--mx) var(--my);
 }
+/* capa sin agrandar, recortada al círculo de la lupa */
+.year-zoom-text {
+  position: absolute;
+  inset: 0;
+  clip-path: circle(var(--r) at var(--mx) var(--my));
+}
 .year-zoom-num {
   position: absolute;
   font-size: clamp(3.4rem, 9vw, 5rem);
