@@ -1618,7 +1618,7 @@ th {
   transition: --r 0.22s ease-out, border-color 0.15s;
 }
 .year-btn.lens-on {
-  --r: 66px;
+  --r: 53px;
   /* la lupa puede salirse del borde: queda por encima de las otras tarjetas */
   z-index: 3;
   border-color: #3a4a63;
@@ -1642,6 +1642,14 @@ th {
   clip-path: circle(calc(var(--r) / 1.8) at var(--mx) var(--my));
   transform: scale(1.8);
   transform-origin: var(--mx) var(--my);
+}
+.year-zoom-num {
+  position: absolute;
+  font-size: clamp(3.4rem, 9vw, 5rem);
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 0 2px #0a1a33, 0 0 10px rgba(110, 190, 255, 0.9);
 }
 .year-ring {
   position: absolute;
@@ -1729,11 +1737,6 @@ th {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-}
-
-.year-name {
-  font-size: 1.2rem;
-  font-weight: 700;
 }
 
 .year-detail {
