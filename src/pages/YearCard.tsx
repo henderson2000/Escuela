@@ -11,7 +11,7 @@ const canHover = () => typeof matchMedia !== 'undefined' && matchMedia('(hover: 
 
 /**
  * Tarjeta de un año. Cada cuarto de la tarjeta esconde una rotación: con el mouse, una lupa redonda sigue al
- * cursor y muestra la foto de la rotación de ese cuarto, con su nombre. Sin mouse, se ven las 4 en miniatura.
+ * cursor y deja ver, agrandada, la rotación de ese cuarto, con su nombre. Sin mouse, se ven las 4 en miniatura.
  */
 export function YearCard({ year, ready, armed }: { year: Year; ready: number; armed: boolean }) {
   const ref = useRef<HTMLAnchorElement>(null)
@@ -29,9 +29,6 @@ export function YearCard({ year, ready, armed }: { year: Year; ready: number; ar
     const s = ref.current.style
     s.setProperty('--mx', `${x}px`)
     s.setProperty('--my', `${y}px`)
-    // posición dentro del cuarto (-1 a 1): la foto se desliza un poco al mover el mouse
-    s.setProperty('--px', String(((x - (right ? b.width / 2 : 0)) / (b.width / 2)) * 2 - 1))
-    s.setProperty('--py', String(((y - (bottom ? b.height / 2 : 0)) / (b.height / 2)) * 2 - 1))
     const q = (right ? 1 : 0) + (bottom ? 2 : 0)
     setActive(q < rotations.length ? q : null)
   }
@@ -63,14 +60,22 @@ export function YearCard({ year, ready, armed }: { year: Year; ready: number; ar
       </span>
 
       {hover ? (
-        <span className="year-lens" aria-hidden>
-          <span className="year-lens-pics">
-            {armed &&
-              rotations.map((r, i) => (
-                <img key={r.n} src={rotationImg(year.id, r.n)} alt="" decoding="async" className={active === i ? 'on' : ''} />
-              ))}
+        // dentro de la lupa: las 4 rotaciones, una por cuarto de la tarjeta, agrandadas alrededor del cursor
+        <span className="year-reveal" aria-hidden>
+          <span className="year-mosaic">
+            {rotations.map((r) => (
+              <span key={r.n} className="year-tile">
+                {armed && (
+                  <>
+                    {/* la misma foto, desenfocada, rellena el cuarto; encima va entera, sin recortar */}
+                    <img className="fill" src={rotationImg(year.id, r.n)} alt="" decoding="async" />
+                    <img className="pic" src={rotationImg(year.id, r.n)} alt="" decoding="async" />
+                  </>
+                )}
+              </span>
+            ))}
           </span>
-          {label && <span className="year-lens-label">{SUBJECTS[label.subject!].name}</span>}
+          <span className="year-ring">{label && <span className="year-ring-label">{SUBJECTS[label.subject!].name}</span>}</span>
         </span>
       ) : (
         <span className="year-thumbs" aria-hidden>
