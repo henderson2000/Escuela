@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { SUBJECTS, type Year } from '../data/curriculum'
 
 /** Foto de cada rotación (el modelo 3D de ese taller, encuadrado de cerca). */
-const rotationImg = (yearId: string, n: number) => `img/rotaciones/${yearId}-${n}.webp`
+// (subir el número de versión al cambiar las fotos, así los navegadores no siguen mostrando las viejas)
+const rotationImg = (yearId: string, n: number) => `img/rotaciones/${yearId}-${n}.webp?v=2`
 
 /** ¿El dispositivo tiene un mouse que pueda "pasar por encima"? (en celulares y tablets se muestran miniaturas) */
 const canHover = () => typeof matchMedia !== 'undefined' && matchMedia('(hover: hover) and (pointer: fine)').matches
