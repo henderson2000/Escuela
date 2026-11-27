@@ -2,7 +2,7 @@ import { Suspense, use, useEffect, useRef } from 'react'
 import { Link, Navigate, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { SUBJECTS, YEARS, getRotation, getYear } from '../data/curriculum'
 import { BaseContext } from '../lib/nav'
-import { YearCard, useArmImages } from './YearCard'
+import { YearCard } from './YearCard'
 import { SubjectContext } from '../lib/subject'
 import { lazyNamed } from '../lib/lazy'
 import { ErrorBoundary } from '../components/ErrorBoundary'
@@ -36,7 +36,6 @@ export function PageLoading() {
 /* ------------------------------------------------------------------ inicio: elegir año */
 
 export function YearsHome() {
-  const [armed, arm] = useArmImages()
   return (
     <div className="page years-home">
       <section className="years-hero">
@@ -45,10 +44,10 @@ export function YearsHome() {
         </h1>
         <p className="lead">Elegí tu año para ver los talleres.</p>
       </section>
-      <div className="year-buttons" onPointerEnter={arm}>
+      <div className="year-buttons">
         {YEARS.map((y) => {
           const ready = y.rotations.filter((r) => r.ready && hasSubjectContent(y.id, r.subject ?? '')).length
-          return <YearCard key={y.id} year={y} ready={ready} armed={armed} />
+          return <YearCard key={y.id} year={y} ready={ready} />
         })}
       </div>
       <div className="home-footer-links">
