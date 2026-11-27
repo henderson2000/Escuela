@@ -67,26 +67,49 @@ export function boxSpec(o: {
   const H = Math.PI / 2;
   const hemLong = Math.PI * k1 * -1; // hacia afuera de la caja
   const hemShort = Math.PI * k1 * (o.mismoSentido ? -1 : 1);
+  // la punta de la oreja que sobresale por encima de la pared (los 5 mm de la pestaña) se dobla para atrás,
+  // por encima del borde de la cabecera, y cierra el triángulo
+  const k5 = stage(p, 0.9, 1);
+  const tabAngle = Math.PI * 0.97 * k5;
   const ear = (side: 1 | -1): ChildSpec => ({
     at: side === 1 ? [0, 0] : [b, h + f],
     phi: side === 1 ? -H : H,
     // se pliegan hacia adentro y quedan apoyadas por fuera de la cabecera
     angle: H * 0.97 * k4,
-    panel: {
-      part: "orejas",
-      poly:
-        side === 1
-          ? [
+    panel:
+      side === 1
+        ? {
+            part: "orejas",
+            poly: [
               [0, 0],
-              [h + f, 0],
-              [h + f, h + f],
-            ]
-          : [
-              [0, 0],
-              [h + f, 0],
-              [0, h + f],
+              [h, 0],
+              [h, h],
             ],
-    },
+            children: [
+              {
+                at: [h, h],
+                phi: H,
+                angle: tabAngle,
+                panel: { part: "orejas", poly: [[0, 0], [h, 0], [h, f], [-f, f]] },
+              },
+            ],
+          }
+        : {
+            part: "orejas",
+            poly: [
+              [f, 0],
+              [h + f, 0],
+              [f, h],
+            ],
+            children: [
+              {
+                at: [f, 0],
+                phi: -H,
+                angle: tabAngle,
+                panel: { part: "orejas", poly: [[0, 0], [h, 0], [h + f, f], [0, f]] },
+              },
+            ],
+          },
   });
   const longWall = (): PanelSpec => ({
     part: "laterales",
