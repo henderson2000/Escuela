@@ -1599,75 +1599,80 @@ th {
 }
 .year-btn {
   position: relative;
-  overflow: hidden;
   isolation: isolate;
+  container-type: inline-size;
   --mx: 50%;
   --my: 50%;
+  --px: 0;
+  --py: 0;
   --r: 0px;
   transition: --r 0.22s ease-out, border-color 0.15s;
 }
 .year-btn.lens-on {
-  --r: 66px;
+  --r: 78px;
+  /* la lupa puede salirse del borde: queda por encima de las otras tarjetas */
+  z-index: 3;
   border-color: #3a4a63;
   /* la lupa reemplaza al puntero */
   cursor: none;
 }
-.year-reveal {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-}
-.year-mosaic {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  background: #0d131d;
-  clip-path: circle(calc(var(--r) / 1.7) at var(--mx) var(--my));
-  /* agranda lo que queda debajo del cursor */
-  transform: scale(1.7);
-  transform-origin: var(--mx) var(--my);
-}
-.year-tile {
-  position: relative;
-  overflow: hidden;
-  background: #121a26;
-}
-.year-tile img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.year-ring {
+.year-lens {
   position: absolute;
   left: var(--mx);
   top: var(--my);
   width: calc(var(--r) * 2);
   height: calc(var(--r) * 2);
   translate: -50% -50%;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.92);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.55), inset 0 0 18px rgba(0, 0, 0, 0.35);
+  z-index: 2;
+  pointer-events: none;
   opacity: 0;
   transition: opacity 0.18s;
 }
-.year-btn.lens-on .year-ring {
+.year-btn.lens-on .year-lens {
   opacity: 1;
 }
-.year-ring-label {
+.year-lens-pics {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #0d131d;
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+.year-lens-pics img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  /* la foto se desliza apenas al mover el mouse dentro de su cuarto */
+  transform: scale(1.12) translate(calc(var(--px) * -4%), calc(var(--py) * -4%));
+  transition: opacity 0.2s;
+}
+.year-lens-pics img.on {
+  opacity: 1;
+}
+/* brillo de vidrio */
+.year-lens-pics::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.18), transparent 45%);
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.45);
+}
+.year-lens-label {
   position: absolute;
   left: 50%;
-  bottom: 10px;
+  bottom: -6px;
   translate: -50% 0;
   white-space: nowrap;
-  padding: 3px 10px;
+  padding: 3px 11px;
   border-radius: 999px;
-  background: rgba(8, 12, 19, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(8, 12, 19, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   color: #fff;
   font-size: 0.82rem;
   font-weight: 700;
@@ -1684,25 +1689,12 @@ th {
   gap: 6px;
 }
 .year-rots li {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 9px 2px 3px;
+  padding: 2px 10px;
   border-radius: 999px;
   border: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.84rem;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
-}
-.year-rots b {
-  display: inline-grid;
-  place-items: center;
-  width: 19px;
-  height: 19px;
-  border-radius: 50%;
-  background: var(--card2);
-  color: var(--text);
-  font-size: 0.72rem;
 }
 .year-rots li.on {
   color: var(--text);
@@ -1714,54 +1706,46 @@ th {
 .year-thumbs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  gap: 8px;
   width: 100%;
   margin-top: 8px;
 }
 .year-thumb {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  font-size: 0.68rem;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-size: 0.7rem;
   color: var(--muted);
   line-height: 1.2;
 }
 .year-thumb img {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid var(--line);
   background: #121a26;
 }
-.year-thumb {
-  position: relative;
+.year-thumb span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 /* en una tablet parada las tarjetas son angostas: miniaturas de a dos */
-.year-btn {
-  container-type: inline-size;
-}
 @container (max-width: 300px) {
   .year-thumbs {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-.year-thumb b {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  display: grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(8, 12, 19, 0.85);
-  color: #fff;
-  font-size: 0.7rem;
-}
 @media (prefers-reduced-motion: reduce) {
   .year-btn {
     transition: none;
+  }
+  .year-lens-pics img {
+    transform: none;
   }
 }
 

@@ -2,15 +2,15 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SUBJECTS, type Year } from '../data/curriculum'
 
-/** Foto de cada rotación (los modelos 3D del laboratorio de ese taller). */
+/** Foto de cada rotación (el modelo 3D de ese taller, encuadrado de cerca). */
 const rotationImg = (yearId: string, n: number) => `img/rotaciones/${yearId}-${n}.webp`
 
 /** ¿El dispositivo tiene un mouse que pueda "pasar por encima"? (en celulares y tablets se muestran miniaturas) */
 const canHover = () => typeof matchMedia !== 'undefined' && matchMedia('(hover: hover) and (pointer: fine)').matches
 
 /**
- * Tarjeta de un año. Con el mouse, una lupa redonda sigue al cursor y deja ver, agrandadas, las 4 rotaciones
- * que hay "debajo" de la tarjeta (una en cada cuarto). Sin mouse, se ven las 4 en miniatura.
+ * Tarjeta de un año. Cada cuarto de la tarjeta esconde una rotación: con el mouse, una lupa redonda sigue al
+ * cursor y muestra la foto de la rotación de ese cuarto, con su nombre. Sin mouse, se ven las 4 en miniatura.
  */
 export function YearCard({ year, ready, armed }: { year: Year; ready: number; armed: boolean }) {
   const ref = useRef<HTMLAnchorElement>(null)
@@ -23,9 +23,15 @@ export function YearCard({ year, ready, armed }: { year: Year; ready: number; ar
     const b = ref.current.getBoundingClientRect()
     const x = e.clientX - b.left
     const y = e.clientY - b.top
-    ref.current.style.setProperty('--mx', `${x}px`)
-    ref.current.style.setProperty('--my', `${y}px`)
-    const q = (x > b.width / 2 ? 1 : 0) + (y > b.height / 2 ? 2 : 0)
+    const right = x > b.width / 2
+    const bottom = y > b.height / 2
+    const s = ref.current.style
+    s.setProperty('--mx', `${x}px`)
+    s.setProperty('--my', `${y}px`)
+    // posición dentro del cuarto (-1 a 1): la foto se desliza un poco al mover el mouse
+    s.setProperty('--px', String(((x - (right ? b.width / 2 : 0)) / (b.width / 2)) * 2 - 1))
+    s.setProperty('--py', String(((y - (bottom ? b.height / 2 : 0)) / (b.height / 2)) * 2 - 1))
+    const q = (right ? 1 : 0) + (bottom ? 2 : 0)
     setActive(q < rotations.length ? q : null)
   }
 
@@ -41,41 +47,36 @@ export function YearCard({ year, ready, armed }: { year: Year; ready: number; ar
     >
       <span className="year-num">{year.short}</span>
       <span className="year-name">{year.name}</span>
-      <ol className="year-rots" aria-label={`Rotaciones de ${year.name}`}>
-        {rotations.map((r, i) => (
-          <li key={r.n} className={active === i ? 'on' : ''}>
-            <b>{r.n}</b> {SUBJECTS[r.subject!].name}
-          </li>
-        ))}
-      </ol>
+      {/* en celulares los nombres ya van debajo de cada miniatura */}
+      {hover && (
+        <ul className="year-rots" aria-label={`Rotaciones de ${year.name}`}>
+          {rotations.map((r, i) => (
+            <li key={r.n} className={active === i ? 'on' : ''}>
+              {SUBJECTS[r.subject!].name}
+            </li>
+          ))}
+        </ul>
+      )}
       <span className={`pill ${ready ? 'ok' : ''}`}>
         {ready ? `${ready} ${ready === 1 ? 'taller disponible' : 'talleres disponibles'}` : 'Próximamente'}
       </span>
 
       {hover ? (
-        // lo que se ve dentro de la lupa: las 4 rotaciones, una por cuarto de la tarjeta, agrandadas
-        <span className="year-reveal" aria-hidden>
-          <span className="year-mosaic">
-            {rotations.map((r) => (
-              <span key={r.n} className="year-tile">
-                {armed && <img src={rotationImg(year.id, r.n)} alt="" decoding="async" />}
-              </span>
-            ))}
+        <span className="year-lens" aria-hidden>
+          <span className="year-lens-pics">
+            {armed &&
+              rotations.map((r, i) => (
+                <img key={r.n} src={rotationImg(year.id, r.n)} alt="" decoding="async" className={active === i ? 'on' : ''} />
+              ))}
           </span>
-          <span className="year-ring">
-            {label && (
-              <span className="year-ring-label">
-                Rotación {label.n} · {SUBJECTS[label.subject!].name}
-              </span>
-            )}
-          </span>
+          {label && <span className="year-lens-label">{SUBJECTS[label.subject!].name}</span>}
         </span>
       ) : (
         <span className="year-thumbs" aria-hidden>
           {rotations.map((r) => (
-            <span key={r.n} className="year-thumb" title={SUBJECTS[r.subject!].name}>
+            <span key={r.n} className="year-thumb">
               <img src={rotationImg(year.id, r.n)} alt="" loading="lazy" decoding="async" />
-              <b>{r.n}</b>
+              <span>{SUBJECTS[r.subject!].name}</span>
             </span>
           ))}
         </span>
@@ -85,7 +86,7 @@ export function YearCard({ year, ready, armed }: { year: Year; ready: number; ar
 }
 
 /**
- * Las fotos de la lupa se piden recién cuando el mouse se acerca a las tarjetas (o cuando la página ya está quieta):
+ * Las fotos de la lupa se piden recién cuando el mouse se acerca a las tarjetas (o a los pocos segundos):
  * así la portada carga igual de rápido.
  */
 export function useArmImages() {
